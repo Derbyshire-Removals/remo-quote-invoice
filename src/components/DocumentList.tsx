@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Mail, Printer } from "lucide-react";
+import { Mail, Printer, FileText } from "lucide-react";
 import EmailDialog from "./EmailDialog";
 import { useState } from "react";
 
@@ -11,12 +11,24 @@ export default function DocumentList() {
   const documents = [
     { id: 1, type: 'Quote', number: 'Q001', customer: 'John Doe', date: '2024-02-20', amount: '£550.00', status: 'Pending' },
     { id: 2, type: 'Invoice', number: 'INV001', customer: 'Jane Smith', date: '2024-02-19', amount: '£750.00', status: 'Unpaid' },
-    // Add more sample data as needed
   ];
 
   const handleEmail = (document: any) => {
     setSelectedDocument(document);
     setShowEmailDialog(true);
+  };
+
+  const handlePreviewPDF = (document: any) => {
+    // For demonstration, we'll use a placeholder PDF URL
+    // In a real application, this would be an API endpoint that generates the PDF
+    const pdfUrl = document.type === 'Invoice' 
+      ? `/api/invoices/${document.id}/pdf`
+      : `/api/quotes/${document.id}/pdf`;
+    
+    // Open PDF in a new tab
+    window.open(pdfUrl, '_blank');
+    
+    console.log('Opening PDF preview for:', document);
   };
 
   return (
@@ -49,6 +61,9 @@ export default function DocumentList() {
                   </Button>
                   <Button variant="outline" size="icon">
                     <Printer className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={() => handlePreviewPDF(doc)}>
+                    <FileText className="h-4 w-4" />
                   </Button>
                 </div>
               </TableCell>
