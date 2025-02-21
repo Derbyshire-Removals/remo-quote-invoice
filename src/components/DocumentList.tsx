@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Mail, Printer, FileText } from "lucide-react";
@@ -34,7 +35,7 @@ export default function DocumentList() {
     }
 
     try {
-      const response = await fetch("https://invoice-generator.com", {
+      const response = await fetch("https://api.invoice-generator.com", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${apiKey}`,
