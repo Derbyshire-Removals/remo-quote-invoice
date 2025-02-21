@@ -1,14 +1,17 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Receipt, FileText } from "lucide-react";
+import { PlusCircle, Receipt, FileText, Settings } from "lucide-react";
 import DocumentList from "@/components/DocumentList";
 import { useState } from "react";
 import QuoteForm from "@/components/QuoteForm";
 import InvoiceForm from "@/components/InvoiceForm";
+import SettingsDialog from "@/components/SettingsDialog";
 
 export default function Dashboard() {
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -22,6 +25,10 @@ export default function Dashboard() {
           <Button onClick={() => setShowInvoiceForm(true)} variant="outline">
             <Receipt className="mr-2 h-4 w-4" />
             New Invoice
+          </Button>
+          <Button onClick={() => setShowSettings(true)} variant="outline">
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
           </Button>
         </div>
       </div>
@@ -59,6 +66,13 @@ export default function Dashboard() {
       
       {showInvoiceForm && (
         <InvoiceForm onClose={() => setShowInvoiceForm(false)} />
+      )}
+
+      {showSettings && (
+        <SettingsDialog 
+          open={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
       )}
     </div>
   );

@@ -21,6 +21,10 @@ export default function DocumentList() {
   };
 
   const handlePrint = (document: any) => {
+    // Get company settings from localStorage
+    const savedSettings = localStorage.getItem("companySettings");
+    const companySettings = savedSettings ? JSON.parse(savedSettings) : null;
+
     // Create a new window for printing
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -32,11 +36,13 @@ export default function DocumentList() {
         <head>
           <title>${document.type} ${document.number}</title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
+            body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
             .header { text-align: center; margin-bottom: 30px; }
+            .company-info { margin-bottom: 30px; }
+            .logo { max-width: 200px; margin-bottom: 15px; }
             .details { margin-bottom: 20px; }
             .row { display: flex; margin-bottom: 10px; }
-            .label { font-weight: bold; width: 100px; }
+            .label { font-weight: bold; width: 150px; }
             .amount { font-size: 1.2em; margin-top: 20px; }
             @media print {
               .no-print { display: none; }
@@ -44,9 +50,23 @@ export default function DocumentList() {
           </style>
         </head>
         <body>
+          ${companySettings?.logoUrl ? `
+            <div class="header">
+              <img src="${companySettings.logoUrl}" alt="Company Logo" class="logo">
+            </div>
+          ` : ''}
+          
+          <div class="company-info">
+            ${companySettings?.name ? `<h2>${companySettings.name}</h2>` : ''}
+            ${companySettings?.address ? `<p>${companySettings.address}</p>` : ''}
+            ${companySettings?.contactInfo ? `<p>${companySettings.contactInfo}</p>` : ''}
+            ${companySettings?.registrationNumber ? `<p>Registration/VAT: ${companySettings.registrationNumber}</p>` : ''}
+          </div>
+
           <div class="header">
             <h1>${document.type} ${document.number}</h1>
           </div>
+          
           <div class="details">
             <div class="row">
               <span class="label">Customer:</span>
@@ -65,6 +85,7 @@ export default function DocumentList() {
               <span>${document.amount}</span>
             </div>
           </div>
+          
           <div class="no-print">
             <button onclick="window.print()">Print</button>
           </div>
