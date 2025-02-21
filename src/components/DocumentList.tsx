@@ -1,12 +1,14 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Mail, Printer, FileText } from "lucide-react";
+import { Mail, Printer, FileText, Edit } from "lucide-react";
 import EmailDialog from "./EmailDialog";
 import { useState } from "react";
+import InvoiceForm from "./InvoiceForm";
 
 export default function DocumentList() {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
 
   const documents = [
@@ -18,6 +20,11 @@ export default function DocumentList() {
   const handleEmail = (document: any) => {
     setSelectedDocument(document);
     setShowEmailDialog(true);
+  };
+
+  const handleEdit = (document: any) => {
+    setSelectedDocument(document);
+    setShowEditForm(true);
   };
 
   const handlePrint = (document: any) => {
@@ -129,6 +136,11 @@ export default function DocumentList() {
                   <Button variant="outline" size="icon" onClick={() => handlePrint(doc)}>
                     <Printer className="h-4 w-4" />
                   </Button>
+                  {doc.type === 'Invoice' && (
+                    <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
@@ -141,6 +153,13 @@ export default function DocumentList() {
         onClose={() => setShowEmailDialog(false)}
         document={selectedDocument}
       />
+
+      {showEditForm && selectedDocument && (
+        <InvoiceForm 
+          onClose={() => setShowEditForm(false)}
+          initialData={selectedDocument}
+        />
+      )}
     </div>
   );
 }
