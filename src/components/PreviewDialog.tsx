@@ -18,11 +18,9 @@ interface PreviewDialogProps {
 
 export default function PreviewDialog({ open, onClose, document, companySettings }: PreviewDialogProps) {
   const handlePrint = () => {
-    // Create a new window for printing
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    // Generate HTML content for the invoice
     const content = `
       <!DOCTYPE html>
       <html>
@@ -71,8 +69,12 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               <span>${document.customer}</span>
             </div>
             <div class="row">
-              <span class="label">Date:</span>
-              <span>${document.date}</span>
+              <span class="label">Invoice Date:</span>
+              <span>${document.invoiceDate || document.date}</span>
+            </div>
+            <div class="row">
+              <span class="label">Due Date:</span>
+              <span>${document.dueDate || document.date}</span>
             </div>
             <div class="row">
               <span class="label">Status:</span>
@@ -91,7 +93,6 @@ export default function PreviewDialog({ open, onClose, document, companySettings
       </html>
     `;
 
-    // Write the content to the new window
     printWindow.document.write(content);
     printWindow.document.close();
   };
@@ -125,8 +126,12 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               <span>{document.customer}</span>
             </div>
             <div className="flex">
-              <span className="font-bold w-32">Date:</span>
-              <span>{document.date}</span>
+              <span className="font-bold w-32">Invoice Date:</span>
+              <span>{document.invoiceDate || document.date}</span>
+            </div>
+            <div className="flex">
+              <span className="font-bold w-32">Due Date:</span>
+              <span>{document.dueDate || document.date}</span>
             </div>
             <div className="flex">
               <span className="font-bold w-32">Status:</span>

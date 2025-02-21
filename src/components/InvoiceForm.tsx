@@ -19,6 +19,8 @@ interface InvoiceFormProps {
     description?: string;
     address?: string;
     tax?: number;
+    invoiceDate?: string;
+    dueDate?: string;
   };
 }
 
@@ -27,6 +29,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     customerName: "",
     email: "",
     invoiceNumber: "",
+    invoiceDate: "",
     dueDate: "",
     address: "",
     description: "",
@@ -40,7 +43,8 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
         customerName: initialData.customer || "",
         email: initialData.email || "",
         invoiceNumber: initialData.number || "",
-        dueDate: initialData.date || "",
+        invoiceDate: initialData.invoiceDate || "",
+        dueDate: initialData.dueDate || "",
         address: initialData.address || "",
         description: initialData.description || "",
         amount: initialData.amount.replace('£', '') || "",
@@ -94,13 +98,22 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="invoiceNumber">Invoice Number</Label>
               <Input 
                 id="invoiceNumber" 
                 placeholder="INV001"
                 value={formData.invoiceNumber}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invoiceDate">Invoice Date</Label>
+              <Input 
+                id="invoiceDate" 
+                type="date"
+                value={formData.invoiceDate}
                 onChange={handleChange}
               />
             </div>
