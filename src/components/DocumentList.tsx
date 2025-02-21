@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, Printer, FileText } from "lucide-react";
 import EmailDialog from "./EmailDialog";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function DocumentList() {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -18,17 +19,53 @@ export default function DocumentList() {
     setShowEmailDialog(true);
   };
 
-  const handlePreviewPDF = (document: any) => {
-    // For demonstration, we'll use a placeholder PDF URL
-    // In a real application, this would be an API endpoint that generates the PDF
-    const pdfUrl = document.type === 'Invoice' 
-      ? `/api/invoices/${document.id}/pdf`
-      : `/api/quotes/${document.id}/pdf`;
-    
-    // Open PDF in a new tab
-    window.open(pdfUrl, '_blank');
-    
-    console.log('Opening PDF preview for:', document);
+  const handlePreviewPDF = async (document: any) => {
+    if (document.type === 'Quote') {
+      // For quotes, we'll keep using the placeholder URL for now
+      const pdfUrl = `/api/quotes/${document.id}/pdf`;
+      window.open(pdfUrl, '_blank');
+      return;
+    }
+
+    const apiKey = localStorage.getItem("invoice_generator_api_key");
+    if (!apiKey) {
+      toast.error("Please set up your Invoice Generator API key in settings first");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://invoice-generator.com", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: "Your Company Name",
+          to: document.customer,
+          number: document.number,
+          date: document.date,
+          items: [
+            {
+              name: "Removal Services",
+              quantity: 1,
+              unit_cost: parseFloat(document.amount.replace('£', ''))
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error("Failed to generate PDF. Please check your API key and try again.");
+    }
   };
 
   return (
