@@ -13,6 +13,8 @@ interface CompanySettings {
   address: string;
   contactInfo: string;
   registrationNumber: string;
+  invoicePrefix: string;
+  invoiceCounter: number;
 }
 
 const defaultSettings: CompanySettings = {
@@ -21,6 +23,8 @@ const defaultSettings: CompanySettings = {
   address: "",
   contactInfo: "",
   registrationNumber: "",
+  invoicePrefix: "INV-DR",
+  invoiceCounter: 1000,
 };
 
 interface SettingsDialogProps {
@@ -100,6 +104,29 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               value={settings.registrationNumber}
               onChange={(e) => setSettings({ ...settings, registrationNumber: e.target.value })}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="invoicePrefix">Invoice Prefix</Label>
+              <Input
+                id="invoicePrefix"
+                placeholder="INV-DR"
+                value={settings.invoicePrefix}
+                onChange={(e) => setSettings({ ...settings, invoicePrefix: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invoiceCounter">Next Invoice Number</Label>
+              <Input
+                id="invoiceCounter"
+                type="number"
+                min="1"
+                placeholder="1000"
+                value={settings.invoiceCounter}
+                onChange={(e) => setSettings({ ...settings, invoiceCounter: Number(e.target.value) })}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end space-x-4">

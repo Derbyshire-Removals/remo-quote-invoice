@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface InvoiceFormProps {
   onClose: () => void;
@@ -50,13 +51,33 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
         amount: initialData.amount.replace('£', '') || "",
         tax: String(initialData.tax || 20)
       });
+    } else {
+      // Generate new invoice number only for new invoices
+      const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+      if (settings.invoicePrefix && settings.invoiceCounter) {
+        setFormData(prev => ({
+          ...prev,
+          invoiceNumber: `${settings.invoicePrefix}-${settings.invoiceCounter}`
+        }));
+      }
     }
   }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!initialData) {
+      // Increment counter only for new invoices
+      const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+      if (settings.invoiceCounter) {
+        settings.invoiceCounter += 1;
+        localStorage.setItem("companySettings", JSON.stringify(settings));
+      }
+    }
+    
     // Here you would typically save the changes
     console.log("Form submitted:", formData);
+    toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
     onClose();
   };
 
@@ -106,6 +127,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
                 placeholder="INV001"
                 value={formData.invoiceNumber}
                 onChange={handleChange}
+                readOnly={!initialData} // Make read-only for new invoices
               />
             </div>
             <div className="space-y-2">
