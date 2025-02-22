@@ -152,6 +152,7 @@ export default function PreviewDialog({
             .notes-content, .terms-content {
               white-space: pre-line;
               line-height: 1.5;
+              margin: 0;
             }
             @media print {
               .no-print { display: none; }
@@ -251,10 +252,10 @@ export default function PreviewDialog({
 
           <div style="margin-top: 3rem; space-y: 1.5rem;">
             <div>
-              <p style="color: #64748b;">Notes:</p>
+              <p style="color: #64748b; margin: 0;">Notes:</p>
               <p class="notes-content">${document.notes || 'No notes provided'}</p>
             </div>
-            <div style="margin-top: 1.5rem;">
+            <div style="margin-top: 1.5rem; margin: 0;">
               <p style="color: #64748b;">Terms:</p>
               <p class="terms-content">${document.terms || 'No terms provided'}</p>
             </div>
