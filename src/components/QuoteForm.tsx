@@ -6,10 +6,24 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface QuoteItem {
   description: string;
   amount: string;
+}
+
+interface Quote {
+  id: string;
+  customerName: string;
+  email: string;
+  phone: string;
+  moveDate: string;
+  fromAddress: string;
+  items: QuoteItem[];
+  message: string;
+  total: number;
+  createdAt: string;
 }
 
 interface QuoteFormProps {
@@ -17,8 +31,17 @@ interface QuoteFormProps {
 }
 
 export default function QuoteForm({ onClose }: QuoteFormProps) {
+  const { toast } = useToast();
   const defaultMessage = "Following our recent conversation I have the pleasure in quoting for the removal of furniture/goods from the above address and delivery to #DESTINATION_ADDRESS.";
   const [items, setItems] = useState<QuoteItem[]>([{ description: "Removal costs incl insurance", amount: "" }]);
+  const [formData, setFormData] = useState({
+    customerName: "",
+    email: "",
+    phone: "",
+    moveDate: "",
+    fromAddress: "",
+    message: defaultMessage
+  });
 
   const handleItemChange = (index: number, field: keyof QuoteItem, value: string) => {
     setItems(prev => prev.map((item, i) => 
@@ -40,6 +63,44 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
     return items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const newQuote: Quote = {
+      id: crypto.randomUUID(),
+      ...formData,
+      items,
+      total: calculateTotal(),
+      createdAt: new Date().toISOString()
+    };
+
+    // Get existing quotes from localStorage
+    const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
+    
+    // Add new quote
+    const updatedQuotes = [...existingQuotes, newQuote];
+    
+    // Save to localStorage
+    localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+
+    // Show success message
+    toast({
+      title: "Quote Created",
+      description: "The quote has been successfully created.",
+    });
+
+    // Close the form
+    onClose();
+  };
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -47,32 +108,63 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
           <DialogTitle>Create New Quote</DialogTitle>
         </DialogHeader>
         
-        <div className="grid gap-6 py-4">
+        <form onSubmit={handleSubmit} className="grid gap-6 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="customerName">Customer Name</Label>
-              <Input id="customerName" placeholder="Enter customer name" />
+              <Input 
+                id="customerName" 
+                placeholder="Enter customer name"
+                value={formData.customerName}
+                onChange={handleInputChange}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="customer@example.com" />
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="customer@example.com"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" placeholder="Enter phone number" />
+              <Input 
+                id="phone" 
+                placeholder="Enter phone number"
+                value={formData.phone}
+                onChange={handleInputChange}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="moveDate">Moving Date</Label>
-              <Input id="moveDate" type="date" />
+              <Input 
+                id="moveDate" 
+                type="date"
+                value={formData.moveDate}
+                onChange={handleInputChange}
+                required
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="fromAddress">From Address</Label>
-            <Textarea id="fromAddress" placeholder="Enter pickup address" />
+            <Textarea 
+              id="fromAddress" 
+              placeholder="Enter pickup address"
+              value={formData.fromAddress}
+              onChange={handleInputChange}
+              required
+            />
           </div>
 
           <div className="space-y-4">
@@ -93,6 +185,7 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
                     value={item.description}
                     onChange={(e) => handleItemChange(index, "description", e.target.value)}
                     placeholder="Enter item description"
+                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -104,6 +197,7 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
                     onChange={(e) => handleItemChange(index, "amount", e.target.value)}
                     className="w-32"
                     placeholder="0.00"
+                    required
                   />
                 </div>
                 <Button
@@ -125,19 +219,21 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quoteMessage">Quote Message</Label>
+            <Label htmlFor="message">Quote Message</Label>
             <Textarea 
-              id="quoteMessage" 
-              defaultValue={defaultMessage}
+              id="message" 
+              value={formData.message}
+              onChange={handleInputChange}
               className="min-h-[120px]"
+              required
             />
           </div>
 
           <div className="flex justify-end space-x-4">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             <Button type="submit">Create Quote</Button>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
