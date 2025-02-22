@@ -1,11 +1,9 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Printer, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface PreviewDialogProps {
   open: boolean;
@@ -27,7 +25,252 @@ export default function PreviewDialog({
   document,
   companySettings
 }: PreviewDialogProps) {
-  const [isPrintMode, setIsPrintMode] = useState(false);
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    const content = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${document.type} ${document.number}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+            body { 
+              font-family: 'Inter', sans-serif;
+              padding: 40px;
+              max-width: 800px;
+              margin: 0 auto;
+              color: #1a1f2c;
+            }
+            .header { 
+              width: 100%;
+              display: table;
+              margin-bottom: 40px;
+            }
+            .left-section {
+              display: table-cell;
+              width: 50%;
+              vertical-align: top;
+              padding-right: 2rem;
+            }
+            .right-section {
+              display: table-cell;
+              width: 50%;
+              vertical-align: top;
+              text-align: right;
+            }
+            .company-info { margin-bottom: 2rem; }
+            .logo { max-width: 175px; margin-bottom: 1rem; }
+            .details { margin-bottom: 30px; }
+            .row { display: flex; margin-bottom: 12px; }
+            .label { font-weight: 600; width: 150px; color: #64748b; }
+            .amount { font-size: 1.5em; margin-top: 30px; }
+            .document-title { 
+              font-size: 2.5em; 
+              color: #64748b;
+              font-weight: 700;
+              text-transform: uppercase;
+              margin-bottom: 0.5rem;
+            }
+            .document-number {
+              font-size: 1.5em;
+              color: #64748b;
+              font-weight: 600;
+              margin-bottom: 3rem;
+            }
+            .company-name {
+              font-size: 1.5em;
+              font-weight: 600;
+              margin-bottom: 0.5rem;
+            }
+            .bill-to {
+              color: #64748b;
+              font-size: 0.875rem;
+              margin: 1.5rem 0 0.5rem 0;
+            }
+            .customer-name {
+              font-weight: 600;
+              margin-bottom: 0.5rem;
+            }
+            .address {
+              white-space: pre-line;
+              line-height: 1.5;
+            }
+            .balance-box {
+              display: inline-block;
+              background-color: #f8f9fa;
+              padding: 1rem 1.5rem;
+              border-radius: 0.5rem;
+              margin-top: 1rem;
+            }
+            .balance-label {
+              font-size: 0.875rem;
+              font-weight: 500;
+              color: #64748b;
+              margin-right: 1rem;
+            }
+            .balance-amount {
+              font-size: 1.25rem;
+              font-weight: 600;
+              color: #1a1f2c;
+            }
+            .date-row {
+              margin-bottom: 0.75rem;
+              text-align: right;
+            }
+            .date-label {
+              font-size: 0.875rem;
+              font-weight: 500;
+              color: #64748b;
+              margin-right: 1rem;
+            }
+            .date-value {
+              font-size: 0.875rem;
+              color: #1a1f2c;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 2rem 0;
+            }
+            th {
+              background-color: #022f5c;
+              color: white;
+              font-weight: 600;
+              text-align: left;
+              padding: 0.5rem;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            td {
+              padding: 0.5rem;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            tr:last-child td {
+              border-bottom: none;
+            }
+            .amount-cell {
+              text-align: right;
+            }
+            .notes-content, .terms-content {
+              white-space: pre-line;
+              line-height: 1.5;
+            }
+            @media print {
+              .no-print { display: none; }
+              body { margin: 0; padding: 20px; }
+              .header { page-break-inside: avoid; }
+              /* Ensure table header color is preserved in print */
+              th {
+                background-color: #022f5c !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+            }
+            
+            .totals-section {
+              margin-top: 1rem;
+              width: 100%;
+            }
+            .totals-row {
+              display: flex;
+              justify-content: flex-end;
+              margin-bottom: 0.5rem;
+            }
+            .totals-label {
+              color: #64748b;
+              margin-right: 2rem;
+            }
+            .totals-value {
+              width: 150px;
+              text-align: right;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="left-section">
+              ${companySettings?.logoUrl ? `<img src="${companySettings.logoUrl}" alt="Company Logo" class="logo">` : ''}
+              ${companySettings?.name ? `<div class="company-name">${companySettings.name}</div>` : ''}
+              ${companySettings?.address ? `<div class="address">${companySettings.address}</div>` : ''}
+              ${companySettings?.companyNumber ? `<div class="company-details">Company No: ${companySettings.companyNumber}</div>` : ''}
+              ${companySettings?.registrationNumber ? `<div class="company-details">VAT: ${companySettings.registrationNumber}</div>` : ''}
+              <div class="bill-to">Bill To:</div>
+              <div class="customer-name">${document.customer}</div>
+              <div class="address">${document.address || ''}</div>
+            </div>
+            <div class="right-section">
+              <div class="document-title">${document.type}</div>
+              <div class="document-number">#${document.number}</div>
+              <div class="date-row">
+                <span class="date-label">Date:</span>
+                <span class="date-value">${formatDate(document.invoiceDate || document.date)}</span>
+              </div>
+              ${document.dueDate ? `
+                <div class="date-row">
+                  <span class="date-label">Due Date:</span>
+                  <span class="date-value">${formatDate(document.dueDate)}</span>
+                </div>
+              ` : ''}
+              <div class="balance-box">
+                <span class="balance-label">Balance Due:</span>
+                <span class="balance-amount">${document.amount}</span>
+              </div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 80%">Description</th>
+                <th style="width: 20%; text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${document.items?.map((item: any) => `
+                <tr>
+                  <td>${item.description}</td>
+                  <td class="amount-cell">£${parseFloat(item.amount).toFixed(2)}</td>
+                </tr>
+              `).join('') || ''}
+            </tbody>
+          </table>
+
+          <div class="totals-section">
+            <div class="totals-row">
+              <span class="totals-label">Subtotal:</span>
+              <span class="totals-value">£${calculateSubtotal(document.items).toFixed(2)}</span>
+            </div>
+            <div class="totals-row">
+              <span class="totals-label">VAT (20%):</span>
+              <span class="totals-value">£${(calculateSubtotal(document.items) * 0.2).toFixed(2)}</span>
+            </div>
+            <div class="totals-row">
+              <span class="totals-label" style="font-weight: 600;">Total:</span>
+              <span class="totals-value" style="font-weight: 600;">£${(calculateSubtotal(document.items) * 1.2).toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 3rem; space-y: 1.5rem;">
+            <div>
+              <p style="color: #64748b;">Notes:</p>
+              <p class="notes-content">${document.notes || 'No notes provided'}</p>
+            </div>
+            <div style="margin-top: 1.5rem;">
+              <p style="color: #64748b;">Terms:</p>
+              <p class="terms-content">${document.terms || 'No terms provided'}</p>
+            </div>
+          </div>
+
+          <div class="no-print">
+            <button onclick="window.print()">Print</button>
+          </div>
+        </body>
+      </html>
+    `;
+    printWindow.document.write(content);
+    printWindow.document.close();
+  };
 
   const calculateSubtotal = (items: any[] = []) => {
     return items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
@@ -41,40 +284,9 @@ export default function PreviewDialog({
     }
   };
 
-  const handlePrint = () => {
-    setIsPrintMode(true);
-  };
-
-  const handleBackToPreview = () => {
-    setIsPrintMode(false);
-  };
-
   return <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className={cn(
-        "max-w-[210mm] w-full bg-white print:shadow-none print:border-none",
-        isPrintMode ? "!max-w-[100vw] !h-[100vh] !max-h-[100vh] !inset-0 !translate-x-0 !translate-y-0 !rounded-none" : "max-h-[85vh] p-8 overflow-y-auto"
-      )}>
+      <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative rounded-lg p-8">
-          {!isPrintMode ? (
-            <Button
-              variant="outline"
-              className="absolute right-0 top-0"
-              onClick={handlePrint}
-            >
-              <Printer className="mr-2" size={16} />
-              Print Mode
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              className="absolute left-4 top-4 z-50 print:hidden"
-              onClick={handleBackToPreview}
-            >
-              <ArrowLeft className="mr-2" size={16} />
-              Back to Preview
-            </Button>
-          )}
-
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div>
               {companySettings?.logoUrl && <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />}
@@ -170,6 +382,13 @@ export default function PreviewDialog({
                 <p className="mt-2 text-gray-900 whitespace-pre-line">{document.terms || 'No terms provided'}</p>
               </div>
             </div>
+          </div>
+
+          <div className="absolute bottom-4 right-4">
+            <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
+              <Printer className="mr-2 h-4 w-4" />
+              Print
+            </Button>
           </div>
         </div>
       </DialogContent>
