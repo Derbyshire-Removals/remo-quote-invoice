@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +56,6 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
         items: initialData.items || [{ description: initialData.description || "", amount: initialData.amount.replace('£', '') || "" }]
       });
     } else {
-      // Generate new invoice number only for new invoices
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
       if (settings.invoicePrefix && settings.invoiceCounter) {
         setFormData(prev => ({
@@ -71,10 +69,11 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Calculate total amount
-    const totalAmount = formData.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    const subtotal = formData.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    const vatRate = parseFloat(formData.tax) / 100;
+    const vatAmount = subtotal * vatRate;
+    const totalAmount = subtotal + vatAmount;
     
-    // Create new document object
     const newDocument = {
       id: initialData?.id || Date.now(),
       type: 'Invoice' as const,
@@ -91,20 +90,15 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       items: formData.items
     };
 
-    // Get existing documents
     const existingDocs = JSON.parse(localStorage.getItem('documents') || '[]');
     let updatedDocs;
 
     if (initialData) {
-      // Update existing document
       updatedDocs = existingDocs.map((doc: any) => 
         doc.id === initialData.id ? newDocument : doc
       );
     } else {
-      // Add new document
       updatedDocs = [...existingDocs, newDocument];
-      
-      // Increment counter only for new invoices
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
       if (settings.invoiceCounter) {
         settings.invoiceCounter += 1;
@@ -112,7 +106,6 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       }
     }
 
-    // Save updated documents
     localStorage.setItem('documents', JSON.stringify(updatedDocs));
     
     toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
@@ -152,8 +145,10 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     }
   };
 
-  // Calculate total amount
-  const totalAmount = formData.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+  const subtotal = formData.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+  const vatRate = parseFloat(formData.tax) / 100;
+  const vatAmount = subtotal * vatRate;
+  const totalAmount = subtotal + vatAmount;
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -270,8 +265,19 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
               </div>
             ))}
 
-            <div className="flex justify-end text-lg font-semibold">
-              Total: £{totalAmount.toFixed(2)}
+            <div className="flex flex-col items-end space-y-2 text-lg">
+              <div className="flex justify-between w-64">
+                <span>Subtotal:</span>
+                <span>£{subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between w-64">
+                <span>VAT ({formData.tax}%):</span>
+                <span>£{vatAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between w-64 font-semibold">
+                <span>Total:</span>
+                <span>£{totalAmount.toFixed(2)}</span>
+              </div>
             </div>
           </div>
 
