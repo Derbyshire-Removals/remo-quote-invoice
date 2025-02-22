@@ -33,7 +33,9 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
       address: "",
       tax: "20",
       items: [{ description: "", amount: "" }],
-      notes: settings.defaultNotes || ""
+      notes: settings.defaultNotes || "",
+      terms: settings.defaultTerms || "",
+      selectedTermsTemplate: "default"
     };
   }
 
@@ -46,6 +48,8 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
     address: initialData.address || "",
     tax: String(initialData.tax || 20),
     items: initialData.items || [{ description: initialData.description || "", amount: initialData.amount.replace('£', '') || "" }],
-    notes: initialData.notes || ""
+    notes: initialData.notes || "",
+    terms: initialData.terms || "",
+    selectedTermsTemplate: "custom"
   };
 };

@@ -14,6 +14,8 @@ export interface InvoiceFormData {
   tax: string;
   items: InvoiceItem[];
   notes: string;
+  terms: string;
+  selectedTermsTemplate?: string;
 }
 
 export interface InitialInvoiceData {
@@ -31,4 +33,5 @@ export interface InitialInvoiceData {
   dueDate?: string;
   items?: InvoiceItem[];
   notes?: string;
+  terms?: string;
 }

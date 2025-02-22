@@ -11,6 +11,7 @@ import { InvoiceDetailsSection } from "./invoice/InvoiceDetailsSection";
 import { InvoiceItemsSection } from "./invoice/InvoiceItemsSection";
 import { calculateTotals, mapInitialDataToFormData } from "@/utils/invoiceUtils";
 import { InvoiceFormData, InitialInvoiceData } from "@/types/invoice";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface InvoiceFormProps {
   onClose: () => void;
@@ -21,6 +22,12 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
   const [formData, setFormData] = useState<InvoiceFormData>(() => 
     mapInitialDataToFormData(initialData)
   );
+  const [termsTemplates, setTermsTemplates] = useState<{ name: string; content: string; }[]>([]);
+
+  useEffect(() => {
+    const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+    setTermsTemplates(settings.termsTemplates || []);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +53,8 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       invoiceDate: formData.invoiceDate,
       dueDate: formData.dueDate,
       items: formData.items,
-      notes: formData.notes
+      notes: formData.notes,
+      terms: formData.terms
     };
 
     const existingDocs = JSON.parse(localStorage.getItem('documents') || '[]');
@@ -76,6 +84,31 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       ...prev,
       [id]: value
     }));
+  };
+
+  const handleTemplateChange = (templateName: string) => {
+    if (templateName === "default") {
+      const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+      setFormData(prev => ({
+        ...prev,
+        terms: settings.defaultTerms || "",
+        selectedTermsTemplate: templateName
+      }));
+    } else if (templateName === "custom") {
+      setFormData(prev => ({
+        ...prev,
+        selectedTermsTemplate: "custom"
+      }));
+    } else {
+      const template = termsTemplates.find(t => t.name === templateName);
+      if (template) {
+        setFormData(prev => ({
+          ...prev,
+          terms: template.content,
+          selectedTermsTemplate: templateName
+        }));
+      }
+    }
   };
 
   const handleItemChange = (index: number, field: keyof InvoiceFormData["items"][0], value: string) => {
@@ -149,6 +182,40 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
               onChange={handleChange}
               className="w-32"
             />
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Terms & Conditions Template</Label>
+              <Select
+                value={formData.selectedTermsTemplate}
+                onValueChange={handleTemplateChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select terms template" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Default Terms</SelectItem>
+                  {termsTemplates.map((template, index) => (
+                    <SelectItem key={index} value={template.name}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="custom">Custom Terms</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="terms">Terms & Conditions</Label>
+              <Textarea
+                id="terms"
+                placeholder="Enter terms and conditions"
+                value={formData.terms}
+                onChange={handleChange}
+                rows={6}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

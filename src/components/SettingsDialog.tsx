@@ -16,6 +16,11 @@ interface CompanySettings {
   invoicePrefix: string;
   invoiceCounter: number;
   defaultNotes: string;
+  termsTemplates: {
+    name: string;
+    content: string;
+  }[];
+  defaultTerms: string;
 }
 
 const defaultSettings: CompanySettings = {
@@ -27,6 +32,13 @@ const defaultSettings: CompanySettings = {
   invoicePrefix: "INV-DR",
   invoiceCounter: 1000,
   defaultNotes: "",
+  termsTemplates: [
+    {
+      name: "Standard Terms",
+      content: "1. Payment is due within 30 days\n2. Late payments will incur a fee\n3. All prices are exclusive of VAT"
+    }
+  ],
+  defaultTerms: "1. Payment is due within 30 days\n2. Late payments will incur a fee\n3. All prices are exclusive of VAT"
 };
 
 interface SettingsDialogProps {
@@ -48,6 +60,29 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     localStorage.setItem("companySettings", JSON.stringify(settings));
     toast.success("Company settings saved successfully");
     onClose();
+  };
+
+  const handleAddTemplate = () => {
+    setSettings(prev => ({
+      ...prev,
+      termsTemplates: [...prev.termsTemplates, { name: "", content: "" }]
+    }));
+  };
+
+  const handleRemoveTemplate = (index: number) => {
+    setSettings(prev => ({
+      ...prev,
+      termsTemplates: prev.termsTemplates.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleTemplateChange = (index: number, field: 'name' | 'content', value: string) => {
+    setSettings(prev => ({
+      ...prev,
+      termsTemplates: prev.termsTemplates.map((template, i) => 
+        i === index ? { ...template, [field]: value } : template
+      )
+    }));
   };
 
   return (
@@ -116,6 +151,51 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               value={settings.defaultNotes}
               onChange={(e) => setSettings({ ...settings, defaultNotes: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="defaultTerms">Default Terms & Conditions</Label>
+            <Textarea
+              id="defaultTerms"
+              placeholder="Enter default terms and conditions"
+              value={settings.defaultTerms}
+              onChange={(e) => setSettings({ ...settings, defaultTerms: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label>Terms & Conditions Templates</Label>
+              <Button type="button" variant="outline" size="sm" onClick={handleAddTemplate}>
+                Add Template
+              </Button>
+            </div>
+            {settings.termsTemplates.map((template, index) => (
+              <div key={index} className="space-y-2 border p-4 rounded-md">
+                <div className="flex justify-between items-center">
+                  <Input
+                    placeholder="Template Name"
+                    value={template.name}
+                    onChange={(e) => handleTemplateChange(index, 'name', e.target.value)}
+                    className="mb-2"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleRemoveTemplate(index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+                <Textarea
+                  placeholder="Template Content"
+                  value={template.content}
+                  onChange={(e) => handleTemplateChange(index, 'content', e.target.value)}
+                  rows={4}
+                />
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
