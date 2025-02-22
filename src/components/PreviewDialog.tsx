@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -151,6 +152,10 @@ export default function PreviewDialog({
             .amount-cell {
               text-align: right;
             }
+            .notes-content, .terms-content {
+              white-space: pre-line;
+              line-height: 1.5;
+            }
             @media print {
               .no-print { display: none; }
               body { margin: 0; padding: 20px; }
@@ -237,6 +242,17 @@ export default function PreviewDialog({
             <div class="totals-row">
               <span class="totals-label" style="font-weight: 600;">Total:</span>
               <span class="totals-value" style="font-weight: 600;">£${(calculateSubtotal(document.items) * 1.2).toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 3rem; space-y: 1.5rem;">
+            <div>
+              <p style="color: #64748b;">Notes:</p>
+              <p class="notes-content">${document.notes || 'No notes provided'}</p>
+            </div>
+            <div style="margin-top: 1.5rem;">
+              <p style="color: #64748b;">Terms:</p>
+              <p class="terms-content">${document.terms || 'No terms provided'}</p>
             </div>
           </div>
 
@@ -353,11 +369,11 @@ export default function PreviewDialog({
             <div className="mt-12 space-y-6">
               <div>
                 <p className="text-[#64748b]">Notes:</p>
-                <p className="mt-2 text-gray-900">{document.notes || 'No notes provided'}</p>
+                <p className="mt-2 text-gray-900 whitespace-pre-line">{document.notes || 'No notes provided'}</p>
               </div>
               <div>
                 <p className="text-[#64748b]">Terms:</p>
-                <p className="mt-2 text-gray-900">{document.terms || 'No terms provided'}</p>
+                <p className="mt-2 text-gray-900 whitespace-pre-line">{document.terms || 'No terms provided'}</p>
               </div>
             </div>
           </div>
