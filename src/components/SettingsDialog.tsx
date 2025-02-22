@@ -52,7 +52,13 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   useEffect(() => {
     const savedSettings = localStorage.getItem("companySettings");
     if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
+      // Merge saved settings with default settings to ensure all fields exist
+      const parsedSettings = JSON.parse(savedSettings);
+      setSettings({
+        ...defaultSettings,
+        ...parsedSettings,
+        termsTemplates: parsedSettings.termsTemplates || defaultSettings.termsTemplates
+      });
     }
   }, []);
 
