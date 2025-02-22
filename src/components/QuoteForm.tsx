@@ -18,7 +18,7 @@ interface QuoteFormProps {
 
 export default function QuoteForm({ onClose }: QuoteFormProps) {
   const defaultMessage = "Following our recent conversation I have the pleasure in quoting for the removal of furniture/goods from the above address and delivery to #DESTINATION_ADDRESS.";
-  const [items, setItems] = useState<QuoteItem[]>([{ description: "", amount: "" }]);
+  const [items, setItems] = useState<QuoteItem[]>([{ description: "Removal costs incl insurance", amount: "" }]);
 
   const handleItemChange = (index: number, field: keyof QuoteItem, value: string) => {
     setItems(prev => prev.map((item, i) => 
