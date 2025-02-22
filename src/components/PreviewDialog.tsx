@@ -39,10 +39,17 @@ export default function PreviewDialog({
   };
 
   const handlePrint = () => {
-    const printContent = document.querySelector('.print-content');
+    if (typeof window === 'undefined' || !window.document) return;
+
+    const printContent = window.document.querySelector('.print-content');
+    if (!printContent) {
+      console.error('Print content not found');
+      return;
+    }
+
     const printWindow = window.open('', '', 'width=800,height=600');
     
-    if (printWindow && printContent) {
+    if (printWindow) {
       printWindow.document.write(`
         <html>
           <head>
