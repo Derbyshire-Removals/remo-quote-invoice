@@ -38,7 +38,22 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const loadDocuments = () => {
     const storedDocs = localStorage.getItem(storageKey);
     if (storedDocs) {
-      setDocuments(JSON.parse(storedDocs));
+      try {
+        const parsedDocs = JSON.parse(storedDocs);
+        // Ensure all documents have required properties
+        const validDocs = parsedDocs.filter((doc: any) => 
+          doc && 
+          doc.number && 
+          doc.customer && 
+          doc.date && 
+          doc.amount && 
+          doc.status
+        );
+        setDocuments(validDocs);
+      } catch (e) {
+        console.error('Error parsing documents:', e);
+        setDocuments([]);
+      }
     } else {
       setDocuments([]); // Initialize with empty array if no documents exist
     }
@@ -78,9 +93,10 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     }
   };
 
-  // Filter documents based on active type
+  // Filter and sort documents, ensuring all required properties exist
   const filteredDocuments = documents
-    .sort((a, b) => b.number.localeCompare(a.number)); // Simple string comparison in descending order
+    .filter(doc => doc && doc.number) // Extra safety check
+    .sort((a, b) => b.number.localeCompare(a.number));
 
   const handleEmail = (document: Document) => {
     setSelectedDocument(document);
