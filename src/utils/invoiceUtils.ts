@@ -23,6 +23,7 @@ export const generateNewInvoiceNumber = () => {
 
 export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): InvoiceFormData => {
   if (!initialData) {
+    const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
     return {
       customerName: "",
       email: "",
@@ -31,7 +32,8 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
       dueDate: "",
       address: "",
       tax: "20",
-      items: [{ description: "", amount: "" }]
+      items: [{ description: "", amount: "" }],
+      notes: settings.defaultNotes || ""
     };
   }
 
@@ -43,6 +45,7 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
     dueDate: initialData.dueDate || "",
     address: initialData.address || "",
     tax: String(initialData.tax || 20),
-    items: initialData.items || [{ description: initialData.description || "", amount: initialData.amount.replace('£', '') || "" }]
+    items: initialData.items || [{ description: initialData.description || "", amount: initialData.amount.replace('£', '') || "" }],
+    notes: initialData.notes || ""
   };
 };

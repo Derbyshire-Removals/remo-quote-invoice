@@ -1,7 +1,9 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CustomerInfoSection } from "./invoice/CustomerInfoSection";
@@ -43,7 +45,8 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       tax: parseInt(formData.tax),
       invoiceDate: formData.invoiceDate,
       dueDate: formData.dueDate,
-      items: formData.items
+      items: formData.items,
+      notes: formData.notes
     };
 
     const existingDocs = JSON.parse(localStorage.getItem('documents') || '[]');
@@ -145,6 +148,17 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
               value={formData.tax}
               onChange={handleChange}
               className="w-32"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              placeholder="Enter any additional notes"
+              value={formData.notes}
+              onChange={handleChange}
+              rows={4}
             />
           </div>
 

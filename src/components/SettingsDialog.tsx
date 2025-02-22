@@ -15,6 +15,7 @@ interface CompanySettings {
   registrationNumber: string;
   invoicePrefix: string;
   invoiceCounter: number;
+  defaultNotes: string;
 }
 
 const defaultSettings: CompanySettings = {
@@ -25,6 +26,7 @@ const defaultSettings: CompanySettings = {
   registrationNumber: "",
   invoicePrefix: "INV-DR",
   invoiceCounter: 1000,
+  defaultNotes: "",
 };
 
 interface SettingsDialogProps {
@@ -103,6 +105,16 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               placeholder="Company Registration or VAT Number"
               value={settings.registrationNumber}
               onChange={(e) => setSettings({ ...settings, registrationNumber: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="defaultNotes">Default Invoice Notes</Label>
+            <Textarea
+              id="defaultNotes"
+              placeholder="Enter default notes for new invoices"
+              value={settings.defaultNotes}
+              onChange={(e) => setSettings({ ...settings, defaultNotes: e.target.value })}
             />
           </div>
 
