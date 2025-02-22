@@ -56,7 +56,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       terms: formData.terms
     };
 
-    const existingDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+    const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
     let updatedDocs;
 
     if (initialData) {
@@ -72,7 +72,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       localStorage.setItem("companySettings", JSON.stringify(settings));
     }
 
-    localStorage.setItem('documents', JSON.stringify(updatedDocs));
+    localStorage.setItem('invoices', JSON.stringify(updatedDocs));
     toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
     onClose();
   };

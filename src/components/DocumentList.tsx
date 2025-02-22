@@ -32,11 +32,15 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const [documents, setDocuments] = useState<Document[]>([]);
   const { toast } = useToast();
 
+  const storageKey = activeDocumentType === 'quotes' ? 'quotes' : 'invoices';
+
   // Function to load documents from localStorage
   const loadDocuments = () => {
-    const storedDocs = localStorage.getItem('documents');
+    const storedDocs = localStorage.getItem(storageKey);
     if (storedDocs) {
       setDocuments(JSON.parse(storedDocs));
+    } else {
+      setDocuments([]); // Initialize with empty array if no documents exist
     }
   };
 
@@ -46,7 +50,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
 
     // Subscribe to storage changes from other windows
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'documents') {
+      if (e.key === storageKey) {
         loadDocuments();
       }
     };
@@ -59,12 +63,12 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
-  }, []);
+  }, [storageKey]); // Re-run effect when storageKey changes
 
   const confirmDelete = () => {
     if (selectedDocument) {
       const updatedDocs = documents.filter(doc => doc.id !== selectedDocument.id);
-      localStorage.setItem('documents', JSON.stringify(updatedDocs));
+      localStorage.setItem(storageKey, JSON.stringify(updatedDocs));
       setDocuments(updatedDocs);
       setShowDeleteDialog(false);
       toast({
@@ -74,9 +78,8 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     }
   };
 
-  // Filter documents based on active type and sort by document number
+  // Filter documents based on active type
   const filteredDocuments = documents
-    .filter(doc => activeDocumentType === 'quotes' ? doc.type === 'Quote' : doc.type === 'Invoice')
     .sort((a, b) => b.number.localeCompare(a.number)); // Simple string comparison in descending order
 
   const handleEmail = (document: Document) => {
@@ -187,3 +190,4 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     </div>
   );
 }
+
