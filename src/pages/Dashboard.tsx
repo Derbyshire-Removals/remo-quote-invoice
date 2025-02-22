@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [activeDocumentType, setActiveDocumentType] = useState<'quotes' | 'invoices'>('quotes');
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -34,7 +35,10 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card className="p-6">
+        <Card 
+          className={`p-6 cursor-pointer transition-colors ${activeDocumentType === 'quotes' ? 'ring-2 ring-primary' : ''}`}
+          onClick={() => setActiveDocumentType('quotes')}
+        >
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-primary/10 rounded-full">
               <FileText className="h-6 w-6 text-primary" />
@@ -45,7 +49,10 @@ export default function Dashboard() {
             </div>
           </div>
         </Card>
-        <Card className="p-6">
+        <Card 
+          className={`p-6 cursor-pointer transition-colors ${activeDocumentType === 'invoices' ? 'ring-2 ring-primary' : ''}`}
+          onClick={() => setActiveDocumentType('invoices')}
+        >
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-primary/10 rounded-full">
               <Receipt className="h-6 w-6 text-primary" />
@@ -58,7 +65,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <DocumentList />
+      <DocumentList activeDocumentType={activeDocumentType} />
 
       {showQuoteForm && (
         <QuoteForm onClose={() => setShowQuoteForm(false)} />

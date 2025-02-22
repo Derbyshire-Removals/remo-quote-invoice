@@ -66,7 +66,36 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!initialData) {
+    // Create new document object
+    const newDocument = {
+      id: initialData?.id || Date.now(),
+      type: 'Invoice' as const,
+      number: formData.invoiceNumber,
+      customer: formData.customerName,
+      date: formData.invoiceDate,
+      amount: `£${formData.amount}`,
+      status: 'Unpaid',
+      email: formData.email,
+      description: formData.description,
+      address: formData.address,
+      tax: parseInt(formData.tax),
+      invoiceDate: formData.invoiceDate,
+      dueDate: formData.dueDate
+    };
+
+    // Get existing documents
+    const existingDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+    let updatedDocs;
+
+    if (initialData) {
+      // Update existing document
+      updatedDocs = existingDocs.map((doc: any) => 
+        doc.id === initialData.id ? newDocument : doc
+      );
+    } else {
+      // Add new document
+      updatedDocs = [...existingDocs, newDocument];
+      
       // Increment counter only for new invoices
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
       if (settings.invoiceCounter) {
@@ -74,9 +103,10 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
         localStorage.setItem("companySettings", JSON.stringify(settings));
       }
     }
+
+    // Save updated documents
+    localStorage.setItem('documents', JSON.stringify(updatedDocs));
     
-    // Here you would typically save the changes
-    console.log("Form submitted:", formData);
     toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
     onClose();
   };

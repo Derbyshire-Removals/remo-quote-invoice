@@ -3,40 +3,71 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Mail, Eye, FileText, Edit } from "lucide-react";
 import EmailDialog from "./EmailDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
 
-export default function DocumentList() {
+interface Document {
+  id: number;
+  type: 'Quote' | 'Invoice';
+  number: string;
+  customer: string;
+  date: string;
+  amount: string;
+  status: string;
+}
+
+interface DocumentListProps {
+  activeDocumentType: 'quotes' | 'invoices';
+}
+
+export default function DocumentList({ activeDocumentType }: DocumentListProps) {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [documents, setDocuments] = useState<Document[]>([]);
 
-  const documents = [
-    { id: 1, type: 'Quote', number: 'Q001', customer: 'John Doe', date: '2024-02-20', amount: '£550.00', status: 'Pending' },
-    { id: 2, type: 'Invoice', number: 'INV001', customer: 'Jane Smith', date: '2024-02-19', amount: '£750.00', status: 'Unpaid' },
-    // Add more sample data as needed
-  ];
+  useEffect(() => {
+    // Load documents from localStorage
+    const storedDocs = localStorage.getItem('documents');
+    if (storedDocs) {
+      setDocuments(JSON.parse(storedDocs));
+    }
+  }, []);
 
-  const handleEmail = (document: any) => {
+  // Filter documents based on active type
+  const filteredDocuments = documents.filter(doc => 
+    activeDocumentType === 'quotes' ? doc.type === 'Quote' : doc.type === 'Invoice'
+  );
+
+  const handleEmail = (document: Document) => {
     setSelectedDocument(document);
     setShowEmailDialog(true);
   };
 
-  const handleEdit = (document: any) => {
+  const handleEdit = (document: Document) => {
     setSelectedDocument(document);
     setShowEditForm(true);
   };
 
-  const handlePreview = (document: any) => {
-    // Get company settings from localStorage
-    const savedSettings = localStorage.getItem("companySettings");
-    const companySettings = savedSettings ? JSON.parse(savedSettings) : null;
-    
+  const handlePreview = (document: Document) => {
     setSelectedDocument(document);
     setShowPreviewDialog(true);
   };
+
+  // Subscribe to storage changes
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'documents') {
+        const updatedDocs = e.newValue ? JSON.parse(e.newValue) : [];
+        setDocuments(updatedDocs);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   return (
     <div className="rounded-md border">
@@ -53,7 +84,7 @@ export default function DocumentList() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {documents.map((doc) => (
+          {filteredDocuments.map((doc) => (
             <TableRow key={doc.id}>
               <TableCell>{doc.type}</TableCell>
               <TableCell>{doc.number}</TableCell>
