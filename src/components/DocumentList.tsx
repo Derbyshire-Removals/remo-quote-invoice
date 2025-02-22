@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Mail, Eye, FileText, Edit, Trash2 } from "lucide-react";
+import { Mail, Eye, Edit, Trash2 } from "lucide-react";
 import EmailDialog from "./EmailDialog";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
@@ -107,7 +107,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Type</TableHead>
             <TableHead>Number</TableHead>
             <TableHead>Customer</TableHead>
             <TableHead>Date</TableHead>
@@ -119,7 +118,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         <TableBody>
           {filteredDocuments.map((doc) => (
             <TableRow key={doc.id}>
-              <TableCell>{doc.type}</TableCell>
               <TableCell>{doc.number}</TableCell>
               <TableCell>{doc.customer}</TableCell>
               <TableCell>{doc.date}</TableCell>
@@ -190,4 +188,3 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     </div>
   );
 }
-
