@@ -335,7 +335,7 @@ export default function PreviewDialog({
               </TableBody>
             </Table>
 
-            <div className="mt-4 flex flex-col items-end space-y-2">
+            <div className="mt-12 flex flex-col items-end space-y-2">
               <div className="flex gap-8">
                 <span className="text-gray-500">Subtotal:</span>
                 <span className="w-[150px] text-right">£{calculateSubtotal(document.items).toFixed(2)}</span>
