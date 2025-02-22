@@ -1,10 +1,8 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-
 interface PreviewDialogProps {
   open: boolean;
   onClose: () => void;
@@ -18,12 +16,15 @@ interface PreviewDialogProps {
     companyNumber?: string;
   };
 }
-
-export default function PreviewDialog({ open, onClose, document, companySettings }: PreviewDialogProps) {
+export default function PreviewDialog({
+  open,
+  onClose,
+  document,
+  companySettings
+}: PreviewDialogProps) {
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
-
     const content = `
       <!DOCTYPE html>
       <html>
@@ -192,11 +193,9 @@ export default function PreviewDialog({ open, onClose, document, companySettings
         </body>
       </html>
     `;
-
     printWindow.document.write(content);
     printWindow.document.close();
   };
-
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'dd MMM yyyy');
@@ -204,45 +203,27 @@ export default function PreviewDialog({ open, onClose, document, companySettings
       return dateString;
     }
   };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
+  return <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative rounded-lg p-8">
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div>
-              {companySettings?.logoUrl && (
-                <img 
-                  src={companySettings.logoUrl} 
-                  alt="Company Logo" 
-                  className="max-w-[175px] mb-4"
-                />
-              )}
+              {companySettings?.logoUrl && <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />}
               
               <div className="space-y-1">
-                {companySettings?.name && (
-                  <p className="font-bold text-gray-900">{companySettings.name}</p>
-                )}
+                {companySettings?.name && <p className="font-bold text-gray-900">{companySettings.name}</p>}
                 
-                {companySettings?.address && (
-                  <p className="whitespace-pre-line text-gray-600">{companySettings.address}</p>
-                )}
+                {companySettings?.address && <p className="whitespace-pre-line text-gray-600">{companySettings.address}</p>}
 
-                {companySettings?.companyNumber && (
-                  <p className="text-gray-600">Company No: {companySettings.companyNumber}</p>
-                )}
+                {companySettings?.companyNumber && <p className="text-gray-600">Company No: {companySettings.companyNumber}</p>}
 
-                {companySettings?.registrationNumber && (
-                  <p className="text-gray-600">VAT: {companySettings.registrationNumber}</p>
-                )}
+                {companySettings?.registrationNumber && <p className="text-gray-600">VAT: {companySettings.registrationNumber}</p>}
               </div>
               
               <div className="pt-6">
                 <p className="text-sm text-gray-500 mb-2">Bill To:</p>
                 <p className="font-semibold text-gray-900 mb-1">{document.customer}</p>
-                {document.address && (
-                  <p className="whitespace-pre-line text-gray-600">{document.address}</p>
-                )}
+                {document.address && <p className="whitespace-pre-line text-gray-600">{document.address}</p>}
               </div>
             </div>
 
@@ -261,12 +242,10 @@ export default function PreviewDialog({ open, onClose, document, companySettings
                     <span className="text-sm text-gray-900">{formatDate(document.invoiceDate || document.date)}</span>
                   </div>
                   
-                  {document.dueDate && (
-                    <div className="flex justify-end items-center gap-4">
+                  {document.dueDate && <div className="flex justify-end items-center gap-4">
                       <span className="text-sm font-medium text-gray-500">Due Date:</span>
                       <span className="text-sm text-gray-900">{formatDate(document.dueDate)}</span>
-                    </div>
-                  )}
+                    </div>}
                   
                   <div className="inline-block mt-4 bg-gray-50 rounded-lg px-6 py-4">
                     <div className="flex justify-end items-center gap-4">
@@ -279,38 +258,7 @@ export default function PreviewDialog({ open, onClose, document, companySettings
             </div>
           </div>
 
-          <div className="space-y-6 border-t pt-6">
-            <div className="grid gap-4">
-              <div className="flex items-center">
-                <span className="font-medium text-gray-500 w-32">Invoice Number:</span>
-                <span className="text-gray-900">{document.number}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="font-medium text-gray-500 w-32">Invoice Date:</span>
-                <span className="text-gray-900">{formatDate(document.invoiceDate || document.date)}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="font-medium text-gray-500 w-32">Due Date:</span>
-                <span className="text-gray-900">{formatDate(document.dueDate || document.date)}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="font-medium text-gray-500 w-32">Status:</span>
-                <span className={cn(
-                  "px-3 py-1 rounded-full text-sm font-medium",
-                  document.status === "Paid" ? "bg-green-100 text-green-800" :
-                  document.status === "Unpaid" ? "bg-red-100 text-red-800" :
-                  "bg-yellow-100 text-yellow-800"
-                )}>
-                  {document.status}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center text-xl mt-8 pt-6 border-t">
-              <span className="font-semibold text-gray-900 w-32">Amount:</span>
-              <span className="text-2xl font-bold text-gray-900">{document.amount}</span>
-            </div>
-          </div>
+          
 
           <div className="absolute bottom-4 right-4">
             <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
@@ -320,7 +268,5 @@ export default function PreviewDialog({ open, onClose, document, companySettings
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 }
-
