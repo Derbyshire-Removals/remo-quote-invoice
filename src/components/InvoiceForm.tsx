@@ -3,83 +3,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-interface InvoiceItem {
-  description: string;
-  amount: string;
-}
+import { CustomerInfoSection } from "./invoice/CustomerInfoSection";
+import { InvoiceDetailsSection } from "./invoice/InvoiceDetailsSection";
+import { InvoiceItemsSection } from "./invoice/InvoiceItemsSection";
+import { calculateTotals, mapInitialDataToFormData } from "@/utils/invoiceUtils";
+import { InvoiceFormData, InitialInvoiceData } from "@/types/invoice";
 
 interface InvoiceFormProps {
   onClose: () => void;
-  initialData?: {
-    id: number;
-    number: string;
-    customer: string;
-    date: string;
-    amount: string;
-    status: string;
-    email?: string;
-    description?: string;
-    address?: string;
-    tax?: number;
-    invoiceDate?: string;
-    dueDate?: string;
-    items?: InvoiceItem[];
-  };
+  initialData?: InitialInvoiceData;
 }
 
 export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) {
-  const [formData, setFormData] = useState({
-    customerName: "",
-    email: "",
-    invoiceNumber: "",
-    invoiceDate: "",
-    dueDate: "",
-    address: "",
-    tax: "20",
-    items: [{ description: "", amount: "" }] as InvoiceItem[]
-  });
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        customerName: initialData.customer || "",
-        email: initialData.email || "",
-        invoiceNumber: initialData.number || "",
-        invoiceDate: initialData.invoiceDate || "",
-        dueDate: initialData.dueDate || "",
-        address: initialData.address || "",
-        tax: String(initialData.tax || 20),
-        items: initialData.items || [{ description: initialData.description || "", amount: initialData.amount.replace('£', '') || "" }]
-      });
-    } else {
-      const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-      const prefix = settings.invoicePrefix || "INV";
-      const counter = settings.invoiceCounter || 1000;
-      const newInvoiceNumber = `${prefix}-${counter}`;
-      
-      console.log("Generated invoice number:", newInvoiceNumber); // Debug log
-      
-      setFormData(prev => ({
-        ...prev,
-        invoiceNumber: newInvoiceNumber
-      }));
-    }
-  }, [initialData]);
+  const [formData, setFormData] = useState<InvoiceFormData>(() => 
+    mapInitialDataToFormData(initialData)
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const subtotal = formData.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-    const vatRate = parseFloat(formData.tax) / 100;
-    const vatAmount = subtotal * vatRate;
-    const totalAmount = subtotal + vatAmount;
+    const { totalAmount } = calculateTotals(formData.items, formData.tax);
     
-    // Ensure we have a valid invoice number
     if (!formData.invoiceNumber) {
       toast.error("Invalid invoice number");
       return;
@@ -101,8 +47,6 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       items: formData.items
     };
 
-    console.log("Saving document:", newDocument); // Debug log
-
     const existingDocs = JSON.parse(localStorage.getItem('documents') || '[]');
     let updatedDocs;
 
@@ -111,25 +55,19 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
         doc.id === initialData.id ? newDocument : doc
       );
     } else {
-      // Sort documents in descending order by document number before saving
       updatedDocs = [...existingDocs, newDocument].sort((a, b) => {
         const numA = parseInt(a.number.split('-')[1]);
         const numB = parseInt(b.number.split('-')[1]);
-        return numB - numA; // Sort in descending order
+        return numB - numA;
       });
       
-      // Update the invoice counter in settings
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
       settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
       settings.invoicePrefix = settings.invoicePrefix || "INV";
       localStorage.setItem("companySettings", JSON.stringify(settings));
-      
-      console.log("Updated settings:", settings); // Debug log
     }
 
     localStorage.setItem('documents', JSON.stringify(updatedDocs));
-    console.log("Saved documents:", updatedDocs); // Debug log
-    
     toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
     onClose();
   };
@@ -142,7 +80,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     }));
   };
 
-  const handleItemChange = (index: number, field: keyof InvoiceItem, value: string) => {
+  const handleItemChange = (index: number, field: keyof InvoiceFormData["items"][0], value: string) => {
     setFormData(prev => ({
       ...prev,
       items: prev.items.map((item, i) => 
@@ -167,10 +105,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     }
   };
 
-  const subtotal = formData.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-  const vatRate = parseFloat(formData.tax) / 100;
-  const vatAmount = subtotal * vatRate;
-  const totalAmount = subtotal + vatAmount;
+  const { subtotal, vatAmount, totalAmount } = calculateTotals(formData.items, formData.tax);
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -180,128 +115,31 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="customerName">Customer Name</Label>
-              <Input 
-                id="customerName" 
-                placeholder="Enter customer name"
-                value={formData.customerName}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="customer@example.com"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
+          <CustomerInfoSection
+            customerName={formData.customerName}
+            email={formData.email}
+            address={formData.address}
+            onChange={handleChange}
+          />
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="invoiceNumber">Invoice Number</Label>
-              <Input 
-                id="invoiceNumber" 
-                placeholder="INV001"
-                value={formData.invoiceNumber}
-                onChange={handleChange}
-                readOnly={!initialData}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="invoiceDate">Invoice Date</Label>
-              <Input 
-                id="invoiceDate" 
-                type="date"
-                value={formData.invoiceDate}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
-              <Input 
-                id="dueDate" 
-                type="date"
-                value={formData.dueDate}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
+          <InvoiceDetailsSection
+            invoiceNumber={formData.invoiceNumber}
+            invoiceDate={formData.invoiceDate}
+            dueDate={formData.dueDate}
+            onChange={handleChange}
+            readOnly={!initialData}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="address">Billing Address</Label>
-            <Textarea 
-              id="address" 
-              placeholder="Enter billing address"
-              value={formData.address}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <Label>Invoice Items</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Item
-              </Button>
-            </div>
-            
-            {formData.items.map((item, index) => (
-              <div key={index} className="grid grid-cols-[1fr,auto,auto] gap-4 items-start">
-                <div className="space-y-2">
-                  <Label htmlFor={`item-${index}-description`}>Description</Label>
-                  <Textarea 
-                    id={`item-${index}-description`}
-                    value={item.description}
-                    onChange={(e) => handleItemChange(index, "description", e.target.value)}
-                    placeholder="Enter item description"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`item-${index}-amount`}>Amount</Label>
-                  <Input
-                    id={`item-${index}-amount`}
-                    type="number"
-                    value={item.amount}
-                    onChange={(e) => handleItemChange(index, "amount", e.target.value)}
-                    className="w-32"
-                    placeholder="0.00"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="mt-8"
-                  onClick={() => removeItem(index)}
-                  disabled={formData.items.length === 1}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-
-            <div className="flex flex-col items-end space-y-2 text-lg">
-              <div className="flex justify-between w-64">
-                <span>Subtotal:</span>
-                <span>£{subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between w-64">
-                <span>VAT ({formData.tax}%):</span>
-                <span>£{vatAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between w-64 font-semibold">
-                <span>Total:</span>
-                <span>£{totalAmount.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
+          <InvoiceItemsSection
+            items={formData.items}
+            onItemChange={handleItemChange}
+            onAddItem={addItem}
+            onRemoveItem={removeItem}
+            subtotal={subtotal}
+            vatRate={formData.tax}
+            vatAmount={vatAmount}
+            totalAmount={totalAmount}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="tax">VAT (%)</Label>
