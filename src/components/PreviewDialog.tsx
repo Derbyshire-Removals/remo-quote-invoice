@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -15,6 +14,7 @@ interface PreviewDialogProps {
     address?: string;
     contactInfo?: string;
     registrationNumber?: string;
+    companyNumber?: string;
   };
 }
 
@@ -136,6 +136,8 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               ${companySettings?.logoUrl ? `<img src="${companySettings.logoUrl}" alt="Company Logo" class="logo">` : ''}
               ${companySettings?.name ? `<div class="company-name">${companySettings.name}</div>` : ''}
               ${companySettings?.address ? `<div class="address">${companySettings.address}</div>` : ''}
+              ${companySettings?.companyNumber ? `<div class="company-details">Company No: ${companySettings.companyNumber}</div>` : ''}
+              ${companySettings?.registrationNumber ? `<div class="company-details">VAT: ${companySettings.registrationNumber}</div>` : ''}
               <div class="bill-to">Bill To:</div>
               <div class="customer-name">${document.customer}</div>
               <div class="address">${document.address || ''}</div>
@@ -206,9 +208,7 @@ export default function PreviewDialog({ open, onClose, document, companySettings
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative rounded-lg p-8">
-          {/* Header Section with Two Columns */}
           <div className="grid grid-cols-2 gap-8 mb-8">
-            {/* Left Column */}
             <div className="space-y-4">
               {companySettings?.logoUrl && (
                 <img 
@@ -225,6 +225,14 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               {companySettings?.address && (
                 <p className="whitespace-pre-line text-gray-600">{companySettings.address}</p>
               )}
+
+              {companySettings?.companyNumber && (
+                <p className="text-gray-600">Company No: {companySettings.companyNumber}</p>
+              )}
+
+              {companySettings?.registrationNumber && (
+                <p className="text-gray-600">VAT: {companySettings.registrationNumber}</p>
+              )}
               
               <div className="pt-6">
                 <p className="text-sm text-gray-500 mb-2">Bill To:</p>
@@ -235,7 +243,6 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               </div>
             </div>
 
-            {/* Right Column */}
             <div>
               <div className="text-right">
                 <h1 className="text-4xl font-bold text-gray-500 mb-1 uppercase">
@@ -269,7 +276,6 @@ export default function PreviewDialog({ open, onClose, document, companySettings
             </div>
           </div>
 
-          {/* Invoice Details */}
           <div className="space-y-6 border-t pt-6">
             <div className="grid gap-4">
               <div className="flex items-center">
@@ -303,7 +309,6 @@ export default function PreviewDialog({ open, onClose, document, companySettings
             </div>
           </div>
 
-          {/* Print Button */}
           <div className="absolute bottom-4 right-4">
             <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
               <Printer className="mr-2 h-4 w-4" />
