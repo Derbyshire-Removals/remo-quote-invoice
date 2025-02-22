@@ -1,8 +1,11 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 interface PreviewDialogProps {
   open: boolean;
   onClose: () => void;
@@ -16,6 +19,7 @@ interface PreviewDialogProps {
     companyNumber?: string;
   };
 }
+
 export default function PreviewDialog({
   open,
   onClose,
@@ -125,6 +129,29 @@ export default function PreviewDialog({
               font-size: 0.875rem;
               color: #1a1f2c;
             }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 2rem 0;
+            }
+            th {
+              background-color: #f8f9fa;
+              color: #64748b;
+              font-weight: 600;
+              text-align: left;
+              padding: 1rem;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            td {
+              padding: 1rem;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            tr:last-child td {
+              border-bottom: none;
+            }
+            .amount-cell {
+              text-align: right;
+            }
             @media print {
               .no-print { display: none; }
               body { margin: 0; padding: 20px; }
@@ -164,29 +191,23 @@ export default function PreviewDialog({
             </div>
           </div>
 
-          <div class="details">
-            <div class="row">
-              <span class="label">Invoice Number:</span>
-              <span>${document.number}</span>
-            </div>
-            <div class="row">
-              <span class="label">Invoice Date:</span>
-              <span>${document.invoiceDate || document.date}</span>
-            </div>
-            <div class="row">
-              <span class="label">Due Date:</span>
-              <span>${document.dueDate || document.date}</span>
-            </div>
-            <div class="row">
-              <span class="label">Status:</span>
-              <span class="status">${document.status}</span>
-            </div>
-            <div class="amount">
-              <span class="label">Amount:</span>
-              <span>${document.amount}</span>
-            </div>
-          </div>
-          
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${document.items?.map((item: any) => `
+                <tr>
+                  <td>${item.description}</td>
+                  <td class="amount-cell">£${parseFloat(item.amount).toFixed(2)}</td>
+                </tr>
+              `).join('') || ''}
+            </tbody>
+          </table>
+
           <div class="no-print">
             <button onclick="window.print()">Print</button>
           </div>
@@ -196,6 +217,7 @@ export default function PreviewDialog({
     printWindow.document.write(content);
     printWindow.document.close();
   };
+
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'dd MMM yyyy');
@@ -203,6 +225,7 @@ export default function PreviewDialog({
       return dateString;
     }
   };
+
   return <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative rounded-lg p-8">
@@ -258,7 +281,24 @@ export default function PreviewDialog({
             </div>
           </div>
 
-          
+          <div className="mt-8">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[70%]">Description</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {document.items?.map((item: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{item.description}</TableCell>
+                    <TableCell className="text-right">£{parseFloat(item.amount).toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           <div className="absolute bottom-4 right-4">
             <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
