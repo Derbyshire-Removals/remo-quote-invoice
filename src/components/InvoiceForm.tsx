@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,11 +54,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
         doc.id === initialData.id ? newDocument : doc
       );
     } else {
-      updatedDocs = [...existingDocs, newDocument].sort((a, b) => {
-        const numA = parseInt(a.number.split('-')[1]);
-        const numB = parseInt(b.number.split('-')[1]);
-        return numB - numA;
-      });
+      updatedDocs = [...existingDocs, newDocument];
       
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
       settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
