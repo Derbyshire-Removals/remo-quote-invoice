@@ -1,11 +1,13 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Mail, Eye, FileText, Edit } from "lucide-react";
+import { Mail, Eye, FileText, Edit, Trash2 } from "lucide-react";
 import EmailDialog from "./EmailDialog";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface Document {
   id: number;
@@ -25,8 +27,10 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const { toast } = useToast();
 
   // Function to load documents from localStorage
   const loadDocuments = () => {
@@ -77,6 +81,24 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setShowPreviewDialog(true);
   };
 
+  const handleDelete = (document: Document) => {
+    setSelectedDocument(document);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedDocument) {
+      const updatedDocs = documents.filter(doc => doc.id !== selectedDocument.id);
+      localStorage.setItem('documents', JSON.stringify(updatedDocs));
+      setDocuments(updatedDocs);
+      setShowDeleteDialog(false);
+      toast({
+        title: "Document deleted",
+        description: `${selectedDocument.type} ${selectedDocument.number} has been deleted.`
+      });
+    }
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -113,6 +135,9 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
                       <Edit className="h-4 w-4" />
                     </Button>
                   )}
+                  <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
@@ -141,6 +166,24 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           companySettings={JSON.parse(localStorage.getItem("companySettings") || "{}")}
         />
       )}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the {selectedDocument?.type.toLowerCase()} 
+              {selectedDocument?.number && ` ${selectedDocument.number}`}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
