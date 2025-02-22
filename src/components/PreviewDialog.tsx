@@ -1,7 +1,6 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -131,90 +130,89 @@ export default function PreviewDialog({ open, onClose, document, companySettings
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[210mm] w-full min-h-[297mm] p-0 bg-white">
-        <ScrollArea className="h-[85vh]">
-          <div className="w-full h-full relative rounded-lg p-8">
-            {/* Header Section with Two Columns */}
-            <div className="grid grid-cols-2 gap-8 mb-8">
-              {/* Left Column */}
-              <div className="space-y-4">
-                {companySettings?.logoUrl && (
-                  <img 
-                    src={companySettings.logoUrl} 
-                    alt="Company Logo" 
-                    className="max-w-[200px]"
-                  />
+      <DialogContent className="max-w-[210mm] w-full min-h-[297mm] p-8 bg-white">
+        <div className="w-full h-full relative rounded-lg p-8">
+          {/* Header Section with Two Columns */}
+          <div className="grid grid-cols-2 gap-8 mb-8">
+            {/* Left Column */}
+            <div className="space-y-4">
+              {companySettings?.logoUrl && (
+                <img 
+                  src={companySettings.logoUrl} 
+                  alt="Company Logo" 
+                  className="max-w-[200px]"
+                />
+              )}
+              
+              {companySettings?.name && (
+                <h2 className="text-xl font-semibold text-gray-900">{companySettings.name}</h2>
+              )}
+              
+              {companySettings?.address && (
+                <p className="whitespace-pre-line text-gray-600">{companySettings.address}</p>
+              )}
+              
+              <div className="pt-6">
+                <p className="text-sm text-gray-500 mb-2">Bill To:</p>
+                <p className="font-semibold text-gray-900 mb-1">{document.customer}</p>
+                {document.address && (
+                  <p className="whitespace-pre-line text-gray-600">{document.address}</p>
                 )}
-                
-                {companySettings?.name && (
-                  <h2 className="text-xl font-semibold text-gray-900">{companySettings.name}</h2>
-                )}
-                
-                {companySettings?.address && (
-                  <p className="whitespace-pre-line text-gray-600">{companySettings.address}</p>
-                )}
-                
-                <div className="pt-6">
-                  <p className="text-sm text-gray-500 mb-2">Bill To:</p>
-                  <p className="font-semibold text-gray-900 mb-1">{document.customer}</p>
-                  {document.address && (
-                    <p className="whitespace-pre-line text-gray-600">{document.address}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Right Column */}
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 text-right">
-                  {document.type}
-                </h1>
               </div>
             </div>
 
-            {/* Invoice Details */}
-            <div className="space-y-6 border-t pt-6">
-              <div className="grid gap-4">
-                <div className="flex items-center">
-                  <span className="font-medium text-gray-500 w-32">Invoice Number:</span>
-                  <span className="text-gray-900">{document.number}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="font-medium text-gray-500 w-32">Invoice Date:</span>
-                  <span className="text-gray-900">{document.invoiceDate || document.date}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="font-medium text-gray-500 w-32">Due Date:</span>
-                  <span className="text-gray-900">{document.dueDate || document.date}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="font-medium text-gray-500 w-32">Status:</span>
-                  <span className={cn(
-                    "px-3 py-1 rounded-full text-sm font-medium",
-                    document.status === "Paid" ? "bg-green-100 text-green-800" :
-                    document.status === "Unpaid" ? "bg-red-100 text-red-800" :
-                    "bg-yellow-100 text-yellow-800"
-                  )}>
-                    {document.status}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center text-xl mt-8 pt-6 border-t">
-                <span className="font-semibold text-gray-900 w-32">Amount:</span>
-                <span className="text-2xl font-bold text-gray-900">{document.amount}</span>
-              </div>
-            </div>
-
-            {/* Print Button */}
-            <div className="sticky bottom-4 right-4 flex justify-end mt-8">
-              <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
-                <Printer className="mr-2 h-4 w-4" />
-                Print
-              </Button>
+            {/* Right Column */}
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 text-right">
+                {document.type}
+              </h1>
             </div>
           </div>
-        </ScrollArea>
+
+          {/* Invoice Details */}
+          <div className="space-y-6 border-t pt-6">
+            <div className="grid gap-4">
+              <div className="flex items-center">
+                <span className="font-medium text-gray-500 w-32">Invoice Number:</span>
+                <span className="text-gray-900">{document.number}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="font-medium text-gray-500 w-32">Invoice Date:</span>
+                <span className="text-gray-900">{document.invoiceDate || document.date}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="font-medium text-gray-500 w-32">Due Date:</span>
+                <span className="text-gray-900">{document.dueDate || document.date}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="font-medium text-gray-500 w-32">Status:</span>
+                <span className={cn(
+                  "px-3 py-1 rounded-full text-sm font-medium",
+                  document.status === "Paid" ? "bg-green-100 text-green-800" :
+                  document.status === "Unpaid" ? "bg-red-100 text-red-800" :
+                  "bg-yellow-100 text-yellow-800"
+                )}>
+                  {document.status}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center text-xl mt-8 pt-6 border-t">
+              <span className="font-semibold text-gray-900 w-32">Amount:</span>
+              <span className="text-2xl font-bold text-gray-900">{document.amount}</span>
+            </div>
+          </div>
+
+          {/* Print Button */}
+          <div className="absolute bottom-4 right-4">
+            <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
+              <Printer className="mr-2 h-4 w-4" />
+              Print
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
 }
+
