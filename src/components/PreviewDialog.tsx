@@ -194,8 +194,8 @@ export default function PreviewDialog({
           <table>
             <thead>
               <tr>
-                <th>Description</th>
-                <th style="text-align: right;">Amount</th>
+                <th style="width: 80%">Description</th>
+                <th style="width: 20%; text-align: right;">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -285,8 +285,8 @@ export default function PreviewDialog({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[70%]">Description</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="w-[150px] text-right">Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
