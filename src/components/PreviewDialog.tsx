@@ -1,10 +1,8 @@
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Printer } from "lucide-react";
 
 interface PreviewDialogProps {
   open: boolean;
@@ -38,152 +36,12 @@ export default function PreviewDialog({
     }
   };
 
-  const handlePrint = () => {
-    if (typeof window === 'undefined' || !window.document) return;
-
-    const printContent = window.document.querySelector('.print-content');
-    if (!printContent) {
-      console.error('Print content not found');
-      return;
-    }
-
-    const printWindow = window.open('', '', 'width=800,height=600');
-    
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Print ${document.type} #${document.number}</title>
-            <style>
-              @page {
-                size: A4;
-                margin: 0;
-              }
-              @media print {
-                body {
-                  -webkit-print-color-adjust: exact !important;
-                  print-color-adjust: exact !important;
-                }
-              }
-              body {
-                margin: 0;
-                padding: 20mm;
-                font-family: system-ui, -apple-system, sans-serif;
-                color: #000;
-                line-height: 1.5;
-              }
-              .print-content {
-                max-width: 100%;
-                width: 100%;
-              }
-              img {
-                max-width: 150px;
-                height: auto;
-              }
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 2rem 0;
-              }
-              th {
-                background-color: #022f5c !important;
-                color: white !important;
-                padding: 8px;
-                text-align: left;
-                font-weight: 600;
-                font-size: 0.875rem;
-              }
-              td {
-                padding: 8px;
-                border-bottom: 1px solid #e2e8f0;
-                font-size: 0.875rem;
-              }
-              .amount-col {
-                text-align: right;
-                width: 150px;
-              }
-              .header {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 2rem;
-                margin-bottom: 2rem;
-              }
-              .company-info {
-                text-align: left;
-              }
-              .document-info {
-                text-align: right;
-              }
-              .total-section {
-                margin-top: 2rem;
-                text-align: right;
-              }
-              .total-row {
-                display: flex;
-                justify-content: flex-end;
-                gap: 2rem;
-                margin: 0.5rem 0;
-              }
-              .total-label {
-                color: #64748b;
-              }
-              .total-amount {
-                width: 150px;
-                text-align: right;
-              }
-              .notes-section {
-                margin-top: 3rem;
-              }
-              .section-title {
-                color: #64748b;
-                margin-bottom: 0.5rem;
-              }
-              .pre-line {
-                white-space: pre-line;
-              }
-            </style>
-          </head>
-          <body>
-            ${printContent.innerHTML}
-          </body>
-        </html>
-      `);
-      
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
+  return <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
-        <DialogTitle className="sr-only">
-          {document.type} #{document.number}
-        </DialogTitle>
-        
-        <Button 
-          variant="outline" 
-          className="absolute right-14 top-4 z-50"
-          onClick={handlePrint}
-        >
-          <Printer className="mr-2 h-4 w-4" />
-          Print
-        </Button>
-        
-        <div className="print-content w-full relative rounded-lg p-8">
+        <div className="w-full relative rounded-lg p-8">
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div>
-              {companySettings?.logoUrl && (
-                <div className="mb-4">
-                  <img 
-                    src={companySettings.logoUrl} 
-                    alt="Company Logo" 
-                    className="max-w-[150px] w-auto h-auto" 
-                  />
-                </div>
-              )}
+              {companySettings?.logoUrl && <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />}
               
               <div className="space-y-1">
                 {companySettings?.name && <p className="font-bold text-gray-900">{companySettings.name}</p>}
@@ -279,6 +137,5 @@ export default function PreviewDialog({
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 }
