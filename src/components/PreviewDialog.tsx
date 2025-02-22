@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -130,8 +129,8 @@ export default function PreviewDialog({ open, onClose, document, companySettings
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[210mm] w-full min-h-[297mm] p-8 bg-white">
-        <div className="w-full h-full relative rounded-lg p-8">
+      <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
+        <div className="w-full relative rounded-lg p-8">
           {/* Header Section with Two Columns */}
           <div className="grid grid-cols-2 gap-8 mb-8">
             {/* Left Column */}
@@ -215,4 +214,3 @@ export default function PreviewDialog({ open, onClose, document, companySettings
     </Dialog>
   );
 }
-
