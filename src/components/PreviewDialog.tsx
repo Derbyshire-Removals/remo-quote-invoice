@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -162,12 +161,11 @@ export default function PreviewDialog({ open, onClose, document, companySettings
             </div>
 
             {/* Right Column */}
-            <div className="space-y-8">
-              <h1 className="text-4xl font-bold text-gray-900 text-right">
-                {document.type}
-              </h1>
-              
-              <div className="text-right space-y-6">
+            <div>
+              <div className="text-right">
+                <h1 className="text-4xl font-bold text-gray-900 mb-1">
+                  {document.type}
+                </h1>
                 <h2 className="text-2xl font-semibold text-gray-500">
                   #{document.number}
                 </h2>
