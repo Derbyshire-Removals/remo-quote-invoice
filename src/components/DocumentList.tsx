@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Mail, Eye, FileText, Edit, Trash2 } from "lucide-react";
@@ -61,11 +60,30 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     };
   }, []);
 
+  const confirmDelete = () => {
+    if (selectedDocument) {
+      // When deleting, maintain the sort order
+      const updatedDocs = documents
+        .filter(doc => doc.id !== selectedDocument.id)
+        .sort((a, b) => {
+          const numA = parseInt(a.number.split('-')[1]);
+          const numB = parseInt(b.number.split('-')[1]);
+          return numB - numA; // Sort in descending order
+        });
+      localStorage.setItem('documents', JSON.stringify(updatedDocs));
+      setDocuments(updatedDocs);
+      setShowDeleteDialog(false);
+      toast({
+        title: "Document deleted",
+        description: `${selectedDocument.type} ${selectedDocument.number} has been deleted.`
+      });
+    }
+  };
+
   // Filter documents based on active type and sort by document number in reverse order
   const filteredDocuments = documents
     .filter(doc => activeDocumentType === 'quotes' ? doc.type === 'Quote' : doc.type === 'Invoice')
     .sort((a, b) => {
-      // Extract numeric part from document numbers (e.g., "INV-001" -> 1)
       const numA = parseInt(a.number.split('-')[1]);
       const numB = parseInt(b.number.split('-')[1]);
       return numB - numA; // Sort in descending order (newest first)
@@ -89,19 +107,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const handleDelete = (document: Document) => {
     setSelectedDocument(document);
     setShowDeleteDialog(true);
-  };
-
-  const confirmDelete = () => {
-    if (selectedDocument) {
-      const updatedDocs = documents.filter(doc => doc.id !== selectedDocument.id);
-      localStorage.setItem('documents', JSON.stringify(updatedDocs));
-      setDocuments(updatedDocs);
-      setShowDeleteDialog(false);
-      toast({
-        title: "Document deleted",
-        description: `${selectedDocument.type} ${selectedDocument.number} has been deleted.`
-      });
-    }
   };
 
   return (

@@ -111,7 +111,12 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
         doc.id === initialData.id ? newDocument : doc
       );
     } else {
-      updatedDocs = [...existingDocs, newDocument];
+      // Sort documents in descending order by document number before saving
+      updatedDocs = [...existingDocs, newDocument].sort((a, b) => {
+        const numA = parseInt(a.number.split('-')[1]);
+        const numB = parseInt(b.number.split('-')[1]);
+        return numB - numA; // Sort in descending order
+      });
       
       // Update the invoice counter in settings
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
