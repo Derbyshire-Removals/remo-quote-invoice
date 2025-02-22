@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -219,7 +218,7 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               )}
               
               {companySettings?.name && (
-                <h2 className="text-xl font-semibold text-gray-900">{companySettings.name}</h2>
+                <p className="text-xl font-bold text-gray-900">{companySettings.name}</p>
               )}
               
               {companySettings?.address && (
