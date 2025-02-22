@@ -3,6 +3,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
 
 interface PreviewDialogProps {
   open: boolean;
@@ -36,9 +38,89 @@ export default function PreviewDialog({
     }
   };
 
+  const handlePrint = () => {
+    const printContent = document.querySelector('.print-content');
+    const printWindow = window.open('', '', 'width=800,height=600');
+    
+    if (printWindow && printContent) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print ${document.type} #${document.number}</title>
+            <style>
+              @page {
+                size: A4;
+                margin: 0;
+              }
+              body {
+                margin: 0;
+                padding: 30mm 20mm;
+                font-family: system-ui, -apple-system, sans-serif;
+              }
+              .print-content {
+                max-width: 100%;
+                width: 100%;
+              }
+              table {
+                width: 100%;
+                border-collapse: collapse;
+              }
+              th {
+                background-color: #022f5c;
+                color: white;
+                height: 2rem;
+                padding: 0.5rem;
+                text-align: left;
+                border-right: 1px solid #ffffff33;
+              }
+              th:last-child {
+                border-right: none;
+              }
+              td {
+                padding: 0.5rem;
+                border-bottom: 1px solid #e2e8f0;
+              }
+              .amount-col {
+                text-align: right;
+                width: 150px;
+              }
+              .totals {
+                margin-top: 3rem;
+                text-align: right;
+              }
+              .notes {
+                margin-top: 3rem;
+              }
+              .pre-line {
+                white-space: pre-line;
+              }
+            </style>
+          </head>
+          <body>
+            ${printContent.innerHTML}
+          </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }
+  };
+
   return <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
-        <div className="w-full relative rounded-lg p-8">
+        <Button 
+          variant="outline" 
+          className="absolute right-14 top-4"
+          onClick={handlePrint}
+        >
+          <Printer className="mr-2 h-4 w-4" />
+          Print
+        </Button>
+        
+        <div className="print-content w-full relative rounded-lg p-8">
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div>
               {companySettings?.logoUrl && <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />}
