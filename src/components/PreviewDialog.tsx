@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -135,8 +134,8 @@ export default function PreviewDialog({
               margin: 2rem 0;
             }
             th {
-              background-color: #f8f9fa;
-              color: #64748b;
+              background-color: #022f5c;
+              color: white;
               font-weight: 600;
               text-align: left;
               padding: 0.5rem;
@@ -160,6 +159,13 @@ export default function PreviewDialog({
               .no-print { display: none; }
               body { margin: 0; padding: 20px; }
               .header { page-break-inside: avoid; }
+              /* Ensure table header color is preserved in print */
+              th {
+                background-color: #022f5c !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
             }
             
             .totals-section {
