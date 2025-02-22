@@ -2,6 +2,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PreviewDialogProps {
   open: boolean;
@@ -27,40 +28,48 @@ export default function PreviewDialog({ open, onClose, document, companySettings
         <head>
           <title>${document.type} ${document.number}</title>
           <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
             body { 
-              font-family: Arial, sans-serif; 
-              padding: 20px; 
-              max-width: 800px; 
-              margin: 0 auto; 
+              font-family: 'Inter', sans-serif;
+              padding: 40px;
+              max-width: 800px;
+              margin: 0 auto;
+              color: #1a1f2c;
             }
-            .header { text-align: center; margin-bottom: 30px; }
-            .company-info { margin-bottom: 30px; }
-            .logo { max-width: 200px; margin-bottom: 15px; }
-            .details { margin-bottom: 20px; }
-            .row { display: flex; margin-bottom: 10px; }
-            .label { font-weight: bold; width: 150px; }
-            .amount { font-size: 1.2em; margin-top: 20px; }
+            .header { margin-bottom: 40px; }
+            .company-info { margin-bottom: 40px; }
+            .logo { max-width: 200px; margin-bottom: 20px; }
+            .details { margin-bottom: 30px; }
+            .row { display: flex; margin-bottom: 12px; }
+            .label { font-weight: 600; width: 150px; color: #64748b; }
+            .amount { font-size: 1.5em; margin-top: 30px; }
+            .document-title { 
+              font-size: 2em; 
+              color: #1a1f2c;
+              margin-bottom: 30px;
+              font-weight: 700;
+            }
+            .company-name {
+              font-size: 1.5em;
+              font-weight: 600;
+              margin-bottom: 10px;
+            }
             @media print {
               .no-print { display: none; }
             }
           </style>
         </head>
         <body>
-          ${companySettings?.logoUrl ? `
-            <div class="header">
-              <img src="${companySettings.logoUrl}" alt="Company Logo" class="logo">
-            </div>
-          ` : ''}
-          
-          <div class="company-info">
-            ${companySettings?.name ? `<h2>${companySettings.name}</h2>` : ''}
-            ${companySettings?.address ? `<p>${companySettings.address}</p>` : ''}
-            ${companySettings?.contactInfo ? `<p>${companySettings.contactInfo}</p>` : ''}
-            ${companySettings?.registrationNumber ? `<p>Registration/VAT: ${companySettings.registrationNumber}</p>` : ''}
+          <div class="header">
+            ${companySettings?.logoUrl ? `<img src="${companySettings.logoUrl}" alt="Company Logo" class="logo">` : ''}
+            ${companySettings?.name ? `<div class="company-name">${companySettings.name}</div>` : ''}
+            ${companySettings?.address ? `<div>${companySettings.address}</div>` : ''}
+            ${companySettings?.contactInfo ? `<div>${companySettings.contactInfo}</div>` : ''}
+            ${companySettings?.registrationNumber ? `<div>Registration/VAT: ${companySettings.registrationNumber}</div>` : ''}
           </div>
 
-          <div class="header">
-            <h1>${document.type} ${document.number}</h1>
+          <div class="document-title">
+            ${document.type} ${document.number}
           </div>
           
           <div class="details">
@@ -78,7 +87,7 @@ export default function PreviewDialog({ open, onClose, document, companySettings
             </div>
             <div class="row">
               <span class="label">Status:</span>
-              <span>${document.status}</span>
+              <span class="status">${document.status}</span>
             </div>
             <div class="amount">
               <span class="label">Amount:</span>
@@ -99,53 +108,73 @@ export default function PreviewDialog({ open, onClose, document, companySettings
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[210mm] w-full min-h-[297mm] p-8">
-        <div className="bg-white w-full h-full relative">
-          {companySettings?.logoUrl && (
-            <div className="text-center mb-8">
-              <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[200px] mx-auto" />
-            </div>
-          )}
-          
-          <div className="mb-8">
-            {companySettings?.name && <h2 className="text-xl font-bold">{companySettings.name}</h2>}
-            {companySettings?.address && <p>{companySettings.address}</p>}
-            {companySettings?.contactInfo && <p>{companySettings.contactInfo}</p>}
-            {companySettings?.registrationNumber && (
-              <p>Registration/VAT: {companySettings.registrationNumber}</p>
+      <DialogContent className="max-w-[210mm] w-full min-h-[297mm] p-8 bg-gradient-to-b from-white to-gray-50">
+        <div className="bg-white w-full h-full relative rounded-lg shadow-lg p-8 border border-gray-100">
+          <div className="space-y-8">
+            {companySettings?.logoUrl && (
+              <div className="text-center">
+                <img 
+                  src={companySettings.logoUrl} 
+                  alt="Company Logo" 
+                  className="max-w-[200px] mx-auto"
+                />
+              </div>
             )}
-          </div>
+            
+            <div className="space-y-2 text-gray-600">
+              {companySettings?.name && (
+                <h2 className="text-2xl font-semibold text-gray-900">{companySettings.name}</h2>
+              )}
+              {companySettings?.address && <p>{companySettings.address}</p>}
+              {companySettings?.contactInfo && <p>{companySettings.contactInfo}</p>}
+              {companySettings?.registrationNumber && (
+                <p>Registration/VAT: {companySettings.registrationNumber}</p>
+              )}
+            </div>
 
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold">{document.type} {document.number}</h1>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex">
-              <span className="font-bold w-32">Customer:</span>
-              <span>{document.customer}</span>
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {document.type} {document.number}
+              </h1>
             </div>
-            <div className="flex">
-              <span className="font-bold w-32">Invoice Date:</span>
-              <span>{document.invoiceDate || document.date}</span>
-            </div>
-            <div className="flex">
-              <span className="font-bold w-32">Due Date:</span>
-              <span>{document.dueDate || document.date}</span>
-            </div>
-            <div className="flex">
-              <span className="font-bold w-32">Status:</span>
-              <span>{document.status}</span>
-            </div>
-            <div className="flex text-lg mt-8">
-              <span className="font-bold w-32">Amount:</span>
-              <span>{document.amount}</span>
+            
+            <div className="space-y-6">
+              <div className="grid gap-4">
+                <div className="flex items-center">
+                  <span className="font-medium text-gray-500 w-32">Customer:</span>
+                  <span className="text-gray-900">{document.customer}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-medium text-gray-500 w-32">Invoice Date:</span>
+                  <span className="text-gray-900">{document.invoiceDate || document.date}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-medium text-gray-500 w-32">Due Date:</span>
+                  <span className="text-gray-900">{document.dueDate || document.date}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-medium text-gray-500 w-32">Status:</span>
+                  <span className={cn(
+                    "px-3 py-1 rounded-full text-sm font-medium",
+                    document.status === "Paid" ? "bg-green-100 text-green-800" :
+                    document.status === "Unpaid" ? "bg-red-100 text-red-800" :
+                    "bg-yellow-100 text-yellow-800"
+                  )}>
+                    {document.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center text-xl mt-8 pt-6 border-t">
+                <span className="font-semibold text-gray-900 w-32">Amount:</span>
+                <span className="text-2xl font-bold text-gray-900">{document.amount}</span>
+              </div>
             </div>
           </div>
 
           <div className="absolute bottom-4 right-4">
-            <Button onClick={handlePrint}>
-              <Printer className="mr-2" />
+            <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
+              <Printer className="mr-2 h-4 w-4" />
               Print
             </Button>
           </div>
