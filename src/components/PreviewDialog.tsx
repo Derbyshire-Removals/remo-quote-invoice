@@ -349,6 +349,17 @@ export default function PreviewDialog({
                 <span className="w-[150px] text-right">£{(calculateSubtotal(document.items) * 1.2).toFixed(2)}</span>
               </div>
             </div>
+
+            <div className="mt-12 space-y-6">
+              <div>
+                <p className="text-[#64748b]">Notes:</p>
+                <p className="mt-2 text-gray-900">{document.notes || 'No notes provided'}</p>
+              </div>
+              <div>
+                <p className="text-[#64748b]">Terms:</p>
+                <p className="mt-2 text-gray-900">{document.terms || 'No terms provided'}</p>
+              </div>
+            </div>
           </div>
 
           <div className="absolute bottom-4 right-4">
