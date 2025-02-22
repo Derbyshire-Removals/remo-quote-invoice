@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Mail, Eye, FileText, Edit, Trash2 } from "lucide-react";
@@ -61,10 +60,10 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     };
   }, []);
 
-  // Filter documents based on active type
-  const filteredDocuments = documents.filter(doc => 
-    activeDocumentType === 'quotes' ? doc.type === 'Quote' : doc.type === 'Invoice'
-  );
+  // Filter documents based on active type and sort by date in reverse chronological order
+  const filteredDocuments = documents
+    .filter(doc => activeDocumentType === 'quotes' ? doc.type === 'Quote' : doc.type === 'Invoice')
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const handleEmail = (document: Document) => {
     setSelectedDocument(document);
@@ -187,4 +186,3 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     </div>
   );
 }
-
