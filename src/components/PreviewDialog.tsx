@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -38,10 +37,21 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               color: #1a1f2c;
             }
             .header { 
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 2rem;
+              width: 100%;
+              display: table;
               margin-bottom: 40px;
+            }
+            .left-section {
+              display: table-cell;
+              width: 50%;
+              vertical-align: top;
+              padding-right: 2rem;
+            }
+            .right-section {
+              display: table-cell;
+              width: 50%;
+              vertical-align: top;
+              text-align: right;
             }
             .company-info { margin-bottom: 2rem; }
             .logo { max-width: 200px; margin-bottom: 1rem; }
@@ -51,9 +61,16 @@ export default function PreviewDialog({ open, onClose, document, companySettings
             .amount { font-size: 1.5em; margin-top: 30px; }
             .document-title { 
               font-size: 2.5em; 
-              color: #1a1f2c;
+              color: #64748b;
               font-weight: 700;
-              text-align: right;
+              text-transform: uppercase;
+              margin-bottom: 0.5rem;
+            }
+            .document-number {
+              font-size: 1.5em;
+              color: #64748b;
+              font-weight: 600;
+              margin-bottom: 3rem;
             }
             .company-name {
               font-size: 1.5em;
@@ -73,8 +90,42 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               white-space: pre-line;
               line-height: 1.5;
             }
+            .balance-box {
+              display: inline-block;
+              background-color: #f8f9fa;
+              padding: 1rem 1.5rem;
+              border-radius: 0.5rem;
+              margin-top: 1rem;
+            }
+            .balance-label {
+              font-size: 0.875rem;
+              font-weight: 500;
+              color: #64748b;
+              margin-right: 1rem;
+            }
+            .balance-amount {
+              font-size: 1.25rem;
+              font-weight: 600;
+              color: #1a1f2c;
+            }
+            .date-row {
+              margin-bottom: 0.75rem;
+              text-align: right;
+            }
+            .date-label {
+              font-size: 0.875rem;
+              font-weight: 500;
+              color: #64748b;
+              margin-right: 1rem;
+            }
+            .date-value {
+              font-size: 0.875rem;
+              color: #1a1f2c;
+            }
             @media print {
               .no-print { display: none; }
+              body { margin: 0; padding: 20px; }
+              .header { page-break-inside: avoid; }
             }
           </style>
         </head>
@@ -89,8 +140,21 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               <div class="address">${document.address || ''}</div>
             </div>
             <div class="right-section">
-              <div class="document-title">
-                ${document.type}
+              <div class="document-title">${document.type}</div>
+              <div class="document-number">#${document.number}</div>
+              <div class="date-row">
+                <span class="date-label">Date:</span>
+                <span class="date-value">${formatDate(document.invoiceDate || document.date)}</span>
+              </div>
+              ${document.dueDate ? `
+                <div class="date-row">
+                  <span class="date-label">Due Date:</span>
+                  <span class="date-value">${formatDate(document.dueDate)}</span>
+                </div>
+              ` : ''}
+              <div class="balance-box">
+                <span class="balance-label">Balance Due:</span>
+                <span class="balance-amount">${document.amount}</span>
               </div>
             </div>
           </div>
