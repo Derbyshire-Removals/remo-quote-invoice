@@ -51,7 +51,7 @@ export default function PreviewDialog({
 
   return <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className={cn(
-        "max-w-[210mm] w-full bg-white",
+        "max-w-[210mm] w-full bg-white print:shadow-none print:border-none",
         isPrintMode ? "!max-w-[100vw] !h-[100vh] !max-h-[100vh] !inset-0 !translate-x-0 !translate-y-0 !rounded-none" : "max-h-[85vh] p-8 overflow-y-auto"
       )}>
         <div className="w-full relative rounded-lg p-8">
@@ -67,7 +67,7 @@ export default function PreviewDialog({
           ) : (
             <Button
               variant="outline"
-              className="absolute left-4 top-4 z-50"
+              className="absolute left-4 top-4 z-50 print:hidden"
               onClick={handleBackToPreview}
             >
               <ArrowLeft className="mr-2" size={16} />

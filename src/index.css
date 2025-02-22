@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,5 +43,19 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  @media print {
+    [data-radix-popper-content-wrapper] {
+      display: block !important;
+      position: static !important;
+      transform: none !important;
+      width: 100% !important;
+      margin: 0 !important;
+    }
+  
+    button[aria-label="Close"] {
+      display: none !important;
+    }
   }
 }
