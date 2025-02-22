@@ -1,8 +1,8 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 interface PreviewDialogProps {
   open: boolean;
@@ -128,6 +128,14 @@ export default function PreviewDialog({ open, onClose, document, companySettings
     printWindow.document.close();
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'dd MMM yyyy');
+    } catch (error) {
+      return dateString;
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
@@ -171,16 +179,16 @@ export default function PreviewDialog({ open, onClose, document, companySettings
                   #{document.number}
                 </h2>
 
-                <div className="space-y-3 mt-8">
+                <div className="space-y-3 mt-8 pt-12">
                   <div className="flex justify-end items-center gap-4">
                     <span className="text-sm font-medium text-gray-500">Date:</span>
-                    <span className="text-sm text-gray-900">{document.invoiceDate || document.date}</span>
+                    <span className="text-sm text-gray-900">{formatDate(document.invoiceDate || document.date)}</span>
                   </div>
                   
                   {document.dueDate && (
                     <div className="flex justify-end items-center gap-4">
                       <span className="text-sm font-medium text-gray-500">Due Date:</span>
-                      <span className="text-sm text-gray-900">{document.dueDate}</span>
+                      <span className="text-sm text-gray-900">{formatDate(document.dueDate)}</span>
                     </div>
                   )}
                   
@@ -204,11 +212,11 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               </div>
               <div className="flex items-center">
                 <span className="font-medium text-gray-500 w-32">Invoice Date:</span>
-                <span className="text-gray-900">{document.invoiceDate || document.date}</span>
+                <span className="text-gray-900">{formatDate(document.invoiceDate || document.date)}</span>
               </div>
               <div className="flex items-center">
                 <span className="font-medium text-gray-500 w-32">Due Date:</span>
-                <span className="text-gray-900">{document.dueDate || document.date}</span>
+                <span className="text-gray-900">{formatDate(document.dueDate || document.date)}</span>
               </div>
               <div className="flex items-center">
                 <span className="font-medium text-gray-500 w-32">Status:</span>
