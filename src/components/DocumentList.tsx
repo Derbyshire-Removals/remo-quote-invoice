@@ -32,7 +32,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const [documents, setDocuments] = useState<Document[]>([]);
   const { toast } = useToast();
 
-  const storageKey = activeDocumentType === 'quotes' ? 'quotes' : 'invoices';
+  const storageKey = activeDocumentType;
 
   // Function to load documents from localStorage
   const loadDocuments = () => {
@@ -102,6 +102,8 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setShowDeleteDialog(true);
   };
 
+  const documentType = activeDocumentType === 'quotes' ? 'quote' : 'invoice';
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -131,7 +133,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
                   <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
                     <Eye className="h-4 w-4" />
                   </Button>
-                  {doc.type === 'Invoice' && (
+                  {activeDocumentType === 'invoices' && (
                     <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -173,7 +175,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the {selectedDocument?.type.toLowerCase()} 
+              This action cannot be undone. This will permanently delete the {documentType}
               {selectedDocument?.number && ` ${selectedDocument.number}`}.
             </AlertDialogDescription>
           </AlertDialogHeader>
