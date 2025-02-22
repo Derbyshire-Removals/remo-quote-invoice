@@ -49,13 +49,13 @@ export default function PreviewDialog({
             }
             .left-section {
               display: table-cell;
-              width: 50%;
+              width: 65%;
               vertical-align: top;
               padding-right: 2rem;
             }
             .right-section {
               display: table-cell;
-              width: 50%;
+              width: 35%;
               vertical-align: top;
               text-align: right;
             }
@@ -79,7 +79,6 @@ export default function PreviewDialog({
               margin-bottom: 3rem;
             }
             .company-name {
-              font-size: 1.5em;
               font-weight: 600;
               margin-bottom: 0.5rem;
             }
