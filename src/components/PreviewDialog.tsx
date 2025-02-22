@@ -27,18 +27,31 @@ export default function PreviewDialog({
   companySettings
 }: PreviewDialogProps) {
   const handlePrint = () => {
+    // Get styles from current document before opening print window
+    const styleSheets = Array.from(window.document.styleSheets);
+    let styles = '';
+    
+    // Extract styles from current document
+    styleSheets.forEach((stylesheet) => {
+      try {
+        if (stylesheet.href && stylesheet.href.includes('index.css')) {
+          styles = `<link href="${stylesheet.href}" rel="stylesheet">`;
+        }
+      } catch (e) {
+        console.warn('Could not access stylesheet:', e);
+      }
+    });
+
+    // Open print window
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
-    
-    // Import the Table component styles
-    const tableStyles = document.querySelector('link[href*="index.css"]')?.outerHTML || '';
     
     const content = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>${document.type} ${document.number}</title>
-          ${tableStyles}
+          ${styles}
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
             body { 
@@ -270,6 +283,8 @@ export default function PreviewDialog({
         </body>
       </html>
     `;
+
+    // Write content to print window
     printWindow.document.write(content);
     printWindow.document.close();
   };
