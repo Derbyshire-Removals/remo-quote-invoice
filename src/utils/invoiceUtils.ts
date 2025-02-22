@@ -24,6 +24,7 @@ export const generateNewInvoiceNumber = () => {
 export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): InvoiceFormData => {
   if (!initialData) {
     const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+    const defaultTemplate = settings.termsTemplates?.[0];
     return {
       customerName: "",
       email: "",
@@ -34,8 +35,8 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
       tax: "20",
       items: [{ description: "", amount: "" }],
       notes: settings.defaultNotes || "",
-      terms: settings.defaultTerms || "",
-      selectedTermsTemplate: "default"
+      terms: defaultTemplate?.content || "",
+      selectedTermsTemplate: defaultTemplate?.name || "custom"
     };
   }
 

@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,14 +86,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
   };
 
   const handleTemplateChange = (templateName: string) => {
-    if (templateName === "default") {
-      const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-      setFormData(prev => ({
-        ...prev,
-        terms: settings.defaultTerms || "",
-        selectedTermsTemplate: templateName
-      }));
-    } else if (templateName === "custom") {
+    if (templateName === "custom") {
       setFormData(prev => ({
         ...prev,
         selectedTermsTemplate: "custom"
@@ -195,7 +187,6 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
                   <SelectValue placeholder="Select terms template" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">Default Terms</SelectItem>
                   {termsTemplates.map((template, index) => (
                     <SelectItem key={index} value={template.name}>
                       {template.name}
