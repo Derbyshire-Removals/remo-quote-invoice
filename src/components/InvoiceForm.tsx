@@ -4,8 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+interface InvoiceItem {
+  description: string;
+  amount: string;
+}
 
 interface InvoiceFormProps {
   onClose: () => void;
@@ -22,6 +28,7 @@ interface InvoiceFormProps {
     tax?: number;
     invoiceDate?: string;
     dueDate?: string;
+    items?: InvoiceItem[];
   };
 }
 
@@ -33,9 +40,8 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     invoiceDate: "",
     dueDate: "",
     address: "",
-    description: "",
-    amount: "",
-    tax: "20"
+    tax: "20",
+    items: [{ description: "", amount: "" }] as InvoiceItem[]
   });
 
   useEffect(() => {
@@ -47,9 +53,8 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
         invoiceDate: initialData.invoiceDate || "",
         dueDate: initialData.dueDate || "",
         address: initialData.address || "",
-        description: initialData.description || "",
-        amount: initialData.amount.replace('£', '') || "",
-        tax: String(initialData.tax || 20)
+        tax: String(initialData.tax || 20),
+        items: initialData.items || [{ description: initialData.description || "", amount: initialData.amount.replace('£', '') || "" }]
       });
     } else {
       // Generate new invoice number only for new invoices
@@ -66,6 +71,9 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Calculate total amount
+    const totalAmount = formData.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    
     // Create new document object
     const newDocument = {
       id: initialData?.id || Date.now(),
@@ -73,14 +81,14 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       number: formData.invoiceNumber,
       customer: formData.customerName,
       date: formData.invoiceDate,
-      amount: `£${formData.amount}`,
+      amount: `£${totalAmount.toFixed(2)}`,
       status: 'Unpaid',
       email: formData.email,
-      description: formData.description,
       address: formData.address,
       tax: parseInt(formData.tax),
       invoiceDate: formData.invoiceDate,
-      dueDate: formData.dueDate
+      dueDate: formData.dueDate,
+      items: formData.items
     };
 
     // Get existing documents
@@ -118,6 +126,34 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       [id]: value
     }));
   };
+
+  const handleItemChange = (index: number, field: keyof InvoiceItem, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const addItem = () => {
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, { description: "", amount: "" }]
+    }));
+  };
+
+  const removeItem = (index: number) => {
+    if (formData.items.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        items: prev.items.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  // Calculate total amount
+  const totalAmount = formData.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -157,7 +193,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
                 placeholder="INV001"
                 value={formData.invoiceNumber}
                 onChange={handleChange}
-                readOnly={!initialData} // Make read-only for new invoices
+                readOnly={!initialData}
               />
             </div>
             <div className="space-y-2">
@@ -190,37 +226,65 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Service Description</Label>
-            <Textarea 
-              id="description" 
-              placeholder="Enter service details"
-              value={formData.description}
-              onChange={handleChange}
-            />
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label>Invoice Items</Label>
+              <Button type="button" variant="outline" size="sm" onClick={addItem}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Item
+              </Button>
+            </div>
+            
+            {formData.items.map((item, index) => (
+              <div key={index} className="grid grid-cols-[1fr,auto,auto] gap-4 items-start">
+                <div className="space-y-2">
+                  <Label htmlFor={`item-${index}-description`}>Description</Label>
+                  <Textarea 
+                    id={`item-${index}-description`}
+                    value={item.description}
+                    onChange={(e) => handleItemChange(index, "description", e.target.value)}
+                    placeholder="Enter item description"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`item-${index}-amount`}>Amount</Label>
+                  <Input
+                    id={`item-${index}-amount`}
+                    type="number"
+                    value={item.amount}
+                    onChange={(e) => handleItemChange(index, "amount", e.target.value)}
+                    className="w-32"
+                    placeholder="0.00"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="mt-8"
+                  onClick={() => removeItem(index)}
+                  disabled={formData.items.length === 1}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+
+            <div className="flex justify-end text-lg font-semibold">
+              Total: £{totalAmount.toFixed(2)}
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
-              <Input 
-                id="amount" 
-                type="number" 
-                placeholder="0.00"
-                value={formData.amount}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tax">VAT (%)</Label>
-              <Input 
-                id="tax" 
-                type="number" 
-                placeholder="20"
-                value={formData.tax}
-                onChange={handleChange}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="tax">VAT (%)</Label>
+            <Input 
+              id="tax" 
+              type="number" 
+              placeholder="20"
+              value={formData.tax}
+              onChange={handleChange}
+              className="w-32"
+            />
           </div>
 
           <div className="flex justify-end space-x-4">
