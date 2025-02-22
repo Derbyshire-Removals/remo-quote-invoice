@@ -5,6 +5,7 @@ import { Eye, Edit, Trash2, CalendarIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
+import QuotePreviewDialog from "./QuotePreviewDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid, parseISO } from "date-fns";
@@ -213,8 +214,17 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         />
       )}
 
-      {showPreviewDialog && selectedDocument && (
+      {showPreviewDialog && selectedDocument && activeDocumentType === 'invoices' && (
         <PreviewDialog
+          open={showPreviewDialog}
+          onClose={() => setShowPreviewDialog(false)}
+          document={selectedDocument}
+          companySettings={JSON.parse(localStorage.getItem("companySettings") || "{}")}
+        />
+      )}
+
+      {showPreviewDialog && selectedDocument && activeDocumentType === 'quotes' && (
+        <QuotePreviewDialog
           open={showPreviewDialog}
           onClose={() => setShowPreviewDialog(false)}
           document={selectedDocument}
@@ -241,4 +251,3 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     </div>
   );
 }
-
