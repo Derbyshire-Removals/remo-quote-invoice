@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Mail, Eye, Edit, Trash2, CalendarIcon } from "lucide-react";
@@ -8,7 +7,7 @@ import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 
 interface QuoteItem {
   description: string;
@@ -116,6 +115,18 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setShowDeleteDialog(true);
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      const date = parseISO(dateString);
+      if (!isValid(date)) {
+        return 'Invalid date';
+      }
+      return format(date, 'dd/MM/yyyy');
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
   const renderQuoteColumns = () => (
     <TableRow>
       <TableHead>Customer</TableHead>
@@ -144,12 +155,12 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       <TableCell className="whitespace-nowrap">
         <div className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4" />
-          {format(new Date(doc.moveDate), 'dd/MM/yyyy')}
+          {formatDate(doc.moveDate)}
         </div>
       </TableCell>
       <TableCell className="max-w-[200px] truncate">{doc.fromAddress}</TableCell>
       <TableCell>£{doc.total.toFixed(2)}</TableCell>
-      <TableCell>{format(new Date(doc.createdAt), 'dd/MM/yyyy')}</TableCell>
+      <TableCell>{formatDate(doc.createdAt)}</TableCell>
       <TableCell>
         <div className="flex space-x-2">
           <Button variant="outline" size="icon" onClick={() => handleEmail(doc)}>
