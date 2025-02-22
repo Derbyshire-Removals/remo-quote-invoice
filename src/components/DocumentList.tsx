@@ -1,17 +1,35 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Mail, Eye, Edit, Trash2 } from "lucide-react";
+import { Mail, Eye, Edit, Trash2, CalendarIcon } from "lucide-react";
 import EmailDialog from "./EmailDialog";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
-interface Document {
+interface QuoteItem {
+  description: string;
+  amount: string;
+}
+
+interface Quote {
+  id: string;
+  customerName: string;
+  email: string;
+  phone: string;
+  moveDate: string;
+  fromAddress: string;
+  items: QuoteItem[];
+  message: string;
+  total: number;
+  createdAt: string;
+}
+
+interface Invoice {
   id: number;
-  type: 'Quote' | 'Invoice';
   number: string;
   customer: string;
   date: string;
@@ -28,11 +46,11 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const [showEditForm, setShowEditForm] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [selectedDocument, setSelectedDocument] = useState<Quote | Invoice | null>(null);
+  const [documents, setDocuments] = useState<(Quote | Invoice)[]>([]);
   const { toast } = useToast();
 
-  const storageKey = activeDocumentType === 'quotes' ? 'quotes' : 'invoices';
+  const storageKey = activeDocumentType;
 
   // Function to load documents from localStorage
   const loadDocuments = () => {
@@ -63,7 +81,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
-  }, [storageKey]); // Re-run effect when storageKey changes
+  }, [storageKey]);
 
   const confirmDelete = () => {
     if (selectedDocument) {
@@ -73,75 +91,118 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       setShowDeleteDialog(false);
       toast({
         title: "Document deleted",
-        description: `${selectedDocument.type} ${selectedDocument.number} has been deleted.`
+        description: `${activeDocumentType === 'quotes' ? 'Quote' : 'Invoice'} has been deleted.`
       });
     }
   };
 
-  // Filter documents based on active type
-  const filteredDocuments = documents
-    .sort((a, b) => b.number.localeCompare(a.number)); // Simple string comparison in descending order
-
-  const handleEmail = (document: Document) => {
+  const handleEmail = (document: Quote | Invoice) => {
     setSelectedDocument(document);
     setShowEmailDialog(true);
   };
 
-  const handleEdit = (document: Document) => {
+  const handleEdit = (document: Quote | Invoice) => {
     setSelectedDocument(document);
     setShowEditForm(true);
   };
 
-  const handlePreview = (document: Document) => {
+  const handlePreview = (document: Quote | Invoice) => {
     setSelectedDocument(document);
     setShowPreviewDialog(true);
   };
 
-  const handleDelete = (document: Document) => {
+  const handleDelete = (document: Quote | Invoice) => {
     setSelectedDocument(document);
     setShowDeleteDialog(true);
   };
+
+  const renderQuoteColumns = () => (
+    <TableRow>
+      <TableHead>Customer</TableHead>
+      <TableHead>Moving Date</TableHead>
+      <TableHead>From Address</TableHead>
+      <TableHead>Total</TableHead>
+      <TableHead>Created</TableHead>
+      <TableHead>Actions</TableHead>
+    </TableRow>
+  );
+
+  const renderInvoiceColumns = () => (
+    <TableRow>
+      <TableHead>Number</TableHead>
+      <TableHead>Customer</TableHead>
+      <TableHead>Date</TableHead>
+      <TableHead>Amount</TableHead>
+      <TableHead>Status</TableHead>
+      <TableHead>Actions</TableHead>
+    </TableRow>
+  );
+
+  const renderQuoteRow = (doc: Quote) => (
+    <TableRow key={doc.id}>
+      <TableCell>{doc.customerName}</TableCell>
+      <TableCell className="whitespace-nowrap">
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="h-4 w-4" />
+          {format(new Date(doc.moveDate), 'dd/MM/yyyy')}
+        </div>
+      </TableCell>
+      <TableCell className="max-w-[200px] truncate">{doc.fromAddress}</TableCell>
+      <TableCell>£{doc.total.toFixed(2)}</TableCell>
+      <TableCell>{format(new Date(doc.createdAt), 'dd/MM/yyyy')}</TableCell>
+      <TableCell>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="icon" onClick={() => handleEmail(doc)}>
+            <Mail className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+
+  const renderInvoiceRow = (doc: Invoice) => (
+    <TableRow key={doc.id}>
+      <TableCell>{doc.number}</TableCell>
+      <TableCell>{doc.customer}</TableCell>
+      <TableCell>{doc.date}</TableCell>
+      <TableCell>{doc.amount}</TableCell>
+      <TableCell>{doc.status}</TableCell>
+      <TableCell>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="icon" onClick={() => handleEmail(doc)}>
+            <Mail className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
 
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Number</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
+          {activeDocumentType === 'quotes' ? renderQuoteColumns() : renderInvoiceColumns()}
         </TableHeader>
         <TableBody>
-          {filteredDocuments.map((doc) => (
-            <TableRow key={doc.id}>
-              <TableCell>{doc.number}</TableCell>
-              <TableCell>{doc.customer}</TableCell>
-              <TableCell>{doc.date}</TableCell>
-              <TableCell>{doc.amount}</TableCell>
-              <TableCell>{doc.status}</TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="icon" onClick={() => handleEmail(doc)}>
-                    <Mail className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  {doc.type === 'Invoice' && (
-                    <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
+          {documents.map((doc) => (
+            activeDocumentType === 'quotes' 
+              ? renderQuoteRow(doc as Quote)
+              : renderInvoiceRow(doc as Invoice)
           ))}
         </TableBody>
       </Table>
@@ -155,7 +216,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       {showEditForm && selectedDocument && (
         <InvoiceForm 
           onClose={() => setShowEditForm(false)}
-          initialData={selectedDocument}
+          initialData={selectedDocument as Invoice}
         />
       )}
 
@@ -173,8 +234,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the {selectedDocument?.type.toLowerCase()} 
-              {selectedDocument?.number && ` ${selectedDocument.number}`}.
+              This action cannot be undone. This will permanently delete the {activeDocumentType === 'quotes' ? 'quote' : 'invoice'}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
