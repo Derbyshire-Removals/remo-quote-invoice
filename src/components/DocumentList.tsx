@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Mail, Eye, FileText, Edit, Trash2 } from "lucide-react";
@@ -60,10 +61,15 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     };
   }, []);
 
-  // Filter documents based on active type and sort by date in reverse chronological order
+  // Filter documents based on active type and sort by document number in reverse order
   const filteredDocuments = documents
     .filter(doc => activeDocumentType === 'quotes' ? doc.type === 'Quote' : doc.type === 'Invoice')
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort((a, b) => {
+      // Extract numeric part from document numbers (e.g., "INV-001" -> 1)
+      const numA = parseInt(a.number.split('-')[1]);
+      const numB = parseInt(b.number.split('-')[1]);
+      return numB - numA; // Sort in descending order (newest first)
+    });
 
   const handleEmail = (document: Document) => {
     setSelectedDocument(document);
