@@ -1,11 +1,8 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import html2canvas from 'html2canvas';
-import { FileDown, Printer, Download } from "lucide-react";
-import { useRef } from "react";
 
 interface PreviewDialogProps {
   open: boolean;
@@ -27,8 +24,6 @@ export default function PreviewDialog({
   document,
   companySettings
 }: PreviewDialogProps) {
-  const contentRef = useRef<HTMLDivElement>(null);
-
   const calculateSubtotal = (items: any[] = []) => {
     return items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
   };
@@ -41,97 +36,9 @@ export default function PreviewDialog({
     }
   };
 
-  // Method 1: Print to PDF using browser's print API
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // Method 2: HTML2Canvas and Blob
-  const handleCanvasExport = async () => {
-    if (!contentRef.current) return;
-
-    try {
-      const canvas = await html2canvas(contentRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false
-      });
-
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => {
-          resolve(blob as Blob);
-        }, 'image/png');
-      });
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${document.type}_${document.number}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-    }
-  };
-
-  // Method 3: Optimized Print to PDF
-  const handleOptimizedPrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow || !contentRef.current) return;
-
-    const content = contentRef.current.innerHTML;
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${document.type}_${document.number}</title>
-          <style>
-            @page {
-              size: A4;
-              margin: 0;
-            }
-            body {
-              margin: 2cm;
-            }
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          ${content}
-        </body>
-      </html>
-    `;
-
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.print();
-  };
-
   return <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
-        <div className="flex gap-2 mb-4">
-          <Button onClick={handlePrint} variant="outline" size="sm">
-            <Printer className="mr-2 h-4 w-4" />
-            Print to PDF
-          </Button>
-          <Button onClick={handleCanvasExport} variant="outline" size="sm">
-            <FileDown className="mr-2 h-4 w-4" />
-            Export as Image
-          </Button>
-          <Button onClick={handleOptimizedPrint} variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            Optimized PDF
-          </Button>
-        </div>
-
-        <div ref={contentRef} className="w-full relative rounded-lg p-8">
+        <div className="w-full relative rounded-lg p-8">
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div>
               {companySettings?.logoUrl && <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />}
