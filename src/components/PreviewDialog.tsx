@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -28,11 +29,16 @@ export default function PreviewDialog({
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
+    
+    // Import the Table component styles
+    const tableStyles = document.querySelector('link[href*="index.css"]')?.outerHTML || '';
+    
     const content = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>${document.type} ${document.number}</title>
+          ${tableStyles}
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
             body { 
@@ -128,44 +134,10 @@ export default function PreviewDialog({
               font-size: 0.875rem;
               color: #1a1f2c;
             }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 2rem 0;
-            }
-            th {
-              background-color: #022f5c;
-              color: white;
-              font-weight: 600;
-              text-align: left;
-              padding: 0.5rem;
-              border-bottom: 1px solid #e2e8f0;
-            }
-            td {
-              padding: 0.5rem;
-              border-bottom: 1px solid #e2e8f0;
-            }
-            tr:last-child td {
-              border-bottom: none;
-            }
-            .amount-cell {
-              text-align: right;
-            }
-            .notes-content, .terms-content {
-              white-space: pre-line;
-              line-height: 1.5;
-            }
             @media print {
               .no-print { display: none; }
               body { margin: 0; padding: 20px; }
               .header { page-break-inside: avoid; }
-              /* Ensure table header color is preserved in print */
-              th {
-                background-color: #022f5c !important;
-                color: white !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
             }
             
             .totals-section {
@@ -184,6 +156,36 @@ export default function PreviewDialog({
             .totals-value {
               width: 150px;
               text-align: right;
+            }
+            
+            /* Ensure our component styles are properly applied in print */
+            .print-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 2rem 0;
+            }
+            .print-table thead {
+              background-color: #022f5c !important;
+              color: white !important;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            .print-table th {
+              height: 2rem;
+              padding: 0.5rem 1rem;
+              text-align: left;
+              font-weight: 500;
+              border-right: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            .print-table th:last-child {
+              border-right: none;
+            }
+            .print-table td {
+              padding: 0.5rem 1rem;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            .print-table tr:last-child td {
+              border-bottom: none;
             }
           </style>
         </head>
@@ -219,7 +221,7 @@ export default function PreviewDialog({
             </div>
           </div>
 
-          <table>
+          <table class="print-table">
             <thead>
               <tr>
                 <th style="width: 80%">Description</th>
@@ -230,7 +232,7 @@ export default function PreviewDialog({
               ${document.items?.map((item: any) => `
                 <tr>
                   <td>${item.description}</td>
-                  <td class="amount-cell">£${parseFloat(item.amount).toFixed(2)}</td>
+                  <td style="text-align: right;">£${parseFloat(item.amount).toFixed(2)}</td>
                 </tr>
               `).join('') || ''}
             </tbody>
@@ -394,3 +396,4 @@ export default function PreviewDialog({
       </DialogContent>
     </Dialog>;
 }
+
