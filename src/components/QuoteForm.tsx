@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,8 @@ interface QuoteFormProps {
 }
 
 export default function QuoteForm({ onClose }: QuoteFormProps) {
+  const defaultMessage = "Following our recent conversation I have the pleasure in quoting for the removal of furniture/goods from the above address and delivery to #DESTINATION_ADDRESS.";
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -45,13 +48,12 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="toAddress">To Address</Label>
-            <Textarea id="toAddress" placeholder="Enter delivery address" />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Special Requirements</Label>
-            <Textarea id="notes" placeholder="Enter any special requirements or notes" />
+            <Label htmlFor="quoteMessage">Quote Message</Label>
+            <Textarea 
+              id="quoteMessage" 
+              defaultValue={defaultMessage}
+              className="min-h-[120px]"
+            />
           </div>
 
           <div className="flex justify-end space-x-4">
