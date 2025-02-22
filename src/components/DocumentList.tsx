@@ -28,12 +28,33 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
 
-  useEffect(() => {
-    // Load documents from localStorage
+  // Function to load documents from localStorage
+  const loadDocuments = () => {
     const storedDocs = localStorage.getItem('documents');
     if (storedDocs) {
       setDocuments(JSON.parse(storedDocs));
     }
+  };
+
+  useEffect(() => {
+    // Initial load
+    loadDocuments();
+
+    // Subscribe to storage changes from other windows
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'documents') {
+        loadDocuments();
+      }
+    };
+
+    // Set up an interval to check for changes every second
+    const interval = setInterval(loadDocuments, 1000);
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
 
   // Filter documents based on active type
@@ -55,19 +76,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setSelectedDocument(document);
     setShowPreviewDialog(true);
   };
-
-  // Subscribe to storage changes
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'documents') {
-        const updatedDocs = e.newValue ? JSON.parse(e.newValue) : [];
-        setDocuments(updatedDocs);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
 
   return (
     <div className="rounded-md border">
@@ -136,3 +144,4 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     </div>
   );
 }
+
