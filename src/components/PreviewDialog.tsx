@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -7,8 +6,6 @@ import { format } from "date-fns";
 import html2canvas from 'html2canvas';
 import { FileDown, Printer, Download } from "lucide-react";
 import { useRef } from "react";
-
-<lov-add-dependency>html2canvas@latest</lov-add-dependency>
 
 interface PreviewDialogProps {
   open: boolean;
