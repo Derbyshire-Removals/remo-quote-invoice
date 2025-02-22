@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -54,7 +55,7 @@ export default function PreviewDialog({ open, onClose, document, companySettings
               text-align: right;
             }
             .company-info { margin-bottom: 2rem; }
-            .logo { max-width: 200px; margin-bottom: 1rem; }
+            .logo { max-width: 175px; margin-bottom: 1rem; }
             .details { margin-bottom: 30px; }
             .row { display: flex; margin-bottom: 12px; }
             .label { font-weight: 600; width: 150px; color: #64748b; }
@@ -213,7 +214,7 @@ export default function PreviewDialog({ open, onClose, document, companySettings
                 <img 
                   src={companySettings.logoUrl} 
                   alt="Company Logo" 
-                  className="max-w-[200px]"
+                  className="max-w-[175px]"
                 />
               )}
               
