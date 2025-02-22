@@ -1,8 +1,11 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { Printer, ArrowLeft } from "lucide-react";
+import { useState } from "react";
 
 interface PreviewDialogProps {
   open: boolean;
@@ -24,6 +27,8 @@ export default function PreviewDialog({
   document,
   companySettings
 }: PreviewDialogProps) {
+  const [isPrintMode, setIsPrintMode] = useState(false);
+
   const calculateSubtotal = (items: any[] = []) => {
     return items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
   };
@@ -36,9 +41,40 @@ export default function PreviewDialog({
     }
   };
 
+  const handlePrint = () => {
+    setIsPrintMode(true);
+  };
+
+  const handleBackToPreview = () => {
+    setIsPrintMode(false);
+  };
+
   return <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
+      <DialogContent className={cn(
+        "max-w-[210mm] w-full bg-white",
+        isPrintMode ? "!max-w-[100vw] !h-[100vh] !max-h-[100vh] !inset-0 !translate-x-0 !translate-y-0 !rounded-none" : "max-h-[85vh] p-8 overflow-y-auto"
+      )}>
         <div className="w-full relative rounded-lg p-8">
+          {!isPrintMode ? (
+            <Button
+              variant="outline"
+              className="absolute right-0 top-0"
+              onClick={handlePrint}
+            >
+              <Printer className="mr-2" size={16} />
+              Print Mode
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="absolute left-4 top-4 z-50"
+              onClick={handleBackToPreview}
+            >
+              <ArrowLeft className="mr-2" size={16} />
+              Back to Preview
+            </Button>
+          )}
+
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div>
               {companySettings?.logoUrl && <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />}
