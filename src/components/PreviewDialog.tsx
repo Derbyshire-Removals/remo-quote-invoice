@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -157,6 +156,24 @@ export default function PreviewDialog({
               body { margin: 0; padding: 20px; }
               .header { page-break-inside: avoid; }
             }
+            
+            .totals-section {
+              margin-top: 1rem;
+              width: 100%;
+            }
+            .totals-row {
+              display: flex;
+              justify-content: flex-end;
+              margin-bottom: 0.5rem;
+            }
+            .totals-label {
+              color: #64748b;
+              margin-right: 2rem;
+            }
+            .totals-value {
+              width: 150px;
+              text-align: right;
+            }
           </style>
         </head>
         <body>
@@ -208,6 +225,21 @@ export default function PreviewDialog({
             </tbody>
           </table>
 
+          <div class="totals-section">
+            <div class="totals-row">
+              <span class="totals-label">Subtotal:</span>
+              <span class="totals-value">£${calculateSubtotal(document.items).toFixed(2)}</span>
+            </div>
+            <div class="totals-row">
+              <span class="totals-label">VAT (20%):</span>
+              <span class="totals-value">£${(calculateSubtotal(document.items) * 0.2).toFixed(2)}</span>
+            </div>
+            <div class="totals-row">
+              <span class="totals-label" style="font-weight: 600;">Total:</span>
+              <span class="totals-value" style="font-weight: 600;">£${(calculateSubtotal(document.items) * 1.2).toFixed(2)}</span>
+            </div>
+          </div>
+
           <div class="no-print">
             <button onclick="window.print()">Print</button>
           </div>
@@ -216,6 +248,10 @@ export default function PreviewDialog({
     `;
     printWindow.document.write(content);
     printWindow.document.close();
+  };
+
+  const calculateSubtotal = (items: any[] = []) => {
+    return items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
   };
 
   const formatDate = (dateString: string) => {
@@ -298,6 +334,21 @@ export default function PreviewDialog({
                 ))}
               </TableBody>
             </Table>
+
+            <div className="mt-4 flex flex-col items-end space-y-2">
+              <div className="flex gap-8">
+                <span className="text-gray-500">Subtotal:</span>
+                <span className="w-[150px] text-right">£{calculateSubtotal(document.items).toFixed(2)}</span>
+              </div>
+              <div className="flex gap-8">
+                <span className="text-gray-500">VAT (20%):</span>
+                <span className="w-[150px] text-right">£{(calculateSubtotal(document.items) * 0.2).toFixed(2)}</span>
+              </div>
+              <div className="flex gap-8 font-semibold">
+                <span className="text-gray-500">Total:</span>
+                <span className="w-[150px] text-right">£{(calculateSubtotal(document.items) * 1.2).toFixed(2)}</span>
+              </div>
+            </div>
           </div>
 
           <div className="absolute bottom-4 right-4">
