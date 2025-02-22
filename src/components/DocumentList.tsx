@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Mail, Eye, Edit, Trash2, CalendarIcon } from "lucide-react";
@@ -159,7 +160,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         </div>
       </TableCell>
       <TableCell className="max-w-[200px] truncate">{doc.fromAddress}</TableCell>
-      <TableCell>£{doc.total.toFixed(2)}</TableCell>
+      <TableCell>£{(doc.total ?? 0).toFixed(2)}</TableCell>
       <TableCell>{formatDate(doc.createdAt)}</TableCell>
       <TableCell>
         <div className="flex space-x-2">
