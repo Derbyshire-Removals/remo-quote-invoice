@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -209,30 +210,32 @@ export default function PreviewDialog({ open, onClose, document, companySettings
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative rounded-lg p-8">
           <div className="grid grid-cols-2 gap-8 mb-8">
-            <div className="space-y-4">
+            <div>
               {companySettings?.logoUrl && (
                 <img 
                   src={companySettings.logoUrl} 
                   alt="Company Logo" 
-                  className="max-w-[175px]"
+                  className="max-w-[175px] mb-4"
                 />
               )}
               
-              {companySettings?.name && (
-                <p className="font-bold text-gray-900">{companySettings.name}</p>
-              )}
-              
-              {companySettings?.address && (
-                <p className="whitespace-pre-line text-gray-600">{companySettings.address}</p>
-              )}
+              <div className="space-y-1">
+                {companySettings?.name && (
+                  <p className="font-bold text-gray-900">{companySettings.name}</p>
+                )}
+                
+                {companySettings?.address && (
+                  <p className="whitespace-pre-line text-gray-600">{companySettings.address}</p>
+                )}
 
-              {companySettings?.companyNumber && (
-                <p className="text-gray-600">Company No: {companySettings.companyNumber}</p>
-              )}
+                {companySettings?.companyNumber && (
+                  <p className="text-gray-600">Company No: {companySettings.companyNumber}</p>
+                )}
 
-              {companySettings?.registrationNumber && (
-                <p className="text-gray-600">VAT: {companySettings.registrationNumber}</p>
-              )}
+                {companySettings?.registrationNumber && (
+                  <p className="text-gray-600">VAT: {companySettings.registrationNumber}</p>
+                )}
+              </div>
               
               <div className="pt-6">
                 <p className="text-sm text-gray-500 mb-2">Bill To:</p>
@@ -320,3 +323,4 @@ export default function PreviewDialog({ open, onClose, document, companySettings
     </Dialog>
   );
 }
+
