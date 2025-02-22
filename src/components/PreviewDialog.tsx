@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -109,11 +109,16 @@ export default function PreviewDialog({
     }
   };
 
-  return <Dialog open={open} onOpenChange={onClose}>
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
+        <DialogTitle className="sr-only">
+          {document.type} #{document.number}
+        </DialogTitle>
+        
         <Button 
           variant="outline" 
-          className="absolute right-14 top-4"
+          className="absolute right-14 top-4 z-50"
           onClick={handlePrint}
         >
           <Printer className="mr-2 h-4 w-4" />
@@ -219,5 +224,6 @@ export default function PreviewDialog({
           </div>
         </div>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 }
