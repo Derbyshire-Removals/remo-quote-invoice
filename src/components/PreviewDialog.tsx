@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -179,7 +180,7 @@ export default function PreviewDialog({ open, onClose, document, companySettings
                   #{document.number}
                 </h2>
 
-                <div className="space-y-3 mt-8 pt-12">
+                <div className="space-y-3 mt-8 pt-20">
                   <div className="flex justify-end items-center gap-4">
                     <span className="text-sm font-medium text-gray-500">Date:</span>
                     <span className="text-sm text-gray-900">{formatDate(document.invoiceDate || document.date)}</span>
