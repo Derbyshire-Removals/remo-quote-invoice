@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,13 +58,16 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       });
     } else {
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-      if (settings.invoicePrefix && settings.invoiceCounter !== undefined) {
-        const newInvoiceNumber = `${settings.invoicePrefix}-${settings.invoiceCounter}`;
-        setFormData(prev => ({
-          ...prev,
-          invoiceNumber: newInvoiceNumber
-        }));
-      }
+      const prefix = settings.invoicePrefix || "INV";
+      const counter = settings.invoiceCounter || 1000;
+      const newInvoiceNumber = `${prefix}-${counter}`;
+      
+      console.log("Generated invoice number:", newInvoiceNumber); // Debug log
+      
+      setFormData(prev => ({
+        ...prev,
+        invoiceNumber: newInvoiceNumber
+      }));
     }
   }, [initialData]);
 
@@ -75,6 +79,12 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     const vatAmount = subtotal * vatRate;
     const totalAmount = subtotal + vatAmount;
     
+    // Ensure we have a valid invoice number
+    if (!formData.invoiceNumber) {
+      toast.error("Invalid invoice number");
+      return;
+    }
+
     const newDocument = {
       id: initialData?.id || Date.now(),
       type: 'Invoice' as const,
@@ -91,6 +101,8 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       items: formData.items
     };
 
+    console.log("Saving document:", newDocument); // Debug log
+
     const existingDocs = JSON.parse(localStorage.getItem('documents') || '[]');
     let updatedDocs;
 
@@ -100,14 +112,18 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       );
     } else {
       updatedDocs = [...existingDocs, newDocument];
+      
+      // Update the invoice counter in settings
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-      if (settings.invoiceCounter !== undefined) {
-        settings.invoiceCounter += 1;
-        localStorage.setItem("companySettings", JSON.stringify(settings));
-      }
+      settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
+      settings.invoicePrefix = settings.invoicePrefix || "INV";
+      localStorage.setItem("companySettings", JSON.stringify(settings));
+      
+      console.log("Updated settings:", settings); // Debug log
     }
 
     localStorage.setItem('documents', JSON.stringify(updatedDocs));
+    console.log("Saved documents:", updatedDocs); // Debug log
     
     toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
     onClose();
