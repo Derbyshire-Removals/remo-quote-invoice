@@ -59,44 +59,84 @@ export default function PreviewDialog({
                 size: A4;
                 margin: 0;
               }
+              @media print {
+                body {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+              }
               body {
                 margin: 0;
-                padding: 30mm 20mm;
+                padding: 20mm;
                 font-family: system-ui, -apple-system, sans-serif;
+                color: #000;
+                line-height: 1.5;
               }
               .print-content {
                 max-width: 100%;
                 width: 100%;
               }
+              img {
+                max-width: 150px;
+                height: auto;
+              }
               table {
                 width: 100%;
                 border-collapse: collapse;
+                margin: 2rem 0;
               }
               th {
-                background-color: #022f5c;
-                color: white;
-                height: 2rem;
-                padding: 0.5rem;
+                background-color: #022f5c !important;
+                color: white !important;
+                padding: 8px;
                 text-align: left;
-                border-right: 1px solid #ffffff33;
-              }
-              th:last-child {
-                border-right: none;
+                font-weight: 600;
+                font-size: 0.875rem;
               }
               td {
-                padding: 0.5rem;
+                padding: 8px;
                 border-bottom: 1px solid #e2e8f0;
+                font-size: 0.875rem;
               }
               .amount-col {
                 text-align: right;
                 width: 150px;
               }
-              .totals {
-                margin-top: 3rem;
+              .header {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+                margin-bottom: 2rem;
+              }
+              .company-info {
+                text-align: left;
+              }
+              .document-info {
                 text-align: right;
               }
-              .notes {
+              .total-section {
+                margin-top: 2rem;
+                text-align: right;
+              }
+              .total-row {
+                display: flex;
+                justify-content: flex-end;
+                gap: 2rem;
+                margin: 0.5rem 0;
+              }
+              .total-label {
+                color: #64748b;
+              }
+              .total-amount {
+                width: 150px;
+                text-align: right;
+              }
+              .notes-section {
                 margin-top: 3rem;
+              }
+              .section-title {
+                color: #64748b;
+                margin-bottom: 0.5rem;
               }
               .pre-line {
                 white-space: pre-line;
@@ -135,7 +175,15 @@ export default function PreviewDialog({
         <div className="print-content w-full relative rounded-lg p-8">
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div>
-              {companySettings?.logoUrl && <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />}
+              {companySettings?.logoUrl && (
+                <div className="mb-4">
+                  <img 
+                    src={companySettings.logoUrl} 
+                    alt="Company Logo" 
+                    className="max-w-[150px] w-auto h-auto" 
+                  />
+                </div>
+              )}
               
               <div className="space-y-1">
                 {companySettings?.name && <p className="font-bold text-gray-900">{companySettings.name}</p>}
