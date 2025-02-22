@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,14 +20,11 @@ export default function EmailDialog({ open, onClose, document }: EmailDialogProp
 
   if (!document) return null;
 
-  // Infer document type from the document number format (QT for quotes, INV for invoices)
-  const documentType = document.number?.startsWith('QT') ? 'quote' : 'invoice';
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Send {documentType} {document.number}</DialogTitle>
+          <DialogTitle>Send {document.type} {document.number}</DialogTitle>
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
@@ -41,7 +37,7 @@ export default function EmailDialog({ open, onClose, document }: EmailDialogProp
             <Label htmlFor="subject">Subject</Label>
             <Input 
               id="subject" 
-              defaultValue={`Your ${documentType} ${document.number} from Removal Company`} 
+              defaultValue={`Your ${document.type} ${document.number} from Removal Company`} 
             />
           </div>
 
@@ -50,7 +46,7 @@ export default function EmailDialog({ open, onClose, document }: EmailDialogProp
             <Textarea 
               id="message" 
               rows={4}
-              defaultValue={`Dear ${document.customer},\n\nPlease find attached your ${documentType} ${document.number}.\n\nBest regards,\nRemoval Company`}
+              defaultValue={`Dear ${document.customer},\n\nPlease find attached your ${document.type.toLowerCase()} ${document.number}.\n\nBest regards,\nRemoval Company`}
             />
           </div>
 

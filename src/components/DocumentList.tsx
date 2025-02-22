@@ -32,28 +32,13 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const [documents, setDocuments] = useState<Document[]>([]);
   const { toast } = useToast();
 
-  const storageKey = activeDocumentType;
+  const storageKey = activeDocumentType === 'quotes' ? 'quotes' : 'invoices';
 
   // Function to load documents from localStorage
   const loadDocuments = () => {
     const storedDocs = localStorage.getItem(storageKey);
     if (storedDocs) {
-      try {
-        const parsedDocs = JSON.parse(storedDocs);
-        // Ensure all documents have required properties
-        const validDocs = parsedDocs.filter((doc: any) => 
-          doc && 
-          doc.number && 
-          doc.customer && 
-          doc.date && 
-          doc.amount && 
-          doc.status
-        );
-        setDocuments(validDocs);
-      } catch (e) {
-        console.error('Error parsing documents:', e);
-        setDocuments([]);
-      }
+      setDocuments(JSON.parse(storedDocs));
     } else {
       setDocuments([]); // Initialize with empty array if no documents exist
     }
@@ -93,10 +78,9 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     }
   };
 
-  // Filter and sort documents, ensuring all required properties exist
+  // Filter documents based on active type
   const filteredDocuments = documents
-    .filter(doc => doc && doc.number) // Extra safety check
-    .sort((a, b) => b.number.localeCompare(a.number));
+    .sort((a, b) => b.number.localeCompare(a.number)); // Simple string comparison in descending order
 
   const handleEmail = (document: Document) => {
     setSelectedDocument(document);
@@ -117,8 +101,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setSelectedDocument(document);
     setShowDeleteDialog(true);
   };
-
-  const documentType = activeDocumentType === 'quotes' ? 'quote' : 'invoice';
 
   return (
     <div className="rounded-md border">
@@ -149,7 +131,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
                   <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
                     <Eye className="h-4 w-4" />
                   </Button>
-                  {activeDocumentType === 'invoices' && (
+                  {doc.type === 'Invoice' && (
                     <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -191,7 +173,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the {documentType}
+              This action cannot be undone. This will permanently delete the {selectedDocument?.type.toLowerCase()} 
               {selectedDocument?.number && ` ${selectedDocument.number}`}.
             </AlertDialogDescription>
           </AlertDialogHeader>
