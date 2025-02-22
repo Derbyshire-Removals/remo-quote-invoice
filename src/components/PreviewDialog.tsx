@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -161,10 +162,37 @@ export default function PreviewDialog({ open, onClose, document, companySettings
             </div>
 
             {/* Right Column */}
-            <div>
+            <div className="space-y-8">
               <h1 className="text-4xl font-bold text-gray-900 text-right">
                 {document.type}
               </h1>
+              
+              <div className="text-right space-y-6">
+                <h2 className="text-2xl font-semibold text-gray-500">
+                  #{document.number}
+                </h2>
+
+                <div className="space-y-3 mt-8">
+                  <div className="flex justify-end items-center gap-4">
+                    <span className="text-sm font-medium text-gray-500">Date:</span>
+                    <span className="text-sm text-gray-900">{document.invoiceDate || document.date}</span>
+                  </div>
+                  
+                  {document.dueDate && (
+                    <div className="flex justify-end items-center gap-4">
+                      <span className="text-sm font-medium text-gray-500">Due Date:</span>
+                      <span className="text-sm text-gray-900">{document.dueDate}</span>
+                    </div>
+                  )}
+                  
+                  <div className="inline-block mt-4 bg-gray-50 rounded-lg px-6 py-4">
+                    <div className="flex justify-end items-center gap-4">
+                      <span className="text-sm font-medium text-gray-500">Balance Due:</span>
+                      <span className="text-lg font-semibold text-gray-900">{document.amount}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
