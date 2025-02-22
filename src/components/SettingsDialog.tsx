@@ -13,6 +13,7 @@ interface CompanySettings {
   address: string;
   contactInfo: string;
   registrationNumber: string;
+  companyNumber: string;
   invoicePrefix: string;
   invoiceCounter: number;
   defaultNotes: string;
@@ -28,6 +29,7 @@ const defaultSettings: CompanySettings = {
   address: "",
   contactInfo: "",
   registrationNumber: "",
+  companyNumber: "",
   invoicePrefix: "INV-DR",
   invoiceCounter: 1000,
   defaultNotes: "",
@@ -50,7 +52,6 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   useEffect(() => {
     const savedSettings = localStorage.getItem("companySettings");
     if (savedSettings) {
-      // Merge saved settings with default settings to ensure all fields exist
       const parsedSettings = JSON.parse(savedSettings);
       setSettings({
         ...defaultSettings,
@@ -144,6 +145,16 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               placeholder="Company Registration or VAT Number"
               value={settings.registrationNumber}
               onChange={(e) => setSettings({ ...settings, registrationNumber: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="companyNumber">Company Number</Label>
+            <Input
+              id="companyNumber"
+              placeholder="Company Number"
+              value={settings.companyNumber}
+              onChange={(e) => setSettings({ ...settings, companyNumber: e.target.value })}
             />
           </div>
 
