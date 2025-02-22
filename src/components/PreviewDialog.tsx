@@ -41,6 +41,7 @@ export default function PreviewDialog({
               max-width: 800px;
               margin: 0 auto;
               color: #1a1f2c;
+              font-size: 14px;
             }
             .header { 
               width: 100%;
@@ -60,7 +61,7 @@ export default function PreviewDialog({
               text-align: right;
             }
             .company-info { margin-bottom: 2rem; }
-            .logo { max-width: 175px; margin-bottom: 1rem; }
+            .logo { max-width: 175px; margin-left: -0.3rem; }
             .details { margin-bottom: 30px; }
             .row { display: flex; margin-bottom: 12px; }
             .label { font-weight: 600; width: 150px; color: #64748b; }
@@ -80,7 +81,6 @@ export default function PreviewDialog({
             }
             .company-name {
               font-weight: 600;
-              margin-bottom: 0.5rem;
             }
             .bill-to {
               color: #64748b;
@@ -89,7 +89,6 @@ export default function PreviewDialog({
             }
             .customer-name {
               font-weight: 600;
-              margin-bottom: 0.5rem;
             }
             .address {
               white-space: pre-line;
