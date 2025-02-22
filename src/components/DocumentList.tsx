@@ -1,8 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Mail, Eye, Edit, Trash2, CalendarIcon } from "lucide-react";
-import EmailDialog from "./EmailDialog";
+import { Eye, Edit, Trash2, CalendarIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
@@ -42,7 +41,6 @@ interface DocumentListProps {
 }
 
 export default function DocumentList({ activeDocumentType }: DocumentListProps) {
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -94,11 +92,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         description: `${activeDocumentType === 'quotes' ? 'Quote' : 'Invoice'} has been deleted.`
       });
     }
-  };
-
-  const handleEmail = (document: Quote | Invoice) => {
-    setSelectedDocument(document);
-    setShowEmailDialog(true);
   };
 
   const handleEdit = (document: Quote | Invoice) => {
@@ -164,9 +157,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       <TableCell>{formatDate(doc.createdAt)}</TableCell>
       <TableCell>
         <div className="flex space-x-2">
-          <Button variant="outline" size="icon" onClick={() => handleEmail(doc)}>
-            <Mail className="h-4 w-4" />
-          </Button>
           <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
             <Eye className="h-4 w-4" />
           </Button>
@@ -187,9 +177,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       <TableCell>{doc.status}</TableCell>
       <TableCell>
         <div className="flex space-x-2">
-          <Button variant="outline" size="icon" onClick={() => handleEmail(doc)}>
-            <Mail className="h-4 w-4" />
-          </Button>
           <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
             <Eye className="h-4 w-4" />
           </Button>
@@ -218,12 +205,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           ))}
         </TableBody>
       </Table>
-
-      <EmailDialog 
-        open={showEmailDialog} 
-        onClose={() => setShowEmailDialog(false)}
-        document={selectedDocument}
-      />
 
       {showEditForm && selectedDocument && (
         <InvoiceForm 
@@ -260,3 +241,4 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     </div>
   );
 }
+
