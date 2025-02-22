@@ -20,7 +20,6 @@ interface CompanySettings {
     name: string;
     content: string;
   }[];
-  defaultTerms: string;
 }
 
 const defaultSettings: CompanySettings = {
@@ -37,8 +36,7 @@ const defaultSettings: CompanySettings = {
       name: "Standard Terms",
       content: "1. Payment is due within 30 days\n2. Late payments will incur a fee\n3. All prices are exclusive of VAT"
     }
-  ],
-  defaultTerms: "1. Payment is due within 30 days\n2. Late payments will incur a fee\n3. All prices are exclusive of VAT"
+  ]
 };
 
 interface SettingsDialogProps {
@@ -156,16 +154,6 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               placeholder="Enter default notes for new invoices"
               value={settings.defaultNotes}
               onChange={(e) => setSettings({ ...settings, defaultNotes: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="defaultTerms">Default Terms & Conditions</Label>
-            <Textarea
-              id="defaultTerms"
-              placeholder="Enter default terms and conditions"
-              value={settings.defaultTerms}
-              onChange={(e) => setSettings({ ...settings, defaultTerms: e.target.value })}
             />
           </div>
 
