@@ -57,10 +57,11 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       });
     } else {
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-      if (settings.invoicePrefix && settings.invoiceCounter) {
+      if (settings.invoicePrefix && settings.invoiceCounter !== undefined) {
+        const newInvoiceNumber = `${settings.invoicePrefix}-${settings.invoiceCounter}`;
         setFormData(prev => ({
           ...prev,
-          invoiceNumber: `${settings.invoicePrefix}-${settings.invoiceCounter}`
+          invoiceNumber: newInvoiceNumber
         }));
       }
     }
@@ -100,7 +101,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     } else {
       updatedDocs = [...existingDocs, newDocument];
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-      if (settings.invoiceCounter) {
+      if (settings.invoiceCounter !== undefined) {
         settings.invoiceCounter += 1;
         localStorage.setItem("companySettings", JSON.stringify(settings));
       }
