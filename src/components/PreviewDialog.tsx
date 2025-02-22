@@ -79,22 +79,9 @@ export default function PreviewDialog({
               margin-bottom: 3rem;
             }
             .company-name {
-              font-size: 1.5em;
+              font-size: 1rem;
               font-weight: 600;
               margin-bottom: 0.5rem;
-            }
-            .bill-to {
-              color: #64748b;
-              font-size: 0.875rem;
-              margin: 1.5rem 0 0.5rem 0;
-            }
-            .customer-name {
-              font-weight: 600;
-              margin-bottom: 0.5rem;
-            }
-            .address {
-              white-space: pre-line;
-              line-height: 1.5;
             }
             .balance-box {
               display: inline-block;
@@ -159,7 +146,6 @@ export default function PreviewDialog({
               .no-print { display: none; }
               body { margin: 0; padding: 20px; }
               .header { page-break-inside: avoid; }
-              /* Ensure table header color is preserved in print */
               th {
                 background-color: #022f5c !important;
                 color: white !important;
