@@ -139,11 +139,11 @@ export default function PreviewDialog({
               color: #64748b;
               font-weight: 600;
               text-align: left;
-              padding: 1rem;
+              padding: 0.5rem;
               border-bottom: 1px solid #e2e8f0;
             }
             td {
-              padding: 1rem;
+              padding: 0.5rem;
               border-bottom: 1px solid #e2e8f0;
             }
             tr:last-child td {
