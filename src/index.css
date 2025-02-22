@@ -52,10 +52,20 @@
       transform: none !important;
       width: 100% !important;
       margin: 0 !important;
+      border: none !important;
     }
   
     button[aria-label="Close"] {
       display: none !important;
+    }
+
+    [data-radix-popper-content-wrapper] > div {
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    [role="dialog"] {
+      border-top: none !important;
     }
   }
 }
