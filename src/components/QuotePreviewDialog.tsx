@@ -73,16 +73,17 @@ export default function QuotePreviewDialog({
             }
             .quote-title {
               font-size: 2.5rem;
-              color: #9b87f5;
+              color: #022f5c;
               font-weight: 700;
               margin-bottom: 0.5rem;
             }
             .services-list {
-              margin-top: 2rem;
+              margin-top: 4rem;
               list-style: none;
               padding: 0;
               text-align: right;
-              color: #4A5568;
+              color: #022f5c;
+              font-weight: 600;
             }
             .services-list li {
               margin-bottom: 0.5rem;
@@ -212,11 +213,11 @@ export default function QuotePreviewDialog({
               </div>
             </div>
             <div className="text-right w-[45%]">
-              <h1 className="text-4xl font-bold text-primary mb-1">QUOTE</h1>
+              <h1 className="text-4xl font-bold mb-1" style={{ color: '#022f5c' }}>QUOTE</h1>
               <div className="text-gray-500">
                 <p>Date: {formatDate(document.createdAt)}</p>
               </div>
-              <ul className="mt-8 space-y-2 text-gray-600 list-none">
+              <ul className="mt-16 space-y-2 list-none font-semibold" style={{ color: '#022f5c' }}>
                 <li>Home/Office Removals</li>
                 <li>Local/Long Distance</li>
                 <li>Full Packing Available</li>
