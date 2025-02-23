@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -84,6 +85,7 @@ export default function QuotePreviewDialog({
               text-align: right;
               color: #022f5c;
               font-weight: 600;
+              font-family: Impact, sans-serif;
             }
             .services-list li {
               margin-bottom: 0.5rem;
@@ -217,7 +219,7 @@ export default function QuotePreviewDialog({
               <div className="text-gray-500">
                 <p>Date: {formatDate(document.createdAt)}</p>
               </div>
-              <ul className="mt-16 space-y-2 list-none font-semibold" style={{ color: '#022f5c' }}>
+              <ul className="mt-16 space-y-2 list-none font-semibold" style={{ color: '#022f5c', fontFamily: 'Impact, sans-serif' }}>
                 <li>Home/Office Removals</li>
                 <li>Local/Long Distance</li>
                 <li>Full Packing Available</li>
@@ -252,7 +254,7 @@ export default function QuotePreviewDialog({
 
             <div className="text-center text-sm text-gray-500 space-y-1">
               <p>{companySettings?.name || 'Derbyshire Removals'} is the trading name used by Nexus Deliveries Ltd</p>
-              <p>Company no: {companySettings?.companyNumber || '#######'} VAT: ${companySettings?.registrationNumber || '#########'}</p>
+              <p>Company no: {companySettings?.companyNumber || '#######'} VAT: {companySettings?.registrationNumber || '#########'}</p>
             </div>
           </div>
 
