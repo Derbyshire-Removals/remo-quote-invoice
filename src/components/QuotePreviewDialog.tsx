@@ -141,7 +141,6 @@ export default function QuotePreviewDialog({
               <div class="quote-title">QUOTE</div>
               <div style="color: #8E9196;">
                 <div>Date: ${formatDate(document.createdAt)}</div>
-                <div>Move Date: ${formatDate(document.moveDate)}</div>
               </div>
             </div>
           </div>
@@ -204,7 +203,6 @@ export default function QuotePreviewDialog({
                 <h1 className="text-4xl font-bold text-primary mb-1">QUOTE</h1>
                 <div className="text-gray-500">
                   <p>Date: {formatDate(document.createdAt)}</p>
-                  <p>Move Date: {formatDate(document.moveDate)}</p>
                 </div>
               </div>
             </div>
