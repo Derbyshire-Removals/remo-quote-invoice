@@ -28,7 +28,6 @@ export default function QuotePreviewDialog({
     if (!dateString) return 'Not specified';
     try {
       const date = new Date(dateString);
-      // Check if the date is valid
       if (isNaN(date.getTime())) {
         return 'Invalid date';
       }
@@ -64,6 +63,13 @@ export default function QuotePreviewDialog({
             }
             .company-info {
               max-width: 60%;
+              display: flex;
+              gap: 2rem;
+            }
+            .company-services {
+              color: #4A5568;
+              font-size: 0.875rem;
+              line-height: 1.5;
             }
             .quote-info {
               text-align: right;
@@ -130,9 +136,18 @@ export default function QuotePreviewDialog({
         <body>
           <div class="quote-header">
             <div class="company-info">
-              ${companySettings?.logoUrl ? `<img src="${companySettings.logoUrl}" alt="Company Logo" class="logo" />` : ''}
-              ${companySettings?.name ? `<div style="font-weight: 600;">${companySettings.name}</div>` : ''}
-              ${companySettings?.address ? `<div class="company-address">${companySettings.address}</div>` : ''}
+              <div>
+                ${companySettings?.logoUrl ? `<img src="${companySettings.logoUrl}" alt="Company Logo" class="logo" />` : ''}
+                ${companySettings?.name ? `<div style="font-weight: 600;">${companySettings.name}</div>` : ''}
+                ${companySettings?.address ? `<div class="company-address">${companySettings.address}</div>` : ''}
+              </div>
+              <div class="company-services">
+                <p>Home/Office Removals</p>
+                <p>Local/Long Distance</p>
+                <p>Full Packing Available</p>
+                <p>Storage Available</p>
+                <p>Fully Insured</p>
+              </div>
             </div>
             <div class="quote-info">
               <div class="quote-title">QUOTE</div>
@@ -186,13 +201,22 @@ export default function QuotePreviewDialog({
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative">
           <div className="flex justify-between mb-12">
-            <div className="max-w-[60%]">
-              {companySettings?.logoUrl && (
-                <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />
-              )}
-              <div className="space-y-1">
-                {companySettings?.name && <p className="font-semibold">{companySettings.name}</p>}
-                {companySettings?.address && <p className="text-gray-600 whitespace-pre-line">{companySettings.address}</p>}
+            <div className="max-w-[60%] flex gap-8">
+              <div>
+                {companySettings?.logoUrl && (
+                  <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />
+                )}
+                <div className="space-y-1">
+                  {companySettings?.name && <p className="font-semibold">{companySettings.name}</p>}
+                  {companySettings?.address && <p className="text-gray-600 whitespace-pre-line">{companySettings.address}</p>}
+                </div>
+              </div>
+              <div className="text-sm text-gray-600 space-y-1">
+                <p>Home/Office Removals</p>
+                <p>Local/Long Distance</p>
+                <p>Full Packing Available</p>
+                <p>Storage Available</p>
+                <p>Fully Insured</p>
               </div>
             </div>
             <div className="text-right">
