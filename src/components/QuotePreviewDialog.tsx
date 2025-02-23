@@ -31,7 +31,7 @@ export default function QuotePreviewDialog({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Quote #${document.id}</title>
+          <title>Quote Preview</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
             body { 
@@ -67,10 +67,10 @@ export default function QuotePreviewDialog({
               font-weight: 700;
               margin-bottom: 0.5rem;
             }
-            .quote-number {
+            .company-address {
+              white-space: pre-line;
               color: #8E9196;
-              font-size: 1.25rem;
-              margin-bottom: 1.5rem;
+              margin-top: 0.5rem;
             }
             .customer-section {
               padding: 2rem;
@@ -151,11 +151,10 @@ export default function QuotePreviewDialog({
             <div class="company-info">
               ${companySettings?.logoUrl ? `<img src="${companySettings.logoUrl}" alt="Company Logo" class="logo" />` : ''}
               ${companySettings?.name ? `<div style="font-weight: 600;">${companySettings.name}</div>` : ''}
-              ${companySettings?.address ? `<div style="color: #8E9196; margin-top: 0.5rem;">${companySettings.address}</div>` : ''}
+              ${companySettings?.address ? `<div class="company-address">${companySettings.address}</div>` : ''}
             </div>
             <div class="quote-info">
               <div class="quote-title">QUOTE</div>
-              <div class="quote-number">#${document.id}</div>
               <div style="color: #8E9196;">
                 <div>Date: ${format(new Date(document.createdAt), 'dd MMM yyyy')}</div>
                 <div>Move Date: ${format(new Date(document.moveDate), 'dd MMM yyyy')}</div>
@@ -226,12 +225,11 @@ export default function QuotePreviewDialog({
                 )}
                 <div className="space-y-1">
                   {companySettings?.name && <p className="font-semibold">{companySettings.name}</p>}
-                  {companySettings?.address && <p className="text-gray-600">{companySettings.address}</p>}
+                  {companySettings?.address && <p className="text-gray-600 whitespace-pre-line">{companySettings.address}</p>}
                 </div>
               </div>
               <div className="text-right">
                 <h1 className="text-4xl font-bold text-primary mb-1">QUOTE</h1>
-                <p className="text-xl text-gray-500 mb-6">#{document.id}</p>
                 <div className="text-gray-500">
                   <p>Date: {format(new Date(document.createdAt), 'dd MMM yyyy')}</p>
                   <p>Move Date: {format(new Date(document.moveDate), 'dd MMM yyyy')}</p>
@@ -292,3 +290,4 @@ export default function QuotePreviewDialog({
     </Dialog>
   );
 }
+
