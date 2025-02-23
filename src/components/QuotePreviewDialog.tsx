@@ -143,7 +143,7 @@ export default function QuotePreviewDialog({
             ${document.items?.map((item: any) => `
               <div class="item">
                 <span class="item-description">${item.description}</span>
-                <span class="item-amount">£${parseFloat(item.amount).toFixed(2)}</span>
+                <span class="item-amount">£${parseFloat(item.amount).toFixed(2)} + VAT</span>
               </div>
             `).join('') || ''}
           </div>
@@ -152,12 +152,12 @@ export default function QuotePreviewDialog({
             <div class="signature">
               <p>If you require any other information please do not hesitate to contact us.</p>
               <p>Yours faithfully,</p>
-              <p>Derbyshire Removals</p>
+              <p>${companySettings?.name || 'Derbyshire Removals'}</p>
             </div>
 
             <div class="company-details">
-              <p>Derbyshire Removals is the trading name used by Nexus Deliveries Ltd</p>
-              <p>Company no: ####### VAT: #########</p>
+              <p>${companySettings?.name || 'Derbyshire Removals'} is the trading name used by Nexus Deliveries Ltd</p>
+              <p>Company no: ${companySettings?.companyNumber || '#######'} VAT: ${companySettings?.registrationNumber || '#########'}</p>
             </div>
           </div>
 
@@ -208,7 +208,7 @@ export default function QuotePreviewDialog({
               {document.items?.map((item: any, index: number) => (
                 <div key={index} className="flex justify-between">
                   <span>{item.description}</span>
-                  <span>£{parseFloat(item.amount).toFixed(2)}</span>
+                  <span>£{parseFloat(item.amount).toFixed(2)} + VAT</span>
                 </div>
               ))}
             </div>
@@ -216,12 +216,12 @@ export default function QuotePreviewDialog({
             <div className="space-y-4 mb-16">
               <p>If you require any other information please do not hesitate to contact us.</p>
               <p>Yours faithfully,</p>
-              <p>Derbyshire Removals</p>
+              <p>{companySettings?.name || 'Derbyshire Removals'}</p>
             </div>
 
             <div className="text-center text-sm text-gray-500 space-y-1">
-              <p>Derbyshire Removals is the trading name used by Nexus Deliveries Ltd</p>
-              <p>Company no: ####### VAT: #########</p>
+              <p>{companySettings?.name || 'Derbyshire Removals'} is the trading name used by Nexus Deliveries Ltd</p>
+              <p>Company no: {companySettings?.companyNumber || '#######'} VAT: {companySettings?.registrationNumber || '#########'}</p>
             </div>
           </div>
 
