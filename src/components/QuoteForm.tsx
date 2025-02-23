@@ -16,21 +16,25 @@ interface QuoteItem {
 interface Quote {
   id: string;
   customerName: string;
-  email: string;
-  phone: string;
-  moveDate: string;
+  email?: string;
+  phone?: string;
+  moveDate?: string;
   fromAddress: string;
   items: QuoteItem[];
   message: string;
   total: number;
   createdAt: string;
+  createdBy: string;
 }
 
 interface QuoteFormProps {
   onClose: () => void;
+  companySettings?: {
+    name?: string;
+  };
 }
 
-export default function QuoteForm({ onClose }: QuoteFormProps) {
+export default function QuoteForm({ onClose, companySettings }: QuoteFormProps) {
   const { toast } = useToast();
   const defaultMessage = "Following our recent conversation I have the pleasure in quoting for the removal of furniture/goods from the above address and delivery to #DESTINATION_ADDRESS.";
   const [items, setItems] = useState<QuoteItem[]>([{ description: "Removal costs incl insurance", amount: "" }]);
@@ -40,7 +44,8 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
     phone: "",
     moveDate: "",
     fromAddress: "",
-    message: defaultMessage
+    message: defaultMessage,
+    createdBy: companySettings?.name || ""
   });
 
   const handleItemChange = (index: number, field: keyof QuoteItem, value: string) => {
@@ -76,11 +81,19 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
     
     const newQuote: Quote = {
       id: crypto.randomUUID(),
-      ...formData,
+      customerName: formData.customerName,
+      fromAddress: formData.fromAddress,
       items,
+      message: formData.message,
       total: calculateTotal(),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      createdBy: formData.createdBy
     };
+
+    // Only add optional fields if they have values
+    if (formData.email) newQuote.email = formData.email;
+    if (formData.phone) newQuote.phone = formData.phone;
+    if (formData.moveDate) newQuote.moveDate = formData.moveDate;
 
     // Get existing quotes from localStorage
     const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
@@ -121,37 +134,34 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email (Optional)</Label>
               <Input 
                 id="email" 
                 type="email" 
                 placeholder="customer@example.com"
                 value={formData.email}
                 onChange={handleInputChange}
-                required
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">Phone (Optional)</Label>
               <Input 
                 id="phone" 
                 placeholder="Enter phone number"
                 value={formData.phone}
                 onChange={handleInputChange}
-                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="moveDate">Moving Date</Label>
+              <Label htmlFor="moveDate">Moving Date (Optional)</Label>
               <Input 
                 id="moveDate" 
                 type="date"
                 value={formData.moveDate}
                 onChange={handleInputChange}
-                required
               />
             </div>
           </div>
@@ -162,6 +172,17 @@ export default function QuoteForm({ onClose }: QuoteFormProps) {
               id="fromAddress" 
               placeholder="Enter pickup address"
               value={formData.fromAddress}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="createdBy">Created By</Label>
+            <Input 
+              id="createdBy" 
+              placeholder="Enter creator name"
+              value={formData.createdBy}
               onChange={handleInputChange}
               required
             />
