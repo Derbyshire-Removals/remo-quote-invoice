@@ -24,6 +24,20 @@ export default function QuotePreviewDialog({
   document,
   companySettings
 }: QuotePreviewDialogProps) {
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'Not specified';
+    try {
+      const date = new Date(dateString);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      return format(date, 'dd MMM yyyy');
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -126,8 +140,8 @@ export default function QuotePreviewDialog({
             <div class="quote-info">
               <div class="quote-title">QUOTE</div>
               <div style="color: #8E9196;">
-                <div>Date: ${format(new Date(document.createdAt), 'dd MMM yyyy')}</div>
-                <div>Move Date: ${format(new Date(document.moveDate), 'dd MMM yyyy')}</div>
+                <div>Date: ${formatDate(document.createdAt)}</div>
+                <div>Move Date: ${formatDate(document.moveDate)}</div>
               </div>
             </div>
           </div>
@@ -189,8 +203,8 @@ export default function QuotePreviewDialog({
               <div className="text-right">
                 <h1 className="text-4xl font-bold text-primary mb-1">QUOTE</h1>
                 <div className="text-gray-500">
-                  <p>Date: {format(new Date(document.createdAt), 'dd MMM yyyy')}</p>
-                  <p>Move Date: {format(new Date(document.moveDate), 'dd MMM yyyy')}</p>
+                  <p>Date: {formatDate(document.createdAt)}</p>
+                  <p>Move Date: {formatDate(document.moveDate)}</p>
                 </div>
               </div>
             </div>
