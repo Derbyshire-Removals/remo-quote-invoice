@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -46,16 +45,9 @@ export default function QuotePreviewDialog({
         <head>
           <title>Quote Preview</title>
           <style>
-            @font-face {
-              font-family: 'Calibri';
-              src: local('Calibri');
-            }
-            @font-face {
-              font-family: 'Impact';
-              src: local('Impact');
-            }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
             body { 
-              font-family: 'Calibri', sans-serif;
+              font-family: 'Inter', sans-serif;
               padding: 40px;
               max-width: 800px;
               margin: 0 auto;
@@ -92,7 +84,6 @@ export default function QuotePreviewDialog({
               text-align: right;
               color: #022f5c;
               font-weight: 600;
-              font-family: 'Impact', sans-serif;
             }
             .services-list li {
               margin-bottom: 0.5rem;
@@ -226,7 +217,7 @@ export default function QuotePreviewDialog({
               <div className="text-gray-500">
                 <p>Date: {formatDate(document.createdAt)}</p>
               </div>
-              <ul className="mt-16 space-y-2 list-none font-semibold font-['Impact']" style={{ color: '#022f5c' }}>
+              <ul className="mt-16 space-y-2 list-none font-semibold" style={{ color: '#022f5c' }}>
                 <li>Home/Office Removals</li>
                 <li>Local/Long Distance</li>
                 <li>Full Packing Available</li>
@@ -236,7 +227,7 @@ export default function QuotePreviewDialog({
             </div>
           </div>
 
-          <div className="mb-8 font-['Calibri']">
+          <div className="mb-8">
             <p className="text-lg font-semibold mb-1">{document.customerName}</p>
             <p className="text-gray-600 whitespace-pre-line mb-8">{document.fromAddress}</p>
             
@@ -261,7 +252,7 @@ export default function QuotePreviewDialog({
 
             <div className="text-center text-sm text-gray-500 space-y-1">
               <p>{companySettings?.name || 'Derbyshire Removals'} is the trading name used by Nexus Deliveries Ltd</p>
-              <p>Company no: {companySettings?.companyNumber || '#######'} VAT: {companySettings?.registrationNumber || '#########'}</p>
+              <p>Company no: {companySettings?.companyNumber || '#######'} VAT: ${companySettings?.registrationNumber || '#########'}</p>
             </div>
           </div>
 
