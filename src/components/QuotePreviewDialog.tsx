@@ -61,9 +61,6 @@ export default function QuotePreviewDialog({
               display: flex;
               justify-content: space-between;
               margin-bottom: 3rem;
-              padding: 2rem;
-              background-color: #F6F6F7;
-              border-radius: 12px;
             }
             .company-info {
               max-width: 60%;
@@ -188,22 +185,20 @@ export default function QuotePreviewDialog({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative">
-          <div className="bg-gray-50 p-8 rounded-lg mb-12">
-            <div className="flex justify-between">
-              <div className="max-w-[60%]">
-                {companySettings?.logoUrl && (
-                  <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />
-                )}
-                <div className="space-y-1">
-                  {companySettings?.name && <p className="font-semibold">{companySettings.name}</p>}
-                  {companySettings?.address && <p className="text-gray-600 whitespace-pre-line">{companySettings.address}</p>}
-                </div>
+          <div className="flex justify-between mb-12">
+            <div className="max-w-[60%]">
+              {companySettings?.logoUrl && (
+                <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />
+              )}
+              <div className="space-y-1">
+                {companySettings?.name && <p className="font-semibold">{companySettings.name}</p>}
+                {companySettings?.address && <p className="text-gray-600 whitespace-pre-line">{companySettings.address}</p>}
               </div>
-              <div className="text-right">
-                <h1 className="text-4xl font-bold text-primary mb-1">QUOTE</h1>
-                <div className="text-gray-500">
-                  <p>Date: {formatDate(document.createdAt)}</p>
-                </div>
+            </div>
+            <div className="text-right">
+              <h1 className="text-4xl font-bold text-primary mb-1">QUOTE</h1>
+              <div className="text-gray-500">
+                <p>Date: {formatDate(document.createdAt)}</p>
               </div>
             </div>
           </div>
