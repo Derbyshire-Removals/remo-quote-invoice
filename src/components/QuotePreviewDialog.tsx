@@ -84,7 +84,6 @@ export default function QuotePreviewDialog({
               text-align: right;
               color: #022f5c;
               font-weight: 600;
-              text-transform: uppercase;
             }
             .services-list li {
               margin-bottom: 0.5rem;
@@ -151,11 +150,11 @@ export default function QuotePreviewDialog({
                 <div>Date: ${formatDate(document.createdAt)}</div>
               </div>
               <ul class="services-list">
-                <li>HOME/OFFICE REMOVALS</li>
-                <li>LOCAL/LONG DISTANCE</li>
-                <li>FULL PACKING AVAILABLE</li>
-                <li>STORAGE AVAILABLE</li>
-                <li>FULLY INSURED</li>
+                <li>Home/Office Removals</li>
+                <li>Local/Long Distance</li>
+                <li>Full Packing Available</li>
+                <li>Storage Available</li>
+                <li>Fully Insured</li>
               </ul>
             </div>
           </div>
@@ -218,12 +217,12 @@ export default function QuotePreviewDialog({
               <div className="text-gray-500">
                 <p>Date: {formatDate(document.createdAt)}</p>
               </div>
-              <ul className="mt-16 space-y-2 list-none font-semibold uppercase" style={{ color: '#022f5c' }}>
-                <li>HOME/OFFICE REMOVALS</li>
-                <li>LOCAL/LONG DISTANCE</li>
-                <li>FULL PACKING AVAILABLE</li>
-                <li>STORAGE AVAILABLE</li>
-                <li>FULLY INSURED</li>
+              <ul className="mt-16 space-y-2 list-none font-semibold" style={{ color: '#022f5c' }}>
+                <li>Home/Office Removals</li>
+                <li>Local/Long Distance</li>
+                <li>Full Packing Available</li>
+                <li>Storage Available</li>
+                <li>Fully Insured</li>
               </ul>
             </div>
           </div>
