@@ -14,6 +14,9 @@ export default function Dashboard() {
   const [showSettings, setShowSettings] = useState(false);
   const [activeDocumentType, setActiveDocumentType] = useState<'quotes' | 'invoices'>('quotes');
 
+  // Get company settings from localStorage
+  const companySettings = JSON.parse(localStorage.getItem('companySettings') || '{}');
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-8">
@@ -68,7 +71,7 @@ export default function Dashboard() {
       <DocumentList activeDocumentType={activeDocumentType} />
 
       {showQuoteForm && (
-        <QuoteForm onClose={() => setShowQuoteForm(false)} />
+        <QuoteForm onClose={() => setShowQuoteForm(false)} companySettings={companySettings} />
       )}
       
       {showInvoiceForm && (
