@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -28,7 +27,6 @@ export default function QuotePreviewDialog({
     if (!dateString) return 'Not specified';
     try {
       const date = new Date(dateString);
-      // Check if the date is valid
       if (isNaN(date.getTime())) {
         return 'Invalid date';
       }
@@ -63,10 +61,11 @@ export default function QuotePreviewDialog({
               margin-bottom: 3rem;
             }
             .company-info {
-              max-width: 60%;
+              max-width: 50%;
             }
             .quote-info {
               text-align: right;
+              width: 45%;
             }
             .logo {
               max-width: 175px;
@@ -76,6 +75,16 @@ export default function QuotePreviewDialog({
               font-size: 2.5rem;
               color: #9b87f5;
               font-weight: 700;
+              margin-bottom: 0.5rem;
+            }
+            .services-list {
+              margin-top: 2rem;
+              list-style: none;
+              padding: 0;
+              text-align: right;
+              color: #4A5568;
+            }
+            .services-list li {
               margin-bottom: 0.5rem;
             }
             .items-list {
@@ -139,6 +148,13 @@ export default function QuotePreviewDialog({
               <div style="color: #8E9196;">
                 <div>Date: ${formatDate(document.createdAt)}</div>
               </div>
+              <ul class="services-list">
+                <li>Home/Office Removals</li>
+                <li>Local/Long Distance</li>
+                <li>Full Packing Available</li>
+                <li>Storage Available</li>
+                <li>Fully Insured</li>
+              </ul>
             </div>
           </div>
 
@@ -186,7 +202,7 @@ export default function QuotePreviewDialog({
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative">
           <div className="flex justify-between mb-12">
-            <div className="max-w-[60%]">
+            <div className="max-w-[50%]">
               {companySettings?.logoUrl && (
                 <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />
               )}
@@ -195,11 +211,18 @@ export default function QuotePreviewDialog({
                 {companySettings?.address && <p className="text-gray-600 whitespace-pre-line">{companySettings.address}</p>}
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-right w-[45%]">
               <h1 className="text-4xl font-bold text-primary mb-1">QUOTE</h1>
               <div className="text-gray-500">
                 <p>Date: {formatDate(document.createdAt)}</p>
               </div>
+              <ul className="mt-8 space-y-2 text-gray-600 list-none">
+                <li>Home/Office Removals</li>
+                <li>Local/Long Distance</li>
+                <li>Full Packing Available</li>
+                <li>Storage Available</li>
+                <li>Fully Insured</li>
+              </ul>
             </div>
           </div>
 
@@ -228,7 +251,7 @@ export default function QuotePreviewDialog({
 
             <div className="text-center text-sm text-gray-500 space-y-1">
               <p>{companySettings?.name || 'Derbyshire Removals'} is the trading name used by Nexus Deliveries Ltd</p>
-              <p>Company no: {companySettings?.companyNumber || '#######'} VAT: {companySettings?.registrationNumber || '#########'}</p>
+              <p>Company no: {companySettings?.companyNumber || '#######'} VAT: ${companySettings?.registrationNumber || '#########'}</p>
             </div>
           </div>
 
