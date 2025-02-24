@@ -1,7 +1,9 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { format } from "date-fns";
+
 interface QuotePreviewDialogProps {
   open: boolean;
   onClose: () => void;
@@ -15,6 +17,7 @@ interface QuotePreviewDialogProps {
     companyNumber?: string;
   };
 }
+
 const formatDate = (dateString: string | undefined) => {
   if (!dateString) return 'Not specified';
   try {
@@ -27,6 +30,7 @@ const formatDate = (dateString: string | undefined) => {
     return 'Invalid date';
   }
 };
+
 export default function QuotePreviewDialog({
   open,
   onClose,
@@ -101,6 +105,18 @@ export default function QuotePreviewDialog({
             .item-amount {
               text-align: right;
               margin-left: 2rem;
+            }
+            .customer-section {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 2rem;
+            }
+            .customer-details {
+              max-width: 50%;
+            }
+            .trusted-trader-logo {
+              width: 150px;
             }
             .customer-name {
               font-size: 1.2rem;
@@ -188,8 +204,13 @@ export default function QuotePreviewDialog({
             </div>
           </div>
 
-          <div class="customer-name">${document.customerName}</div>
-          <div class="customer-address">${document.fromAddress}</div>
+          <div class="customer-section">
+            <div class="customer-details">
+              <div class="customer-name">${document.customerName}</div>
+              <div class="customer-address">${document.fromAddress}</div>
+            </div>
+            <img src="https://derbyshireremovals.com/images/derbyshire-trusted-trader-logo.gif" alt="Derbyshire Trusted Trader" class="trusted-trader-logo" />
+          </div>
 
           <div class="greeting">Dear ${document.customerName},</div>
 
@@ -337,7 +358,9 @@ export default function QuotePreviewDialog({
     printWindow.document.write(content);
     printWindow.document.close();
   };
-  return <Dialog open={open} onOpenChange={onClose}>
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative">
           <div className="flex justify-end mb-4">
@@ -355,16 +378,11 @@ export default function QuotePreviewDialog({
               </div>
             </div>
             <div className="text-right w-[45%]">
-              <h1 className="text-4xl font-bold mb-1" style={{
-              color: '#022f5c'
-            }}>QUOTE</h1>
+              <h1 className="text-4xl font-bold mb-1" style={{color: '#022f5c'}}>QUOTE</h1>
               <div className="text-gray-500">
                 <p>Date: {formatDate(document.createdAt)}</p>
               </div>
-              <ul className="mt-16 space-y-2 list-none font-semibold" style={{
-              color: '#022f5c',
-              fontFamily: 'Impact, sans-serif'
-            }}>
+              <ul className="mt-16 space-y-2 list-none font-semibold" style={{color: '#022f5c', fontFamily: 'Impact, sans-serif'}}>
                 <li>Home/Office Removals</li>
                 <li>Local/Long Distance</li>
                 <li>Full Packing Available</li>
@@ -374,19 +392,30 @@ export default function QuotePreviewDialog({
             </div>
           </div>
 
+          <div className="flex justify-between items-start mb-8">
+            <div className="max-w-[50%]">
+              <p className="font-semibold mb-1">{document.customerName}</p>
+              <p className="text-gray-600 whitespace-pre-line">{document.fromAddress}</p>
+            </div>
+            <img 
+              src="https://derbyshireremovals.com/images/derbyshire-trusted-trader-logo.gif" 
+              alt="Derbyshire Trusted Trader" 
+              className="w-[150px]"
+            />
+          </div>
+
           <div className="mb-8">
-            <p className="font-semibold mb-1">{document.customerName}</p>
-            <p className="text-gray-600 whitespace-pre-line mb-8">{document.fromAddress}</p>
-            
             <p className="mb-8">Dear {document.customerName},</p>
             
             <div className="whitespace-pre-line mb-8">{document.message || 'No message provided'}</div>
 
             <div className="space-y-2 mb-8">
-              {document.items?.map((item: any, index: number) => <div key={index} className="flex justify-between">
+              {document.items?.map((item: any, index: number) => (
+                <div key={index} className="flex justify-between">
                   <span>{item.description}</span>
                   <span className="ml-8">£{parseFloat(item.amount).toFixed(2)} + VAT</span>
-                </div>)}
+                </div>
+              ))}
             </div>
 
             <div className="space-y-4 mb-16">
@@ -402,5 +431,6 @@ export default function QuotePreviewDialog({
           </div>
         </div>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 }
