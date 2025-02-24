@@ -2,7 +2,6 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { format } from "date-fns";
-
 interface QuotePreviewDialogProps {
   open: boolean;
   onClose: () => void;
@@ -16,7 +15,6 @@ interface QuotePreviewDialogProps {
     companyNumber?: string;
   };
 }
-
 const formatDate = (dateString: string | undefined) => {
   if (!dateString) return 'Not specified';
   try {
@@ -29,7 +27,6 @@ const formatDate = (dateString: string | undefined) => {
     return 'Invalid date';
   }
 };
-
 export default function QuotePreviewDialog({
   open,
   onClose,
@@ -89,11 +86,6 @@ export default function QuotePreviewDialog({
             }
             .services-list li {
               margin-bottom: 0.5rem;
-            }
-            .trusted-trader-logo {
-              width: 150px;
-              display: block;
-              margin: 0 0 1rem auto;
             }
             .items-list {
               margin: 2rem 0;
@@ -186,7 +178,6 @@ export default function QuotePreviewDialog({
               <div style="color: #8E9196;">
                 <div>Date: ${formatDate(document.createdAt)}</div>
               </div>
-              <img src="https://derbyshireremovals.com/images/derbyshire-trusted-trader-logo.gif" alt="Derbyshire Trusted Trader" class="trusted-trader-logo" />
               <ul class="services-list">
                 <li>Home/Office Removals</li>
                 <li>Local/Long Distance</li>
@@ -346,7 +337,6 @@ export default function QuotePreviewDialog({
     printWindow.document.write(content);
     printWindow.document.close();
   };
-
   return <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative">
@@ -366,20 +356,15 @@ export default function QuotePreviewDialog({
             </div>
             <div className="text-right w-[45%]">
               <h1 className="text-4xl font-bold mb-1" style={{
-                color: '#022f5c'
-              }}>QUOTE</h1>
+              color: '#022f5c'
+            }}>QUOTE</h1>
               <div className="text-gray-500">
                 <p>Date: {formatDate(document.createdAt)}</p>
               </div>
-              <img 
-                src="https://derbyshireremovals.com/images/derbyshire-trusted-trader-logo.gif" 
-                alt="Derbyshire Trusted Trader" 
-                className="w-[150px] ml-auto mb-4"
-              />
               <ul className="mt-16 space-y-2 list-none font-semibold" style={{
-                color: '#022f5c',
-                fontFamily: 'Impact, sans-serif'
-              }}>
+              color: '#022f5c',
+              fontFamily: 'Impact, sans-serif'
+            }}>
                 <li>Home/Office Removals</li>
                 <li>Local/Long Distance</li>
                 <li>Full Packing Available</li>
