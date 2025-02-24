@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface QuoteItem {
@@ -32,9 +32,11 @@ interface QuoteFormProps {
   companySettings?: {
     name?: string;
   };
+  initialData?: Quote;
+  mode?: 'create' | 'edit';
 }
 
-export default function QuoteForm({ onClose, companySettings }: QuoteFormProps) {
+export default function QuoteForm({ onClose, companySettings, initialData, mode = 'create' }: QuoteFormProps) {
   const { toast } = useToast();
   const defaultMessage = "Following our recent conversation I have the pleasure in quoting for the removal of furniture/goods from the above address and delivery to #DESTINATION_ADDRESS.";
   const [items, setItems] = useState<QuoteItem[]>([{ description: "Removal costs incl insurance", amount: "" }]);
@@ -47,6 +49,22 @@ export default function QuoteForm({ onClose, companySettings }: QuoteFormProps) 
     message: defaultMessage,
     createdBy: companySettings?.name || ""
   });
+
+  // Load initial data if in edit mode
+  useEffect(() => {
+    if (mode === 'edit' && initialData) {
+      setFormData({
+        customerName: initialData.customerName,
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        moveDate: initialData.moveDate || "",
+        fromAddress: initialData.fromAddress,
+        message: initialData.message,
+        createdBy: initialData.createdBy
+      });
+      setItems(initialData.items);
+    }
+  }, [initialData, mode]);
 
   const handleItemChange = (index: number, field: keyof QuoteItem, value: string) => {
     setItems(prev => prev.map((item, i) => 
@@ -79,35 +97,43 @@ export default function QuoteForm({ onClose, companySettings }: QuoteFormProps) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newQuote: Quote = {
-      id: crypto.randomUUID(),
+    const quoteData: Quote = {
+      id: mode === 'edit' && initialData ? initialData.id : crypto.randomUUID(),
       customerName: formData.customerName,
       fromAddress: formData.fromAddress,
       items,
       message: formData.message,
       total: calculateTotal(),
-      createdAt: new Date().toISOString(),
+      createdAt: mode === 'edit' && initialData ? initialData.createdAt : new Date().toISOString(),
       createdBy: formData.createdBy
     };
 
     // Only add optional fields if they have values
-    if (formData.email) newQuote.email = formData.email;
-    if (formData.phone) newQuote.phone = formData.phone;
-    if (formData.moveDate) newQuote.moveDate = formData.moveDate;
+    if (formData.email) quoteData.email = formData.email;
+    if (formData.phone) quoteData.phone = formData.phone;
+    if (formData.moveDate) quoteData.moveDate = formData.moveDate;
 
     // Get existing quotes from localStorage
     const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
     
-    // Add new quote
-    const updatedQuotes = [...existingQuotes, newQuote];
+    let updatedQuotes;
+    if (mode === 'edit') {
+      // Update existing quote
+      updatedQuotes = existingQuotes.map((quote: Quote) => 
+        quote.id === quoteData.id ? quoteData : quote
+      );
+    } else {
+      // Add new quote
+      updatedQuotes = [...existingQuotes, quoteData];
+    }
     
     // Save to localStorage
     localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
 
     // Show success message
     toast({
-      title: "Quote Created",
-      description: "The quote has been successfully created.",
+      title: `Quote ${mode === 'edit' ? 'Updated' : 'Created'}`,
+      description: `The quote has been successfully ${mode === 'edit' ? 'updated' : 'created'}.`,
     });
 
     // Close the form
@@ -118,7 +144,7 @@ export default function QuoteForm({ onClose, companySettings }: QuoteFormProps) 
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create New Quote</DialogTitle>
+          <DialogTitle>{mode === 'edit' ? 'Edit Quote' : 'Create New Quote'}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
