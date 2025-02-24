@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -347,6 +348,12 @@ export default function QuotePreviewDialog({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative">
+          <div className="flex justify-end mb-4">
+            <Button onClick={handlePrint} variant="outline">
+              <Printer className="mr-2" />
+              Print Quote
+            </Button>
+          </div>
           <div className="flex justify-between mb-12">
             <div className="max-w-[50%]">
               {companySettings?.logoUrl && (
@@ -384,7 +391,7 @@ export default function QuotePreviewDialog({
               {document.items?.map((item: any, index: number) => (
                 <div key={index} className="flex justify-between">
                   <span>{item.description}</span>
-                  <span>£{parseFloat(item.amount).toFixed(2)} + VAT</span>
+                  <span className="ml-8">£{parseFloat(item.amount).toFixed(2)} + VAT</span>
                 </div>
               ))}
             </div>
@@ -405,3 +412,4 @@ export default function QuotePreviewDialog({
     </Dialog>
   );
 }
+
