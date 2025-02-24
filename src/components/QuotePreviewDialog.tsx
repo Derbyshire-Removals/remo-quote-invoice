@@ -119,7 +119,6 @@ export default function QuotePreviewDialog({
               width: 150px;
             }
             .customer-name {
-              font-size: 1.2rem;
               font-weight: 600;
               margin-bottom: 0.5rem;
             }
