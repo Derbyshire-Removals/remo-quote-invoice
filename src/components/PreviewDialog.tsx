@@ -283,9 +283,11 @@ export default function PreviewDialog({
     }
   };
 
-  return <Dialog open={open} onOpenChange={onClose}>
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative rounded-lg p-8">
+          
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div>
               {companySettings?.logoUrl && <img src={companySettings.logoUrl} alt="Company Logo" className="max-w-[175px] mb-4" />}
@@ -338,6 +340,7 @@ export default function PreviewDialog({
             </div>
           </div>
 
+          
           <div className="mt-8">
             <Table>
               <TableHeader>
@@ -356,6 +359,7 @@ export default function PreviewDialog({
               </TableBody>
             </Table>
 
+            
             <div className="mt-12 flex flex-col items-end space-y-2">
               <div className="flex gap-8">
                 <span className="text-gray-500">Subtotal:</span>
@@ -371,25 +375,32 @@ export default function PreviewDialog({
               </div>
             </div>
 
+            
             <div className="mt-12 space-y-6">
               <div>
                 <p className="text-[#64748b]">Notes:</p>
-                <p className="mt-2 text-gray-900 whitespace-pre-line">{document.notes || 'No notes provided'}</p>
+                <p className="mt-2 text-gray-900 whitespace-pre-line">
+                  {document.notes || 'No notes provided'}
+                </p>
               </div>
               <div>
                 <p className="text-[#64748b]">Terms:</p>
-                <p className="mt-2 text-gray-900 whitespace-pre-line">{document.terms || 'No terms provided'}</p>
+                <p className="mt-2 text-gray-900 whitespace-pre-line">
+                  {document.terms || 'No terms provided'}
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="absolute bottom-4 right-4">
-            <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
-              <Printer className="mr-2 h-4 w-4" />
-              Print
-            </Button>
+            
+            <div className="mt-8 flex justify-end">
+              <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 }
