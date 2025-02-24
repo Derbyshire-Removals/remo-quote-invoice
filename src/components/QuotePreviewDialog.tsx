@@ -40,11 +40,15 @@ export default function QuotePreviewDialog({
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
+
+    // Set the document title for saving
+    printWindow.document.title = `${document.customerName}'s Quote`;
+
     const content = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Quote Preview</title>
+          <title>${document.customerName}'s Quote</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
             body { 
@@ -114,6 +118,7 @@ export default function QuotePreviewDialog({
               white-space: pre-line;
               color: #4A5568;
               margin-bottom: 2rem;
+              line-height: 1.5;
             }
             .greeting {
               margin-bottom: 2rem;
@@ -144,7 +149,7 @@ export default function QuotePreviewDialog({
             <div class="company-info">
               ${companySettings?.logoUrl ? `<img src="${companySettings.logoUrl}" alt="Company Logo" class="logo" />` : ''}
               ${companySettings?.name ? `<div style="font-weight: 600;">${companySettings.name}</div>` : ''}
-              ${companySettings?.address ? `<div class="company-address">${companySettings.address}</div>` : ''}
+              ${companySettings?.address ? `<div style="white-space: pre-line;">${companySettings.address}</div>` : ''}
             </div>
             <div class="quote-info">
               <div class="quote-title">QUOTE</div>
@@ -269,4 +274,3 @@ export default function QuotePreviewDialog({
     </Dialog>
   );
 }
-
