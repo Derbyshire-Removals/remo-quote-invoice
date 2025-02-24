@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit, Trash2, CalendarIcon } from "lucide-react";
@@ -6,6 +5,7 @@ import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
 import QuotePreviewDialog from "./QuotePreviewDialog";
+import QuoteForm from "./QuoteForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid, parseISO } from "date-fns";
@@ -26,6 +26,7 @@ interface Quote {
   message: string;
   total: number;
   createdAt: string;
+  createdBy: string;
 }
 
 interface Invoice {
@@ -161,6 +162,9 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
             <Eye className="h-4 w-4" />
           </Button>
+          <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
+            <Edit className="h-4 w-4" />
+          </Button>
           <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
@@ -207,7 +211,14 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         </TableBody>
       </Table>
 
-      {showEditForm && selectedDocument && (
+      {showEditForm && selectedDocument && activeDocumentType === 'quotes' && (
+        <QuoteForm 
+          onClose={() => setShowEditForm(false)}
+          initialData={selectedDocument as Quote}
+        />
+      )}
+
+      {showEditForm && selectedDocument && activeDocumentType === 'invoices' && (
         <InvoiceForm 
           onClose={() => setShowEditForm(false)}
           initialData={selectedDocument as Invoice}
