@@ -1,15 +1,14 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit, Trash2, CalendarIcon } from "lucide-react";
 import { useState, useEffect } from "react";
+import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
 import QuotePreviewDialog from "./QuotePreviewDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid, parseISO } from "date-fns";
-import QuoteForm from "./QuoteForm";
-import InvoiceForm from "./InvoiceForm";
 
 interface QuoteItem {
   description: string;
@@ -27,7 +26,6 @@ interface Quote {
   message: string;
   total: number;
   createdAt: string;
-  createdBy: string;
 }
 
 interface Invoice {
@@ -208,15 +206,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           ))}
         </TableBody>
       </Table>
-
-      {showEditForm && selectedDocument && activeDocumentType === 'quotes' && (
-        <QuoteForm 
-          onClose={() => setShowEditForm(false)}
-          initialData={selectedDocument as Quote}
-          mode="edit"
-          companySettings={JSON.parse(localStorage.getItem("companySettings") || "{}")}
-        />
-      )}
 
       {showEditForm && selectedDocument && (
         <InvoiceForm 

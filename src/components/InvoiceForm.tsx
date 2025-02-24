@@ -1,64 +1,83 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { CustomerInfoSection } from "./invoice/CustomerInfoSection";
+import { InvoiceDetailsSection } from "./invoice/InvoiceDetailsSection";
+import { InvoiceItemsSection } from "./invoice/InvoiceItemsSection";
+import { calculateTotals, mapInitialDataToFormData } from "@/utils/invoiceUtils";
+import { InvoiceFormData, InitialInvoiceData } from "@/types/invoice";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface InvoiceFormProps {
   onClose: () => void;
-  initialData?: Invoice;
-}
-
-interface Invoice {
-  id: number;
-  number: string;
-  customer: string;
-  date: string;
-  amount: string;
-  status: string;
+  initialData?: InitialInvoiceData;
 }
 
 export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) {
-  const [formData, setFormData] = useState({
-    number: initialData?.number || '',
-    customer: initialData?.customer || '',
-    date: initialData?.date || new Date().toISOString().split('T')[0],
-    amount: initialData?.amount || '',
-    status: initialData?.status || 'Unpaid'
-  });
+  const [formData, setFormData] = useState<InvoiceFormData>(() => 
+    mapInitialDataToFormData(initialData)
+  );
+  const [termsTemplates, setTermsTemplates] = useState<{ name: string; content: string; }[]>([]);
+
+  useEffect(() => {
+    const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+    setTermsTemplates(settings.termsTemplates || []);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.number || !formData.customer || !formData.date || !formData.amount) {
-      toast.error("Please fill in all required fields");
+    const { totalAmount } = calculateTotals(formData.items, formData.tax);
+    
+    if (!formData.invoiceNumber) {
+      toast.error("Invalid invoice number");
       return;
     }
 
-    const newInvoice = {
+    const newDocument = {
       id: initialData?.id || Date.now(),
-      ...formData
+      type: 'Invoice' as const,
+      number: formData.invoiceNumber,
+      customer: formData.customerName,
+      date: formData.invoiceDate,
+      amount: `£${totalAmount.toFixed(2)}`,
+      status: 'Unpaid',
+      email: formData.email,
+      address: formData.address,
+      tax: parseInt(formData.tax),
+      invoiceDate: formData.invoiceDate,
+      dueDate: formData.dueDate,
+      items: formData.items,
+      notes: formData.notes,
+      terms: formData.terms
     };
 
-    const existingInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-    let updatedInvoices;
+    const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
+    let updatedDocs;
 
     if (initialData) {
-      updatedInvoices = existingInvoices.map((invoice: Invoice) => 
-        invoice.id === initialData.id ? newInvoice : invoice
+      updatedDocs = existingDocs.map((doc: any) => 
+        doc.id === initialData.id ? newDocument : doc
       );
     } else {
-      updatedInvoices = [...existingInvoices, newInvoice];
+      updatedDocs = [...existingDocs, newDocument];
+      
+      const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+      settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
+      settings.invoicePrefix = settings.invoicePrefix || "INV";
+      localStorage.setItem("companySettings", JSON.stringify(settings));
     }
 
-    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+    localStorage.setItem('invoices', JSON.stringify(updatedDocs));
     toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
     onClose();
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -66,55 +85,142 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     }));
   };
 
+  const handleTemplateChange = (templateName: string) => {
+    if (templateName === "custom") {
+      setFormData(prev => ({
+        ...prev,
+        selectedTermsTemplate: "custom"
+      }));
+    } else {
+      const template = termsTemplates.find(t => t.name === templateName);
+      if (template) {
+        setFormData(prev => ({
+          ...prev,
+          terms: template.content,
+          selectedTermsTemplate: templateName
+        }));
+      }
+    }
+  };
+
+  const handleItemChange = (index: number, field: keyof InvoiceFormData["items"][0], value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const addItem = () => {
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, { description: "", amount: "" }]
+    }));
+  };
+
+  const removeItem = (index: number) => {
+    if (formData.items.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        items: prev.items.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const { subtotal, vatAmount, totalAmount } = calculateTotals(formData.items, formData.tax);
+
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit Invoice" : "Create New Invoice"}</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="grid gap-6 py-4">
+          <CustomerInfoSection
+            customerName={formData.customerName}
+            email={formData.email}
+            address={formData.address}
+            onChange={handleChange}
+          />
+
+          <InvoiceDetailsSection
+            invoiceNumber={formData.invoiceNumber}
+            invoiceDate={formData.invoiceDate}
+            dueDate={formData.dueDate}
+            onChange={handleChange}
+            readOnly={!initialData}
+          />
+
+          <InvoiceItemsSection
+            items={formData.items}
+            onItemChange={handleItemChange}
+            onAddItem={addItem}
+            onRemoveItem={removeItem}
+            subtotal={subtotal}
+            vatRate={formData.tax}
+            vatAmount={vatAmount}
+            totalAmount={totalAmount}
+          />
+
           <div className="space-y-2">
-            <Label htmlFor="number">Invoice Number</Label>
+            <Label htmlFor="tax">VAT (%)</Label>
             <Input 
-              id="number"
-              placeholder="INV-001"
-              value={formData.number}
+              id="tax" 
+              type="number" 
+              placeholder="20"
+              value={formData.tax}
               onChange={handleChange}
+              className="w-32"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="customer">Customer Name</Label>
-            <Input 
-              id="customer"
-              placeholder="John Doe"
-              value={formData.customer}
-              onChange={handleChange}
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Terms & Conditions Template</Label>
+              <Select
+                value={formData.selectedTermsTemplate}
+                onValueChange={handleTemplateChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select terms template" />
+                </SelectTrigger>
+                <SelectContent>
+                  {termsTemplates.map((template, index) => (
+                    <SelectItem key={index} value={template.name}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="custom">Custom Terms</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="terms">Terms & Conditions</Label>
+              <Textarea
+                id="terms"
+                placeholder="Enter terms and conditions"
+                value={formData.terms}
+                onChange={handleChange}
+                rows={6}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input 
-              id="date"
-              type="date"
-              value={formData.date}
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              placeholder="Enter any additional notes"
+              value={formData.notes}
               onChange={handleChange}
+              rows={4}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
-            <Input 
-              id="amount"
-              placeholder="£0.00"
-              value={formData.amount}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="flex justify-end space-x-4 pt-4">
+          <div className="flex justify-end space-x-4">
             <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
             <Button type="submit">{initialData ? "Save Changes" : "Create Invoice"}</Button>
           </div>
