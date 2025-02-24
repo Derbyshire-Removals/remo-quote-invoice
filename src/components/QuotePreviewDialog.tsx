@@ -190,7 +190,7 @@ export default function QuotePreviewDialog({
             </div>
 
             <div class="company-details">
-              <p>${companySettings?.name || 'Derbyshire Removals'} is the trading name used by Nexus Deliveries Ltd</p>
+              <p>Derbyshire Removals is the trading name used by Nexus Deliveries Ltd</p>
               <p>Company no: ${companySettings?.companyNumber || '#######'} VAT: ${companySettings?.registrationNumber || '#########'}</p>
             </div>
           </div>
@@ -258,7 +258,7 @@ export default function QuotePreviewDialog({
             </div>
 
             <div className="text-center text-sm text-gray-500 space-y-1">
-              <p>{companySettings?.name || 'Derbyshire Removals'} is the trading name used by Nexus Deliveries Ltd</p>
+              <p>Derbyshire Removals is the trading name used by Nexus Deliveries Ltd</p>
               <p>Company no: {companySettings?.companyNumber || '#######'} VAT: {companySettings?.registrationNumber || '#########'}</p>
             </div>
           </div>
