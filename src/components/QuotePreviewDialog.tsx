@@ -109,7 +109,7 @@ export default function QuotePreviewDialog({
             .customer-section {
               display: flex;
               justify-content: space-between;
-              align-items: flex-start;
+              align-items: center;
               margin-bottom: 2rem;
             }
             .customer-details {
