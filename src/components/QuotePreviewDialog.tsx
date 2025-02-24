@@ -1,4 +1,3 @@
-<lov-code>
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -401,101 +400,8 @@ export default function QuotePreviewDialog({
               <p>Company no: {companySettings?.companyNumber || '#######'} VAT: {companySettings?.registrationNumber || '#########'}</p>
             </div>
           </div>
-
-          <div className="page-break-before mt-10">
-            <h2 className="text-2xl font-bold text-primary mb-5">Derbyshire Removals</h2>
-            <div className="prose prose-sm max-w-none">
-              <h3 className="text-lg font-semibold mb-3">1. CONDITIONS OF BUSINESS</h3>
-              <p className="mb-4">We handle, remove and care for your property only under these Conditions of Business. In these conditions: we, our and us refer to Derbyshire Removals: you means the customer or the customer's agents.</p>
-
-              <div className="mb-4">
-                <p className="font-bold">1. ESTIMATES</p>
-                <p className="italic">We may amend our estimate and you agree to pay any extra amount if:</p>
-                <p>a. extra work is done or extra goods are handled or dealt with; or</p>
-                <p>b. goods are to be collected from or delivered to premises above a second floor unless previously agreed in writing; or</p>
-                <p>c. during the work we supply extra services or work on Saturday, Sunday or general holiday, at your request; or</p>
-                <p>d. when we collect or deliver the goods the work cannot be done conveniently by means of adequate staircases, lifts, doorways, or there is no suitable road and approach for our vehicle unless you have given adequate notice in writing; or</p>
-                <p>e. at our discretion we have to use window or other tackle. The use of such equipment shall be at your risk and expense; or</p>
-                <p>f. costs are altered by any circumstances or delay beyond our control; or</p>
-                <p>g. you do not accept the estimate within 21 days.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">2. WORK NOT INCLUDED</p>
-                <p>Unless we have agreed differently in writing our estimate does not include taking down or putting up unit furniture, fitments and fixtures, disconnecting and reconnecting appliances and fittings, laying fitted floor coverings, moving deep freezers loaded with goods or moving night storage heaters not dismantled or any other items we specifically exclude in writing. If any of our employees does such work at your request without our prior agreement we shall not be liable for any loss or damage occurring whatever the cause. But the rest of these conditions shall still apply to such work.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">3. PAYMENT</p>
-                <p>Unless we have agreed differently in writing, our charges shall be payable; Four weeks in advance for rental and other charges for goods stored.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">4. DECLARATION OF OWNERSHIP</p>
-                <p>By signing this Contract you declare that the property to be handled is either your own property free of any legal charge or burden on it or that you have the complete authority of anyone owning or having a legal interest in it to enter into this contract on their behalf. You agree to cover us fully against any claims, charges, costs and demands made against us arising from any claim to the goods by anyone else.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">5. YOUR RESPONSIBILITIES</p>
-                <p>You agree:</p>
-                <p>a. to be present or represented during the removal to ensure that nothing that should be removed is left behind and that no goods are taken away in error, or to provide in advance a list of all items to be removed.</p>
-                <p>b. to arrange proper protection for goods left in unoccupied or unattended premises or where other people such as tenants or workmen are present. If such protection is not properly arranged we shall not be liable for damage or loss however caused.</p>
-                <p>c. not to offer for removal or storage, jewellery, watches, trinkets, precious stones, money, deeds, securities, stamps and coins (or similar collections of any kind) or livestock.</p>
-                <p>d. not to offer for removal, packing or warehousing any article or substance which is dangerous, damaging or explosive, nor to offer for warehousing any article or substance including food or anything likely to encourage vermin or other pests or likely to cause infection. You will cover us fully against any claims made and for any loss or damage that we or someone else may suffer through the presence of any such article or substance among goods. If such article or substance is discovered we may remove, self destroy or other dispose of it.</p>
-                <p>e. to pay or repay to us any parking or meter suspension charges we may have to pay during any work for you.</p>
-                <p>f. pay any toll/road/bridge charges that are incurred during the removal.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">6 CANCELLING THE REMOVAL</p>
-                <p>If you cancel the work we shall be entitled to make the following charges:</p>
-                <p>a. for cancellation or postponement 11 working days or more before the start of the work – no charge.</p>
-                <p>b. 8 to 10 working days – 25% of the removal charge.</p>
-                <p>c. 7 to 4 working days  – 50% of the removal charge.</p>
-                <p>D 3 working days or less – 100% or the removal charge</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">7. ROUTE AND METHOD</p>
-                <p>You agree that we may:</p>
-                <p>a. at any time interchange the goods between vehicles and warehouses and may also decide what route or by what means the goods shall be carried or stored</p>
-                <p>b. enter into any contract with any other business to carry out the whole or any part of this contract or to cause any of the property to be stored by any other business. All these conditions shall apply to such a sub-contractor.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">8. LIMITS OF OUR LIABILITY</p>
-                <p>If we are liable for any loss, failure to produce or damages we will pay only:</p>
-                <p>a. the cost of repairing or replacing the damaged or missing article, or up to £20 for any one article, suite, service or complete case or package or other container and their contents whichever is the smaller amount. We shall choose whether to repair or replace any damaged or missing article if we repair no claim can be made against us for depreciation.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">9. OTHER LIABILITIES</p>
-                <p>We shall not be liable at all for any loss, failure to produce or damage however caused.</p>
-                <p>a. by fire save that should we receive your written instructions and a declaration value three clear days before the removal starts we will arrange insurance against the risk in your name and for your account;</p>
-                <p>b. by war, war invasion, acts of foreign enemies, hostilities (whether war is declared or not), civil war, rebellion, insurrection or military coup, wear and tear or graded deterioration, leakage or deficiency of articles of a perishable or leaky nature, acts of God, consequential loss or circumstances beyond our control;</p>
-                <p>c. by vermin, moth or other infestations;</p>
-                <p>d. arising from any process of cleaning, repairing or restoring of the goods unless such work was carried out by us in which case our liability is limited as in clause 8;</p>
-                <p>e. to any articles in wardrobes or drawers or in ay package, bundle, case or any other container not both packed and unpacked by our employees. If goods are only packed and dispatched by us no claim shall be made against us after the goods leave our hands for any loss or damage however caused.</p>
-                <p>f. for jewellery, watches, trinkets, precious stones, money, deeds, securities, stamps, coins or similar collections of any kind, nor livestock, plants or animals;</p>
-                <p>g. if goods are removed from or delivered to unattended or unoccupied premises or where third parties present (see clause 5b);</p>
-                <p>h. if goods are proved to be brittle or to have any inherent defect or to suffer from any inherent vice.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">10. DEEP FREEZE</p>
-                <p>We shall not be liable for:</p>
-                <p>a. damage to any deep freeze in which goods are packed however caused</p>
-                <p>b. loss or damage to the contents of any deep freezer however caused</p>
-                <p>c. for death, injury, sickness or disease to any person arising from the removal or warehousing of any deep freezer in which goods are packed</p>
-                <p>d. If any goods are moved/removed at your request by yourself or third parties.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">11. SELF ASSEMBLY KIT FURNITURE</p>
-                <p>We shall not be liable for any damage to or reduction in quality of any furniture which is unsuitable for removal or carriage (particularly system furniture sold in the form of dismantled kits). Having dismantled such furniture at your instruction, we will not be responsible for the quality or state of that furniture upon re-assembling either by us or by you not for any damage to the furniture during dismantling or re-assembling.</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="font-bold">12. TIME LIMITS FOR OTHER CLAIMS</p>
-                <p>You must notify us in writing of loss or damage within the time stated below, otherwise we will not be liable, the time limits are essential;</p>
-                <p>a. for goods removed from our warehouse by anyone except us – at the time the goods are removed</p
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
