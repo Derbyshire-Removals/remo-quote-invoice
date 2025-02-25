@@ -11,7 +11,8 @@ interface CompanySettings {
   logoUrl: string;
   name: string;
   address: string;
-  contactInfo: string;
+  phone: string;  // Changed from contactInfo
+  email: string;  // Added new field
   registrationNumber: string;
   companyNumber: string;
   invoicePrefix: string;
@@ -27,7 +28,8 @@ const defaultSettings: CompanySettings = {
   logoUrl: "",
   name: "",
   address: "",
-  contactInfo: "",
+  phone: "",    // Changed from contactInfo
+  email: "",    // Added new field
   registrationNumber: "",
   companyNumber: "",
   invoicePrefix: "INV-DR",
@@ -53,9 +55,19 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     const savedSettings = localStorage.getItem("companySettings");
     if (savedSettings) {
       const parsedSettings = JSON.parse(savedSettings);
+      // Handle migration of old contactInfo field to separate phone and email fields
+      let phone = "";
+      let email = "";
+      if (parsedSettings.contactInfo) {
+        const parts = parsedSettings.contactInfo.split('|');
+        phone = parts[0]?.trim() || "";
+        email = parts[1]?.trim() || "";
+      }
       setSettings({
         ...defaultSettings,
         ...parsedSettings,
+        phone: parsedSettings.phone || phone,
+        email: parsedSettings.email || email,
         termsTemplates: parsedSettings.termsTemplates || defaultSettings.termsTemplates
       });
     }
@@ -129,12 +141,23 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contactInfo">Phone/Email</Label>
+            <Label htmlFor="phone">Phone Number</Label>
             <Input
-              id="contactInfo"
-              placeholder="Phone: xxx-xxx-xxxx | Email: example@company.com"
-              value={settings.contactInfo}
-              onChange={(e) => setSettings({ ...settings, contactInfo: e.target.value })}
+              id="phone"
+              placeholder="e.g., +44 123 456 7890"
+              value={settings.phone}
+              onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="example@company.com"
+              value={settings.email}
+              onChange={(e) => setSettings({ ...settings, email: e.target.value })}
             />
           </div>
 
