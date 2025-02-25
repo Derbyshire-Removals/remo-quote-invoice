@@ -12,7 +12,7 @@ interface QuotePreviewDialogProps {
     name?: string;
     logoUrl?: string;
     address?: string;
-    contactInfo?: string;
+    phone?: string;
     registrationNumber?: string;
     companyNumber?: string;
   };
@@ -187,6 +187,7 @@ export default function QuotePreviewDialog({
               ${companySettings?.logoUrl ? `<img src="${companySettings.logoUrl}" alt="Company Logo" class="logo" />` : ''}
               ${companySettings?.name ? `<div style="font-weight: 600;">${companySettings.name}</div>` : ''}
               ${companySettings?.address ? `<div style="white-space: pre-line;">${companySettings.address}</div>` : ''}
+              ${companySettings?.phone ? `<div style="color: #4A5568;">${companySettings.phone}</div>` : ''}
             </div>
             <div class="quote-info">
               <div class="quote-title">QUOTE</div>
@@ -374,6 +375,7 @@ export default function QuotePreviewDialog({
               <div className="space-y-1">
                 {companySettings?.name && <p className="font-semibold">{companySettings.name}</p>}
                 {companySettings?.address && <p className="text-gray-600 whitespace-pre-line">{companySettings.address}</p>}
+                {companySettings?.phone && <p className="text-gray-600">{companySettings.phone}</p>}
               </div>
             </div>
             <div className="text-right w-[45%]">
@@ -433,3 +435,4 @@ export default function QuotePreviewDialog({
     </Dialog>
   );
 }
+
