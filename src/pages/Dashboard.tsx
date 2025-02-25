@@ -48,7 +48,6 @@ export default function Dashboard() {
             </div>
             <div>
               <h2 className="text-2xl font-semibold">Quotes</h2>
-              <p className="text-muted-foreground">5 pending quotes</p>
             </div>
           </div>
         </Card>
