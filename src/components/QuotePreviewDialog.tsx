@@ -345,7 +345,7 @@ export default function QuotePreviewDialog({
             <p>g. Storage Insurance covers all risks up to the value insured excluding jewellery, watches, trinkets, precious stones, money, deeds, securities, stamps and coins or similar collections of any kind of barometers and livestock.</p>
 
             <p><strong>18. THIS AGREEMENT</strong></p>
-            <p>This agreement is treated as having been made at our office stated on this form. If it is in the United Kingdom or The Republic of Ireland, this agreement will be governed by English Law. None of our servants or agents has authority to alter or vary these conditions in any way. Get in touch!</p>
+            <p>This agreement is treated as having been made at our office stated on this form. If it is in the United Kingdom or The Republic of Ireland, this agreement will be governed by English Law. None of our servants or agents has authority to alter or vary these conditions in any way.</p>
           </div>
 
           <div class="no-print">
