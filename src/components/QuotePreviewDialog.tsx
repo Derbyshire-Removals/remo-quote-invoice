@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -364,7 +363,7 @@ export default function QuotePreviewDialog({
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
         <div className="w-full relative">
           <div className="flex justify-end mb-4">
-            <Button onClick={handlePrint} variant="outline">
+            <Button onClick={handlePrint} variant="outline" className="text-black">
               <Printer className="mr-2" />
               Print Quote
             </Button>
@@ -435,4 +434,3 @@ export default function QuotePreviewDialog({
     </Dialog>
   );
 }
-
