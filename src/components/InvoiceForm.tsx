@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,8 +98,8 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
           
           return {
             ...prev,
-            items: updatedItems,
-            notes: prev.notes + "\nThis is a 50% deposit invoice. Remaining balance will be invoiced upon completion."
+            items: updatedItems
+            // Removed the line that adds the extra note text
           };
         }
         return prev;
