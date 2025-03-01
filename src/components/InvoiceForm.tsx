@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,7 @@ interface InvoiceFormProps {
 }
 
 export default function InvoiceForm({ onClose, initialData, convertFromQuote }: InvoiceFormProps) {
-  const [createDepositInvoice, setCreateDepositInvoice] = useState(convertFromQuote ? true : false);
+  const [createDepositInvoice, setCreateDepositInvoice] = useState(false);
   
   const [formData, setFormData] = useState<InvoiceFormData>(() => {
     if (convertFromQuote) {
