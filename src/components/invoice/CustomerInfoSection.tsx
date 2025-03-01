@@ -8,9 +8,10 @@ interface CustomerInfoSectionProps {
   email: string;
   address: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  readOnly?: boolean;
 }
 
-export function CustomerInfoSection({ customerName, email, address, onChange }: CustomerInfoSectionProps) {
+export function CustomerInfoSection({ customerName, email, address, onChange, readOnly }: CustomerInfoSectionProps) {
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
@@ -21,6 +22,7 @@ export function CustomerInfoSection({ customerName, email, address, onChange }: 
             placeholder="Enter customer name"
             value={customerName}
             onChange={onChange}
+            readOnly={readOnly}
           />
         </div>
         <div className="space-y-2">
@@ -31,6 +33,7 @@ export function CustomerInfoSection({ customerName, email, address, onChange }: 
             placeholder="customer@example.com"
             value={email}
             onChange={onChange}
+            readOnly={readOnly}
           />
         </div>
       </div>
@@ -42,6 +45,7 @@ export function CustomerInfoSection({ customerName, email, address, onChange }: 
           placeholder="Enter billing address"
           value={address}
           onChange={onChange}
+          readOnly={readOnly}
         />
       </div>
     </>

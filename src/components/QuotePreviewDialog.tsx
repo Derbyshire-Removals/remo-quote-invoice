@@ -1,8 +1,9 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer } from "lucide-react";
+import { Printer, FileText } from "lucide-react";
 import { format } from "date-fns";
+import { useState } from "react";
+import InvoiceForm from "./InvoiceForm";
 
 interface QuotePreviewDialogProps {
   open: boolean;
@@ -37,6 +38,8 @@ export default function QuotePreviewDialog({
   document,
   companySettings
 }: QuotePreviewDialogProps) {
+  const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+  
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -359,10 +362,59 @@ export default function QuotePreviewDialog({
     printWindow.document.close();
   };
 
+  const handleConvertToInvoice = () => {
+    setShowInvoiceForm(true);
+  };
+
+  const convertToInitialInvoiceData = () => {
+    // Calculate total amount from items
+    const total = document.items?.reduce((sum: number, item: any) => {
+      const amount = parseFloat(item.amount) || 0;
+      return sum + amount;
+    }, 0) || 0;
+
+    return {
+      id: Date.now(),
+      number: "",
+      customer: document.customerName || "",
+      date: new Date().toISOString().split('T')[0],
+      amount: `£${total.toFixed(2)}`,
+      status: 'Unpaid',
+      email: document.email || "",
+      address: document.fromAddress || "",
+      tax: 20, // Default VAT rate
+      invoiceDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+      items: document.items?.map((item: any) => ({
+        description: item.description || "",
+        amount: item.amount || ""
+      })) || [{ description: "", amount: "" }],
+      notes: `Converted from Quote created on ${formatDate(document.createdAt)}`,
+      terms: ""
+    };
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
-        <div className="w-full relative">
+    <>
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
+          <div className="w-full relative">
+            <div className="flex justify-end mb-4 gap-2">
+              <Button 
+                onClick={handleConvertToInvoice} 
+                variant="outline" 
+                className="border-green-600 text-green-600 hover:bg-green-50"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Convert to Invoice
+              </Button>
+              <Button onClick={handlePrint} variant="outline" className="bg-black text-white hover:bg-black/90">
+                <Printer className="mr-2" />
+                Print Quote
+              </Button>
+            </div>
+            
+            <div className="w-full relative">
           <div className="flex justify-end mb-4">
             <Button onClick={handlePrint} variant="outline" className="bg-black text-white hover:bg-black/90">
               <Printer className="mr-2" />
@@ -431,7 +483,16 @@ export default function QuotePreviewDialog({
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {showInvoiceForm && (
+        <InvoiceForm 
+          onClose={() => setShowInvoiceForm(false)} 
+          initialData={convertToInitialInvoiceData()}
+        />
+      )}
+    </>
   );
 }
