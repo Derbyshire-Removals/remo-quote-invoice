@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,8 @@ interface InvoiceFormProps {
 }
 
 export default function InvoiceForm({ onClose, initialData, convertFromQuote }: InvoiceFormProps) {
-  const [createDepositInvoice, setCreateDepositInvoice] = useState(false);
+  // Set createDepositInvoice to true by default when converting from a quote
+  const [createDepositInvoice, setCreateDepositInvoice] = useState(convertFromQuote ? true : false);
   
   const [formData, setFormData] = useState<InvoiceFormData>(() => {
     if (convertFromQuote) {
@@ -67,7 +67,16 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
   useEffect(() => {
     const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
     setTermsTemplates(settings.termsTemplates || []);
-  }, []);
+    
+    // If we're converting from a quote and have templates, select the first one by default
+    if (convertFromQuote && settings.termsTemplates && settings.termsTemplates.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        terms: settings.termsTemplates[0].content,
+        selectedTermsTemplate: settings.termsTemplates[0].name
+      }));
+    }
+  }, [convertFromQuote]);
 
   useEffect(() => {
     if (convertFromQuote && createDepositInvoice) {
