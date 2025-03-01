@@ -187,7 +187,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
             invoiceDate={formData.invoiceDate}
             dueDate={formData.dueDate}
             onChange={handleChange}
-            readOnly={initialData !== undefined}
+            readOnly={false} // Allow editing invoice number for all cases
           />
 
           <InvoiceItemsSection
