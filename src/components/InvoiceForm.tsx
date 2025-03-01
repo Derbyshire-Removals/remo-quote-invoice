@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,7 +45,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
         address: convertFromQuote.fromAddress || "",
         invoiceNumber: nextInvoiceNumber,
         invoiceDate: new Date().toISOString().split('T')[0],
-        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+        dueDate: "", // Set due date to empty when converting from quote
         tax: "20", // Default VAT rate
         items: itemsFromQuote,
         notes: settings.defaultNotes || "", // Use default notes from settings
