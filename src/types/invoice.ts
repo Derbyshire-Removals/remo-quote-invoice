@@ -34,4 +34,5 @@ export interface InitialInvoiceData {
   items?: InvoiceItem[];
   notes?: string;
   terms?: string;
+  isDepositInvoice?: boolean;
 }

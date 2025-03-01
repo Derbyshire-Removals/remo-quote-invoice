@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { InvoiceItemsSection } from "./invoice/InvoiceItemsSection";
 import { calculateTotals, mapInitialDataToFormData } from "@/utils/invoiceUtils";
 import { InvoiceFormData, InitialInvoiceData } from "@/types/invoice";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 interface InvoiceFormProps {
   onClose: () => void;
@@ -19,6 +21,8 @@ interface InvoiceFormProps {
 }
 
 export default function InvoiceForm({ onClose, initialData, convertFromQuote }: InvoiceFormProps) {
+  const [createDepositInvoice, setCreateDepositInvoice] = useState(false);
+  
   const [formData, setFormData] = useState<InvoiceFormData>(() => {
     if (convertFromQuote) {
       // Map quote data to invoice form
@@ -65,6 +69,59 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
     setTermsTemplates(settings.termsTemplates || []);
   }, []);
 
+  useEffect(() => {
+    if (convertFromQuote && createDepositInvoice) {
+      // Apply 50% to the first item when deposit invoice is selected
+      setFormData(prev => {
+        if (prev.items.length > 0) {
+          const updatedItems = [...prev.items];
+          const firstItem = {...updatedItems[0]};
+          
+          // Calculate 50% of the original amount
+          const originalAmount = parseFloat(firstItem.amount);
+          if (!isNaN(originalAmount)) {
+            const depositAmount = originalAmount * 0.5;
+            firstItem.description = `50% Deposit: ${firstItem.description}`;
+            firstItem.amount = depositAmount.toString();
+            updatedItems[0] = firstItem;
+          }
+          
+          return {
+            ...prev,
+            items: updatedItems,
+            notes: prev.notes + "\nThis is a 50% deposit invoice. Remaining balance will be invoiced upon completion."
+          };
+        }
+        return prev;
+      });
+    } else if (convertFromQuote && !createDepositInvoice) {
+      // Reset to original values if toggling off
+      setFormData(prev => {
+        const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+        
+        // Create items array with quote message appended to first item description
+        let itemsFromQuote = convertFromQuote.items?.map((item: any, index: number) => {
+          if (index === 0 && convertFromQuote.message) {
+            return {
+              description: `${item.description}\n\nQuote notes: ${convertFromQuote.message}`,
+              amount: item.amount.toString()
+            };
+          }
+          return {
+            description: item.description,
+            amount: item.amount.toString()
+          };
+        }) || [{ description: "", amount: "" }];
+        
+        return {
+          ...prev,
+          items: itemsFromQuote,
+          notes: settings.defaultNotes || ""
+        };
+      });
+    }
+  }, [createDepositInvoice, convertFromQuote]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -91,7 +148,8 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
       items: formData.items,
       notes: formData.notes,
       terms: formData.terms,
-      convertedFromQuote: convertFromQuote ? convertFromQuote.id : undefined
+      convertedFromQuote: convertFromQuote ? convertFromQuote.id : undefined,
+      isDepositInvoice: convertFromQuote && createDepositInvoice ? true : undefined
     };
 
     const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
@@ -114,7 +172,9 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
     localStorage.setItem('invoices', JSON.stringify(updatedDocs));
     
     if (convertFromQuote) {
-      toast.success("Quote converted to invoice successfully");
+      toast.success(createDepositInvoice 
+        ? "Quote converted to 50% deposit invoice successfully" 
+        : "Quote converted to invoice successfully");
     } else {
       toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
     }
@@ -185,6 +245,17 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
+          {convertFromQuote && (
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="deposit-invoice"
+                checked={createDepositInvoice}
+                onCheckedChange={setCreateDepositInvoice}
+              />
+              <Label htmlFor="deposit-invoice">Create as 50% deposit invoice</Label>
+            </div>
+          )}
+
           <CustomerInfoSection
             customerName={formData.customerName}
             email={formData.email}
@@ -270,7 +341,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
           <div className="flex justify-end space-x-4">
             <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
             <Button type="submit">
-              {initialData ? "Save Changes" : convertFromQuote ? "Create Invoice from Quote" : "Create Invoice"}
+              {initialData ? "Save Changes" : convertFromQuote ? (createDepositInvoice ? "Create 50% Deposit Invoice" : "Create Invoice from Quote") : "Create Invoice"}
             </Button>
           </div>
         </form>
