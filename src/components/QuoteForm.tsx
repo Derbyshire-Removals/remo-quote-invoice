@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,25 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-
-interface QuoteItem {
-  description: string;
-  amount: string;
-}
-
-interface Quote {
-  id: string;
-  customerName: string;
-  email?: string;
-  phone?: string;
-  moveDate?: string;
-  fromAddress: string;
-  items: QuoteItem[];
-  message: string;
-  total: number;
-  createdAt: string;
-  createdBy: string;
-}
+import { Quote, QuoteItem } from "@/types/invoice";
 
 interface QuoteFormProps {
   onClose: () => void;
@@ -48,6 +29,7 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
     moveDate: initialData?.moveDate || "",
     fromAddress: initialData?.fromAddress || "",
     message: initialData?.message || defaultMessage,
+    planningNotes: initialData?.planningNotes || "",
     createdBy: initialData?.createdBy || companySettings?.name || ""
   });
 
@@ -88,6 +70,7 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
       fromAddress: formData.fromAddress,
       items,
       message: formData.message,
+      planningNotes: formData.planningNotes,
       total: calculateTotal(),
       createdAt: initialData?.createdAt || new Date().toISOString(),
       createdBy: formData.createdBy
@@ -260,6 +243,17 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
               onChange={handleInputChange}
               className="min-h-[120px]"
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="planningNotes">Planning Notes (Internal Only)</Label>
+            <Textarea 
+              id="planningNotes" 
+              value={formData.planningNotes}
+              onChange={handleInputChange}
+              className="min-h-[100px]"
+              placeholder="These notes will not appear on the quote"
             />
           </div>
 

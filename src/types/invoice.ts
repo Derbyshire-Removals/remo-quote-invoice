@@ -36,3 +36,23 @@ export interface InitialInvoiceData {
   terms?: string;
   isDepositInvoice?: boolean;
 }
+
+export interface QuoteItem {
+  description: string;
+  amount: string;
+}
+
+export interface Quote {
+  id: string;
+  customerName: string;
+  email?: string;
+  phone?: string;
+  moveDate?: string;
+  fromAddress: string;
+  items: QuoteItem[];
+  message: string;
+  planningNotes?: string;
+  total: number;
+  createdAt: string;
+  createdBy: string;
+}
