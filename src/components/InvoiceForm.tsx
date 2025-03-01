@@ -15,10 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface InvoiceFormProps {
   onClose: () => void;
   initialData?: InitialInvoiceData;
-  convertedFromQuote?: boolean;
 }
 
-export default function InvoiceForm({ onClose, initialData, convertedFromQuote }: InvoiceFormProps) {
+export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) {
   const [formData, setFormData] = useState<InvoiceFormData>(() => 
     mapInitialDataToFormData(initialData)
   );
@@ -60,7 +59,7 @@ export default function InvoiceForm({ onClose, initialData, convertedFromQuote }
     const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
     let updatedDocs;
 
-    if (initialData && !convertedFromQuote) {
+    if (initialData) {
       updatedDocs = existingDocs.map((doc: any) => 
         doc.id === initialData.id ? newDocument : doc
       );
@@ -74,7 +73,7 @@ export default function InvoiceForm({ onClose, initialData, convertedFromQuote }
     }
 
     localStorage.setItem('invoices', JSON.stringify(updatedDocs));
-    toast.success(initialData && !convertedFromQuote ? "Invoice updated successfully" : "Invoice created successfully");
+    toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
     onClose();
   };
 
@@ -135,7 +134,7 @@ export default function InvoiceForm({ onClose, initialData, convertedFromQuote }
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{initialData && !convertedFromQuote ? "Edit Invoice" : "Create New Invoice"}</DialogTitle>
+          <DialogTitle>{initialData ? "Edit Invoice" : "Create New Invoice"}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
@@ -144,7 +143,6 @@ export default function InvoiceForm({ onClose, initialData, convertedFromQuote }
             email={formData.email}
             address={formData.address}
             onChange={handleChange}
-            readOnly={convertedFromQuote}
           />
 
           <InvoiceDetailsSection
@@ -152,7 +150,7 @@ export default function InvoiceForm({ onClose, initialData, convertedFromQuote }
             invoiceDate={formData.invoiceDate}
             dueDate={formData.dueDate}
             onChange={handleChange}
-            readOnly={!initialData || convertedFromQuote}
+            readOnly={!initialData}
           />
 
           <InvoiceItemsSection
@@ -224,7 +222,7 @@ export default function InvoiceForm({ onClose, initialData, convertedFromQuote }
 
           <div className="flex justify-end space-x-4">
             <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
-            <Button type="submit">{initialData && !convertedFromQuote ? "Save Changes" : "Create Invoice"}</Button>
+            <Button type="submit">{initialData ? "Save Changes" : "Create Invoice"}</Button>
           </div>
         </form>
       </DialogContent>

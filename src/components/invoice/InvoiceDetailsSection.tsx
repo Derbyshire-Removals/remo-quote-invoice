@@ -36,7 +36,6 @@ export function InvoiceDetailsSection({
           type="date"
           value={invoiceDate}
           onChange={onChange}
-          readOnly={readOnly}
         />
       </div>
       <div className="space-y-2">
@@ -46,7 +45,6 @@ export function InvoiceDetailsSection({
           type="date"
           value={dueDate}
           onChange={onChange}
-          readOnly={readOnly}
         />
       </div>
     </div>
