@@ -14,7 +14,7 @@ export const calculateTotals = (items: InvoiceItem[], taxRate: string) => {
   };
 };
 
-export const generateNewInvoiceNumber = () => {
+export const generateNewInvoiceNumber = (incrementCounter = true) => {
   const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
   const prefix = settings.invoicePrefix || "INV";
   const counter = settings.invoiceCounter || 1000;

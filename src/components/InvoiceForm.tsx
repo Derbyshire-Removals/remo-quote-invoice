@@ -24,7 +24,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
     if (convertFromQuote) {
       // Map quote data to invoice form
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-      const nextInvoiceNumber = `${settings.invoicePrefix || "INV"}${(settings.invoiceCounter || 1000) + 1}`;
+      const nextInvoiceNumber = `${settings.invoicePrefix || "INV"}-${settings.invoiceCounter || 1000}`;
       
       return {
         customerName: convertFromQuote.customerName || "",
@@ -94,6 +94,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
     } else {
       updatedDocs = [...existingDocs, newDocument];
       
+      // Only increment the counter after saving the invoice
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
       settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
       settings.invoicePrefix = settings.invoicePrefix || "INV";
