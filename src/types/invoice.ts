@@ -49,7 +49,6 @@ export interface Quote {
   phone?: string;
   moveDate?: string;
   fromAddress: string;
-  destinationAddress?: string;
   items: QuoteItem[];
   message: string;
   planningNotes?: string;

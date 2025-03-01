@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit, Trash2, CalendarIcon, FileText, MapPin } from "lucide-react";
@@ -23,7 +22,6 @@ interface Quote {
   phone: string;
   moveDate: string;
   fromAddress: string;
-  destinationAddress?: string;
   items: QuoteItem[];
   message: string;
   total: number;
@@ -142,7 +140,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       <TableHead>Customer</TableHead>
       <TableHead>Moving Date</TableHead>
       <TableHead>From Address</TableHead>
-      <TableHead>Destination</TableHead>
       <TableHead>Total</TableHead>
       <TableHead>Created</TableHead>
       <TableHead>Actions</TableHead>
@@ -170,7 +167,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         </div>
       </TableCell>
       <TableCell 
-        className="max-w-[180px] truncate cursor-pointer hover:text-primary hover:underline" 
+        className="max-w-[200px] truncate cursor-pointer hover:text-primary hover:underline" 
         title="Click to open in Google Maps"
         onClick={() => openGoogleMaps(doc.fromAddress)}
       >
@@ -178,20 +175,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           <MapPin className="h-4 w-4 text-primary" />
           {doc.fromAddress}
         </div>
-      </TableCell>
-      <TableCell 
-        className={`max-w-[180px] truncate ${doc.destinationAddress ? 'cursor-pointer hover:text-primary hover:underline' : ''}`}
-        title={doc.destinationAddress ? "Click to open in Google Maps" : "No destination address"}
-        onClick={() => doc.destinationAddress && openGoogleMaps(doc.destinationAddress)}
-      >
-        {doc.destinationAddress ? (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" />
-            {doc.destinationAddress}
-          </div>
-        ) : (
-          <span className="text-muted-foreground italic">None</span>
-        )}
       </TableCell>
       <TableCell>£{(doc.total ?? 0).toFixed(2)}</TableCell>
       <TableCell>{formatDate(doc.createdAt)}</TableCell>

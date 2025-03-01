@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +28,6 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
     phone: initialData?.phone || "",
     moveDate: initialData?.moveDate || "",
     fromAddress: initialData?.fromAddress || "",
-    destinationAddress: initialData?.destinationAddress || "",
     message: initialData?.message || defaultMessage,
     planningNotes: initialData?.planningNotes || "",
     createdBy: initialData?.createdBy || companySettings?.name || ""
@@ -66,19 +64,12 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Replace placeholder with actual destination if present
-    let finalMessage = formData.message;
-    if (formData.destinationAddress && finalMessage.includes('#DESTINATION_ADDRESS')) {
-      finalMessage = finalMessage.replace('#DESTINATION_ADDRESS', formData.destinationAddress);
-    }
-    
     const quoteData: Quote = {
       id: initialData?.id || crypto.randomUUID(),
       customerName: formData.customerName,
       fromAddress: formData.fromAddress,
-      destinationAddress: formData.destinationAddress,
       items,
-      message: finalMessage,
+      message: formData.message,
       planningNotes: formData.planningNotes,
       total: calculateTotal(),
       createdAt: initialData?.createdAt || new Date().toISOString(),
@@ -179,16 +170,6 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
               value={formData.fromAddress}
               onChange={handleInputChange}
               required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="destinationAddress">Destination Address</Label>
-            <Textarea 
-              id="destinationAddress" 
-              placeholder="Enter destination address"
-              value={formData.destinationAddress}
-              onChange={handleInputChange}
             />
           </div>
 
