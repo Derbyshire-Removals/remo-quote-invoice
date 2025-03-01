@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, CalendarIcon } from "lucide-react";
+import { Eye, Edit, Trash2, CalendarIcon, FileText } from "lucide-react";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
@@ -46,6 +46,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const [showEditForm, setShowEditForm] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Quote | Invoice | null>(null);
   const [documents, setDocuments] = useState<(Quote | Invoice)[]>([]);
   const { toast } = useToast();
@@ -111,6 +112,11 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setShowDeleteDialog(true);
   };
 
+  const handleConvertToInvoice = (quote: Quote) => {
+    setSelectedDocument(quote);
+    setShowInvoiceForm(true);
+  };
+
   const formatDate = (dateString: string) => {
     try {
       const date = parseISO(dateString);
@@ -168,6 +174,9 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
+          <Button variant="outline" size="icon" onClick={() => handleConvertToInvoice(doc)}>
+            <FileText className="h-4 w-4 text-primary" />
+          </Button>
         </div>
       </TableCell>
     </TableRow>
@@ -222,6 +231,13 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         <InvoiceForm 
           onClose={() => setShowEditForm(false)}
           initialData={selectedDocument as Invoice}
+        />
+      )}
+
+      {showInvoiceForm && selectedDocument && (
+        <InvoiceForm 
+          onClose={() => setShowInvoiceForm(false)}
+          convertFromQuote={selectedDocument as Quote}
         />
       )}
 

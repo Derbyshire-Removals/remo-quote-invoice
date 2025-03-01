@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,12 +16,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface InvoiceFormProps {
   onClose: () => void;
   initialData?: InitialInvoiceData;
+  convertFromQuote?: any; // We need to accept a quote to convert
 }
 
-export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) {
-  const [formData, setFormData] = useState<InvoiceFormData>(() => 
-    mapInitialDataToFormData(initialData)
-  );
+export default function InvoiceForm({ onClose, initialData, convertFromQuote }: InvoiceFormProps) {
+  const [formData, setFormData] = useState<InvoiceFormData>(() => {
+    if (convertFromQuote) {
+      // Map quote data to invoice form
+      const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+      const nextInvoiceNumber = `${settings.invoicePrefix || "INV"}${(settings.invoiceCounter || 1000) + 1}`;
+      
+      return {
+        customerName: convertFromQuote.customerName || "",
+        email: convertFromQuote.email || "",
+        address: convertFromQuote.fromAddress || "",
+        invoiceNumber: nextInvoiceNumber,
+        invoiceDate: new Date().toISOString().split('T')[0],
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+        tax: "20", // Default VAT rate
+        items: convertFromQuote.items?.map((item: any) => ({
+          description: item.description,
+          amount: item.amount.toString()
+        })) || [{ description: "", amount: "" }],
+        notes: convertFromQuote.message || "",
+        terms: "",
+        selectedTermsTemplate: "custom"
+      };
+    } else {
+      // Regular initialization
+      return mapInitialDataToFormData(initialData);
+    }
+  });
+  
   const [termsTemplates, setTermsTemplates] = useState<{ name: string; content: string; }[]>([]);
 
   useEffect(() => {
@@ -53,7 +80,8 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
       dueDate: formData.dueDate,
       items: formData.items,
       notes: formData.notes,
-      terms: formData.terms
+      terms: formData.terms,
+      convertedFromQuote: convertFromQuote ? convertFromQuote.id : undefined
     };
 
     const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
@@ -73,7 +101,13 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     }
 
     localStorage.setItem('invoices', JSON.stringify(updatedDocs));
-    toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
+    
+    if (convertFromQuote) {
+      toast.success("Quote converted to invoice successfully");
+    } else {
+      toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
+    }
+    
     onClose();
   };
 
@@ -134,7 +168,9 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{initialData ? "Edit Invoice" : "Create New Invoice"}</DialogTitle>
+          <DialogTitle>
+            {initialData ? "Edit Invoice" : convertFromQuote ? "Convert Quote to Invoice" : "Create New Invoice"}
+          </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
@@ -150,7 +186,7 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
             invoiceDate={formData.invoiceDate}
             dueDate={formData.dueDate}
             onChange={handleChange}
-            readOnly={!initialData}
+            readOnly={initialData !== undefined}
           />
 
           <InvoiceItemsSection
@@ -222,7 +258,9 @@ export default function InvoiceForm({ onClose, initialData }: InvoiceFormProps) 
 
           <div className="flex justify-end space-x-4">
             <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
-            <Button type="submit">{initialData ? "Save Changes" : "Create Invoice"}</Button>
+            <Button type="submit">
+              {initialData ? "Save Changes" : convertFromQuote ? "Create Invoice from Quote" : "Create Invoice"}
+            </Button>
           </div>
         </form>
       </DialogContent>
