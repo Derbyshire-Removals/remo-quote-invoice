@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, CalendarIcon, FileText } from "lucide-react";
+import { Eye, Edit, Trash2, CalendarIcon, FileText, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
@@ -27,6 +27,7 @@ interface Quote {
   total: number;
   createdAt: string;
   createdBy: string;
+  planningNotes?: string;
 }
 
 interface Invoice {
@@ -117,6 +118,11 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setShowInvoiceForm(true);
   };
 
+  const openGoogleMaps = (address: string) => {
+    const encodedAddress = encodeURIComponent(address);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+  };
+
   const formatDate = (dateString: string) => {
     try {
       const date = parseISO(dateString);
@@ -160,7 +166,16 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           {formatDate(doc.moveDate)}
         </div>
       </TableCell>
-      <TableCell className="max-w-[200px] truncate">{doc.fromAddress}</TableCell>
+      <TableCell 
+        className="max-w-[200px] truncate cursor-pointer hover:text-primary hover:underline" 
+        title="Click to open in Google Maps"
+        onClick={() => openGoogleMaps(doc.fromAddress)}
+      >
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-primary" />
+          {doc.fromAddress}
+        </div>
+      </TableCell>
       <TableCell>£{(doc.total ?? 0).toFixed(2)}</TableCell>
       <TableCell>{formatDate(doc.createdAt)}</TableCell>
       <TableCell>
