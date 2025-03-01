@@ -26,6 +26,20 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
       const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
       const nextInvoiceNumber = `${settings.invoicePrefix || "INV"}-${settings.invoiceCounter || 1000}`;
       
+      // Create items array with quote message appended to first item description
+      let itemsFromQuote = convertFromQuote.items?.map((item: any, index: number) => {
+        if (index === 0 && convertFromQuote.message) {
+          return {
+            description: `${item.description}\n\nQuote notes: ${convertFromQuote.message}`,
+            amount: item.amount.toString()
+          };
+        }
+        return {
+          description: item.description,
+          amount: item.amount.toString()
+        };
+      }) || [{ description: "", amount: "" }];
+      
       return {
         customerName: convertFromQuote.customerName || "",
         email: convertFromQuote.email || "",
@@ -34,11 +48,8 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
         invoiceDate: new Date().toISOString().split('T')[0],
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
         tax: "20", // Default VAT rate
-        items: convertFromQuote.items?.map((item: any) => ({
-          description: item.description,
-          amount: item.amount.toString()
-        })) || [{ description: "", amount: "" }],
-        notes: convertFromQuote.message || "",
+        items: itemsFromQuote,
+        notes: settings.defaultNotes || "", // Use default notes from settings
         terms: "",
         selectedTermsTemplate: "custom"
       };
