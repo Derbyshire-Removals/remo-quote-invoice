@@ -119,7 +119,11 @@ export default function EnquiryList() {
               <TableCell>
                 <div className="flex items-center space-x-1">
                   {enquiry.phone}
-                  {enquiry.hasWhatsapp && <MessageSquare className="h-4 w-4 text-green-500" title="Has WhatsApp" />}
+                  {enquiry.hasWhatsapp && (
+                    <div className="flex items-center" title="Has WhatsApp">
+                      <MessageSquare className="h-4 w-4 text-green-500" />
+                    </div>
+                  )}
                 </div>
               </TableCell>
               <TableCell className="whitespace-nowrap">
