@@ -1,18 +1,21 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Receipt, FileText, Settings } from "lucide-react";
+import { PlusCircle, Receipt, FileText, Settings, MessageCircle } from "lucide-react";
 import DocumentList from "@/components/DocumentList";
 import { useState } from "react";
 import QuoteForm from "@/components/QuoteForm";
 import InvoiceForm from "@/components/InvoiceForm";
 import SettingsDialog from "@/components/SettingsDialog";
+import EnquiryForm from "@/components/EnquiryForm";
+import EnquiryList from "@/components/EnquiryList";
 
 export default function Dashboard() {
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+  const [showEnquiryForm, setShowEnquiryForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [activeDocumentType, setActiveDocumentType] = useState<'quotes' | 'invoices'>('quotes');
+  const [activeDocumentType, setActiveDocumentType] = useState<'enquiries' | 'quotes' | 'invoices'>('enquiries');
 
   // Get company settings from localStorage
   const companySettings = JSON.parse(localStorage.getItem('companySettings') || '{}');
@@ -22,7 +25,11 @@ export default function Dashboard() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Removal Company Dashboard</h1>
         <div className="space-x-4">
-          <Button onClick={() => setShowQuoteForm(true)} className="bg-primary">
+          <Button onClick={() => setShowEnquiryForm(true)} className="bg-primary">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Enquiry
+          </Button>
+          <Button onClick={() => setShowQuoteForm(true)} variant="outline">
             <PlusCircle className="mr-2 h-4 w-4" />
             New Quote
           </Button>
@@ -37,7 +44,21 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card 
+          className={`p-6 cursor-pointer transition-colors ${activeDocumentType === 'enquiries' ? 'ring-2 ring-primary' : ''}`}
+          onClick={() => setActiveDocumentType('enquiries')}
+        >
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-primary/10 rounded-full">
+              <MessageCircle className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold">Enquiries</h2>
+              <p className="text-muted-foreground">New customer enquiries</p>
+            </div>
+          </div>
+        </Card>
         <Card 
           className={`p-6 cursor-pointer transition-colors ${activeDocumentType === 'quotes' ? 'ring-2 ring-primary' : ''}`}
           onClick={() => setActiveDocumentType('quotes')}
@@ -67,7 +88,11 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <DocumentList activeDocumentType={activeDocumentType} />
+      {activeDocumentType === 'enquiries' ? (
+        <EnquiryList />
+      ) : (
+        <DocumentList activeDocumentType={activeDocumentType} />
+      )}
 
       {showQuoteForm && (
         <QuoteForm onClose={() => setShowQuoteForm(false)} companySettings={companySettings} />
@@ -75,6 +100,10 @@ export default function Dashboard() {
       
       {showInvoiceForm && (
         <InvoiceForm onClose={() => setShowInvoiceForm(false)} />
+      )}
+
+      {showEnquiryForm && (
+        <EnquiryForm onClose={() => setShowEnquiryForm(false)} />
       )}
 
       {showSettings && (

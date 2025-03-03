@@ -56,3 +56,25 @@ export interface Quote {
   createdAt: string;
   createdBy: string;
 }
+
+export interface Enquiry {
+  id: string;
+  customerName: string;
+  phone: string;
+  hasWhatsapp: boolean;
+  email?: string;
+  moveDate?: string;
+  fromAddress: string;
+  fromBedrooms: number;
+  toAddress: string;
+  accessIssues?: string;
+  gettingMoreQuotes?: boolean;
+  services: {
+    packaging: boolean;
+    storage: boolean;
+    disassembly: boolean;
+  };
+  notes?: string;
+  status: 'new' | 'contacted' | 'quoted' | 'converted' | 'lost';
+  createdAt: string;
+}
