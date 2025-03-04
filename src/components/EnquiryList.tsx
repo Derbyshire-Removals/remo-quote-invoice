@@ -1,20 +1,22 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Edit, Trash2, MessageSquare, Calendar } from "lucide-react";
+import { Eye, Edit, Trash2, MessageSquare, Calendar, FileText, Clipboard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Enquiry } from "@/types/invoice";
 import EnquiryForm from "./EnquiryForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid, parseISO } from "date-fns";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function EnquiryList() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportText, setExportText] = useState("");
   const { toast } = useToast();
 
   const storageKey = 'enquiries';
@@ -98,6 +100,70 @@ export default function EnquiryList() {
     }
   };
 
+  const handleExport = (enquiry: Enquiry) => {
+    // Generate formatted text for export
+    const text = generateExportText(enquiry);
+    setExportText(text);
+    setSelectedEnquiry(enquiry);
+    setShowExportDialog(true);
+  };
+
+  const generateExportText = (enquiry: Enquiry) => {
+    // Generate a nicely formatted text representation of the enquiry
+    const servicesRequested = [];
+    if (enquiry.services.packaging) servicesRequested.push("Packaging");
+    if (enquiry.services.storage) servicesRequested.push("Storage");
+    if (enquiry.services.disassembly) servicesRequested.push("Disassembly/Reassembly");
+
+    return `
+NEW REMOVAL ENQUIRY
+
+Customer: ${enquiry.customerName}
+Phone: ${enquiry.phone}${enquiry.hasWhatsapp ? ' (Has WhatsApp)' : ''}
+Email: ${enquiry.email || 'Not provided'}
+
+Move Details:
+- Date: ${formatDate(enquiry.moveDate)}
+- From: ${enquiry.fromAddress} (${enquiry.fromBedrooms} bedroom${enquiry.fromBedrooms !== 1 ? 's' : ''})
+- To: ${enquiry.toAddress}
+- Access Issues: ${enquiry.accessIssues || 'None mentioned'}
+
+Additional Services Requested:
+${servicesRequested.length > 0 ? servicesRequested.join(', ') : 'None'}
+
+Customer Notes:
+${enquiry.notes || 'None provided'}
+
+Additional Information:
+- Getting Other Quotes: ${enquiry.gettingMoreQuotes ? 'Yes' : 'No/Unknown'}
+- Current Status: ${enquiry.status.toUpperCase()}
+- Created: ${formatDate(enquiry.createdAt)}
+
+FOLLOW-UP ACTIONS:
+[ ] Call customer to confirm details
+[ ] Schedule site visit if needed
+[ ] Prepare quote
+[ ] Update status in system
+`;
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(exportText).then(() => {
+      toast({
+        title: "Copied to clipboard",
+        description: "The enquiry details have been copied to your clipboard."
+      });
+      setShowExportDialog(false);
+    }).catch(err => {
+      toast({
+        title: "Failed to copy",
+        description: "Please try again or copy the text manually.",
+        variant: "destructive"
+      });
+      console.error('Failed to copy text: ', err);
+    });
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -139,6 +205,9 @@ export default function EnquiryList() {
               </TableCell>
               <TableCell>
                 <div className="flex space-x-2">
+                  <Button variant="outline" size="icon" onClick={() => handleExport(enquiry)} title="Export to text">
+                    <FileText className="h-4 w-4" />
+                  </Button>
                   <Button variant="outline" size="icon" onClick={() => handleEdit(enquiry)}>
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -175,6 +244,26 @@ export default function EnquiryList() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Export Enquiry</DialogTitle>
+            <DialogDescription>
+              Copy this text to share with your sales team
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col space-y-4">
+            <div className="bg-muted p-4 rounded-md">
+              <pre className="whitespace-pre-wrap text-xs md:text-sm">{exportText}</pre>
+            </div>
+            <Button onClick={copyToClipboard} className="ml-auto">
+              <Clipboard className="mr-2 h-4 w-4" />
+              Copy to Clipboard
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
