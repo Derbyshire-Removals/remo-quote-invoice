@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Edit, Trash2, MessageSquare, Calendar, FileText, Clipboard } from "lucide-react";
+import { Eye, Edit, Trash2, MessageSquare, Calendar, FileText, Clipboard, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Enquiry } from "@/types/invoice";
 import EnquiryForm from "./EnquiryForm";
@@ -164,6 +164,26 @@ FOLLOW-UP ACTIONS:
     });
   };
 
+  // Function to generate Google Maps URL from an address
+  const getGoogleMapsUrl = (address: string) => {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  };
+  
+  // Function to render address cell with Google Maps link
+  const renderAddressWithMapLink = (address: string) => {
+    return (
+      <a 
+        href={getGoogleMapsUrl(address)} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="flex items-center hover:text-primary hover:underline group max-w-[150px] truncate"
+      >
+        <span className="truncate">{address}</span>
+        <MapPin className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+      </a>
+    );
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -198,8 +218,12 @@ FOLLOW-UP ACTIONS:
                   {formatDate(enquiry.moveDate)}
                 </div>
               </TableCell>
-              <TableCell className="max-w-[150px] truncate">{enquiry.fromAddress}</TableCell>
-              <TableCell className="max-w-[150px] truncate">{enquiry.toAddress}</TableCell>
+              <TableCell>
+                {renderAddressWithMapLink(enquiry.fromAddress)}
+              </TableCell>
+              <TableCell>
+                {renderAddressWithMapLink(enquiry.toAddress)}
+              </TableCell>
               <TableCell>
                 <Badge className={getStatusColor(enquiry.status)}>{enquiry.status}</Badge>
               </TableCell>
