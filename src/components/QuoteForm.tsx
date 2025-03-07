@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -114,7 +113,7 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
   };
 
   return (
-    <Dialog open onOpenChange={() => onClose(false)}>
+    <Dialog open onOpenChange={() => onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{initialData && initialData.createdAt ? "Edit Quote" : "Create New Quote"}</DialogTitle>
@@ -261,7 +260,7 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
           </div>
 
           <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => onClose()}>Cancel</Button>
             <Button type="submit">{initialData ? "Update Quote" : "Create Quote"}</Button>
           </div>
         </form>

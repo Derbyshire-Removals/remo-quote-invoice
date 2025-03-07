@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -197,7 +198,7 @@ FOLLOW-UP ACTIONS:
   const updateEnquiryStatus = (enquiryId: string) => {
     const updatedEnquiries = enquiries.map(enquiry => 
       enquiry.id === enquiryId 
-        ? { ...enquiry, status: 'quoted' } 
+        ? { ...enquiry, status: 'quoted' as const } 
         : enquiry
     );
     
