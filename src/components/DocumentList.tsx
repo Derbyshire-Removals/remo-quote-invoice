@@ -1,4 +1,4 @@
-<lov-code>
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail } from "lucide-react";
@@ -599,7 +599,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       <TableCell>
         <div className="flex space-x-2">
           <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
-            <Eye className="h-4 w-4" />
+            <Printer className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
             <Edit className="h-4 w-4" />
@@ -669,4 +669,10 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
-            </AlertDialogAction
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
