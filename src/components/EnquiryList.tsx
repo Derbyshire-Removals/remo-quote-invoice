@@ -2,7 +2,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, MessageSquare, Calendar, FileText, Clipboard, MapPin, FileText as QuoteIcon } from "lucide-react";
+import { Edit, Trash2, MessageSquare, Calendar, Share, Clipboard, MapPin, FileText as QuoteIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Enquiry, Quote } from "@/types/invoice";
 import EnquiryForm from "./EnquiryForm";
@@ -283,7 +283,7 @@ FOLLOW-UP ACTIONS:
                     onClick={() => handleExport(enquiry)} 
                     title="Export to text"
                   >
-                    <FileText className="h-4 w-4" />
+                    <Share className="h-4 w-4" />
                   </Button>
                   <Button 
                     variant="outline" 
