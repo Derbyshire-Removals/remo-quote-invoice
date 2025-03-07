@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail } from "lucide-react";
@@ -181,14 +180,12 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       }
     };
     
-    // Calculate the total (without VAT)
+    // Calculate the subtotal
     const calculateSubtotal = (items: QuoteItem[]) => {
       return items.reduce((sum, item) => sum + parseFloat(item.amount || '0'), 0);
     };
     
     const subtotal = calculateSubtotal(quote.items);
-    const vat = subtotal * 0.2; // 20% VAT
-    const total = subtotal + vat;
     
     const content = `
       <!DOCTYPE html>
@@ -407,17 +404,9 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           ${quote.items.length > 1 ? `
           <div class="totals-section">
             <table class="totals-table">
-              <tr class="totals-row">
-                <td class="totals-label">Subtotal:</td>
-                <td class="totals-value">£${subtotal.toFixed(2)}</td>
-              </tr>
-              <tr class="totals-row">
-                <td class="totals-label">VAT (20%):</td>
-                <td class="totals-value">£${vat.toFixed(2)}</td>
-              </tr>
               <tr class="totals-row total">
-                <td class="totals-label">Total:</td>
-                <td class="totals-value">£${total.toFixed(2)}</td>
+                <td class="totals-label">Subtotal:</td>
+                <td class="totals-value">£${subtotal.toFixed(2)} + VAT</td>
               </tr>
             </table>
           </div>
@@ -680,74 +669,4 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           {activeDocumentType === 'quotes' ? renderQuoteColumns() : renderInvoiceColumns()}
         </TableHeader>
         <TableBody>
-          {documents.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={activeDocumentType === 'quotes' ? 8 : 6} className="text-center h-24 text-muted-foreground">
-                No {activeDocumentType} found.
-              </TableCell>
-            </TableRow>
-          ) : (
-            // Cast and render appropriate rows based on document type
-            activeDocumentType === 'quotes'
-              ? (documents as Quote[]).map(renderQuoteRow)
-              : (documents as Invoice[]).map(renderInvoiceRow)
-          )}
-        </TableBody>
-      </Table>
-
-      {showEditForm && selectedDocument && (
-        activeDocumentType === 'quotes' ? (
-          <QuoteForm
-            onClose={() => setShowEditForm(false)}
-            initialData={selectedDocument as Quote}
-          />
-        ) : (
-          <InvoiceForm
-            onClose={() => setShowEditForm(false)}
-            initialData={selectedDocument as Invoice}
-          />
-        )
-      )}
-
-      {showPreviewDialog && selectedDocument && (
-        activeDocumentType === 'quotes' ? (
-          <QuotePreviewDialog
-            open={showPreviewDialog}
-            onClose={() => setShowPreviewDialog(false)}
-            document={selectedDocument as Quote}
-          />
-        ) : (
-          <PreviewDialog
-            open={showPreviewDialog}
-            onClose={() => setShowPreviewDialog(false)}
-            document={selectedDocument as Invoice}
-          />
-        )
-      )}
-
-      {showInvoiceForm && selectedDocument && (
-        <InvoiceForm
-          onClose={() => setShowInvoiceForm(false)}
-          convertFromQuote={selectedDocument as Quote}
-        />
-      )}
-
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the {activeDocumentType === 'quotes' ? 'quote' : 'invoice'}.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
+          {documents.length ===
