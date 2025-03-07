@@ -1,14 +1,15 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Edit, Trash2, MessageSquare, Calendar, FileText, Clipboard, MapPin } from "lucide-react";
+import { Edit, Trash2, MessageSquare, Calendar, FileText, Clipboard, MapPin, FileText as QuoteIcon } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Enquiry } from "@/types/invoice";
+import { Enquiry, Quote } from "@/types/invoice";
 import EnquiryForm from "./EnquiryForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid, parseISO } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import QuoteForm from "./QuoteForm";
 
 export default function EnquiryList() {
   const [showEditForm, setShowEditForm] = useState(false);
@@ -17,6 +18,7 @@ export default function EnquiryList() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportText, setExportText] = useState("");
+  const [showQuoteForm, setShowQuoteForm] = useState(false);
   const { toast } = useToast();
 
   const storageKey = 'enquiries';
@@ -184,6 +186,42 @@ FOLLOW-UP ACTIONS:
     );
   };
 
+  // New function to convert enquiry to quote
+  const handleConvertToQuote = (enquiry: Enquiry) => {
+    // Set the enquiry as selected and prepare to show the quote form
+    setSelectedEnquiry(enquiry);
+    setShowQuoteForm(true);
+  };
+
+  // Function to update enquiry status to 'quoted'
+  const updateEnquiryStatus = (enquiryId: string) => {
+    const updatedEnquiries = enquiries.map(enquiry => 
+      enquiry.id === enquiryId 
+        ? { ...enquiry, status: 'quoted' } 
+        : enquiry
+    );
+    
+    localStorage.setItem(storageKey, JSON.stringify(updatedEnquiries));
+    setEnquiries(updatedEnquiries);
+    
+    toast({
+      title: "Enquiry status updated",
+      description: "The enquiry status has been changed to 'quoted'."
+    });
+  };
+
+  // Function to close quote form and update status
+  const handleQuoteFormClose = (quoteCreated: boolean = false) => {
+    setShowQuoteForm(false);
+    
+    // If a quote was created and we have a selected enquiry, update its status
+    if (quoteCreated && selectedEnquiry) {
+      updateEnquiryStatus(selectedEnquiry.id);
+    }
+    
+    setSelectedEnquiry(null);
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -229,13 +267,35 @@ FOLLOW-UP ACTIONS:
               </TableCell>
               <TableCell>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="icon" onClick={() => handleExport(enquiry)} title="Export to text">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => handleConvertToQuote(enquiry)} 
+                    title="Convert to Quote"
+                    disabled={enquiry.status === 'quoted' || enquiry.status === 'converted'}
+                  >
+                    <QuoteIcon className="h-4 w-4 text-blue-500" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => handleExport(enquiry)} 
+                    title="Export to text"
+                  >
                     <FileText className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon" onClick={() => handleEdit(enquiry)}>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => handleEdit(enquiry)}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon" onClick={() => handleDelete(enquiry)}>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => handleDelete(enquiry)}
+                  >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
@@ -249,6 +309,25 @@ FOLLOW-UP ACTIONS:
         <EnquiryForm 
           onClose={() => setShowEditForm(false)}
           initialData={selectedEnquiry}
+        />
+      )}
+
+      {showQuoteForm && selectedEnquiry && (
+        <QuoteForm 
+          onClose={(created) => handleQuoteFormClose(created)}
+          initialData={{
+            id: crypto.randomUUID(),
+            customerName: selectedEnquiry.customerName,
+            email: selectedEnquiry.email || '',
+            phone: selectedEnquiry.phone,
+            moveDate: selectedEnquiry.moveDate || '',
+            fromAddress: selectedEnquiry.fromAddress,
+            items: [{ description: "Removal costs incl insurance", amount: "" }],
+            message: `Following our recent conversation I have the pleasure in quoting for the removal of furniture/goods from ${selectedEnquiry.fromAddress} and delivery to ${selectedEnquiry.toAddress}.`,
+            total: 0,
+            createdAt: new Date().toISOString(),
+            createdBy: ''
+          }}
         />
       )}
 

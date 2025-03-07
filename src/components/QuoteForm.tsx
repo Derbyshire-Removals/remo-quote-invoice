@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Quote, QuoteItem } from "@/types/invoice";
 
 interface QuoteFormProps {
-  onClose: () => void;
+  onClose: (quoteCreated?: boolean) => void;
   initialData?: Quote;
   companySettings?: {
     name?: string;
@@ -85,7 +86,7 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
     const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
     
     let updatedQuotes;
-    if (initialData) {
+    if (initialData && existingQuotes.some((quote: Quote) => quote.id === initialData.id)) {
       // Update existing quote
       updatedQuotes = existingQuotes.map((quote: Quote) => 
         quote.id === initialData.id ? quoteData : quote
@@ -100,21 +101,23 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
 
     // Show success message
     toast({
-      title: initialData ? "Quote Updated" : "Quote Created",
-      description: initialData 
+      title: initialData && existingQuotes.some((q: Quote) => q.id === initialData.id) 
+        ? "Quote Updated" 
+        : "Quote Created",
+      description: initialData && existingQuotes.some((q: Quote) => q.id === initialData.id)
         ? "The quote has been successfully updated."
         : "The quote has been successfully created.",
     });
 
-    // Close the form
-    onClose();
+    // Close the form and indicate a quote was created
+    onClose(true);
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
+    <Dialog open onOpenChange={() => onClose(false)}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{initialData ? "Edit Quote" : "Create New Quote"}</DialogTitle>
+          <DialogTitle>{initialData && initialData.createdAt ? "Edit Quote" : "Create New Quote"}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
