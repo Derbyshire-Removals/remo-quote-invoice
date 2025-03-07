@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, CalendarIcon, FileText, MapPin } from "lucide-react";
+import { Eye, Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
@@ -9,6 +9,7 @@ import QuoteForm from "./QuoteForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid, parseISO } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 interface QuoteItem {
   description: string;
@@ -28,6 +29,7 @@ interface Quote {
   createdAt: string;
   createdBy: string;
   planningNotes?: string;
+  status?: 'open' | 'invoiced' | 'lost' | 'expired';
 }
 
 interface Invoice {
@@ -135,12 +137,27 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     }
   };
 
+  const getStatusBadge = (status?: 'open' | 'invoiced' | 'lost' | 'expired') => {
+    switch (status) {
+      case 'invoiced':
+        return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="h-3 w-3 mr-1" /> Invoiced</Badge>;
+      case 'lost':
+        return <Badge className="bg-red-500 hover:bg-red-600"><XCircle className="h-3 w-3 mr-1" /> Lost</Badge>;
+      case 'expired':
+        return <Badge className="bg-amber-500 hover:bg-amber-600"><AlertCircle className="h-3 w-3 mr-1" /> Expired</Badge>;
+      case 'open':
+      default:
+        return <Badge className="bg-blue-500 hover:bg-blue-600"><Clock className="h-3 w-3 mr-1" /> Open</Badge>;
+    }
+  };
+
   const renderQuoteColumns = () => (
     <TableRow>
       <TableHead>Customer</TableHead>
       <TableHead>Moving Date</TableHead>
       <TableHead>From Address</TableHead>
       <TableHead>Total</TableHead>
+      <TableHead>Status</TableHead>
       <TableHead>Created</TableHead>
       <TableHead>Actions</TableHead>
     </TableRow>
@@ -177,6 +194,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         </div>
       </TableCell>
       <TableCell>£{(doc.total ?? 0).toFixed(2)}</TableCell>
+      <TableCell>{getStatusBadge(doc.status)}</TableCell>
       <TableCell>{formatDate(doc.createdAt)}</TableCell>
       <TableCell>
         <div className="flex space-x-2">
@@ -189,7 +207,13 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
-          <Button variant="outline" size="icon" onClick={() => handleConvertToInvoice(doc)}>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={() => handleConvertToInvoice(doc)}
+            disabled={doc.status === 'invoiced'}
+            title={doc.status === 'invoiced' ? 'Already invoiced' : 'Convert to invoice'}
+          >
             <FileText className="h-4 w-4 text-primary" />
           </Button>
         </div>
