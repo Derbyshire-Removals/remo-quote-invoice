@@ -10,14 +10,14 @@ import { CustomerInfoSection } from "./invoice/CustomerInfoSection";
 import { InvoiceDetailsSection } from "./invoice/InvoiceDetailsSection";
 import { InvoiceItemsSection } from "./invoice/InvoiceItemsSection";
 import { calculateTotals, mapInitialDataToFormData } from "@/utils/invoiceUtils";
-import { InvoiceFormData, InitialInvoiceData } from "@/types/invoice";
+import { InvoiceFormData, InitialInvoiceData, Quote } from "@/types/invoice";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
 interface InvoiceFormProps {
   onClose: () => void;
   initialData?: InitialInvoiceData;
-  convertFromQuote?: any; // We need to accept a quote to convert
+  convertFromQuote?: Quote; // Update to use the Quote type
 }
 
 export default function InvoiceForm({ onClose, initialData, convertFromQuote }: InvoiceFormProps) {
@@ -99,7 +99,6 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
           return {
             ...prev,
             items: updatedItems
-            // Removed the line that adds the extra note text
           };
         }
         return prev;
@@ -181,7 +180,14 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
 
     localStorage.setItem('invoices', JSON.stringify(updatedDocs));
     
+    // Update quote status to 'invoiced' when converting from quote
     if (convertFromQuote) {
+      const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
+      const updatedQuotes = existingQuotes.map((quote: Quote) => 
+        quote.id === convertFromQuote.id ? { ...quote, status: 'invoiced' as const } : quote
+      );
+      localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+      
       toast.success(createDepositInvoice 
         ? "Quote converted to 50% deposit invoice successfully" 
         : "Quote converted to invoice successfully");

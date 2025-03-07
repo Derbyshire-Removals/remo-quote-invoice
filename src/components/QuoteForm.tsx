@@ -73,7 +73,8 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
       planningNotes: formData.planningNotes,
       total: calculateTotal(),
       createdAt: initialData?.createdAt || new Date().toISOString(),
-      createdBy: formData.createdBy
+      createdBy: formData.createdBy,
+      status: initialData?.status || 'open'
     };
 
     // Only add optional fields if they have values

@@ -55,6 +55,7 @@ export interface Quote {
   total: number;
   createdAt: string;
   createdBy: string;
+  status?: 'open' | 'invoiced' | 'lost' | 'expired';
 }
 
 export interface Enquiry {
