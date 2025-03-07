@@ -41,12 +41,14 @@ export default function QuotePreviewDialog({
     if (!printWindow) return;
     printWindow.document.title = `${document.customerName}'s Quote`;
     
-    // Calculate the subtotal (without VAT)
+    // Calculate the total (without VAT)
     const calculateSubtotal = (items: any[]) => {
       return items.reduce((sum, item) => sum + parseFloat(item.amount || '0'), 0);
     };
     
     const subtotal = calculateSubtotal(document.items || []);
+    const vat = subtotal * 0.2; // 20% VAT
+    const total = subtotal + vat;
     
     const content = `
       <!DOCTYPE html>
@@ -265,9 +267,17 @@ export default function QuotePreviewDialog({
           ${document.items && document.items.length > 1 ? `
           <div class="totals-section">
             <table class="totals-table">
-              <tr class="totals-row total">
+              <tr class="totals-row">
                 <td class="totals-label">Subtotal:</td>
-                <td class="totals-value">£${subtotal.toFixed(2)} + VAT</td>
+                <td class="totals-value">£${subtotal.toFixed(2)}</td>
+              </tr>
+              <tr class="totals-row">
+                <td class="totals-label">VAT (20%):</td>
+                <td class="totals-value">£${vat.toFixed(2)}</td>
+              </tr>
+              <tr class="totals-row total">
+                <td class="totals-label">Total:</td>
+                <td class="totals-value">£${total.toFixed(2)}</td>
               </tr>
             </table>
           </div>
@@ -396,6 +406,10 @@ export default function QuotePreviewDialog({
             <p><strong>18. THIS AGREEMENT</strong></p>
             <p>This agreement is treated as having been made at our office stated on this form. If it is in the United Kingdom or The Republic of Ireland, this agreement will be governed by English Law. None of our servants or agents has authority to alter or vary these conditions in any way.</p>
           </div>
+
+          <div class="no-print">
+            <button onclick="window.print()">Print Quote</button>
+          </div>
         </body>
       </html>
     `;
@@ -403,12 +417,14 @@ export default function QuotePreviewDialog({
     printWindow.document.close();
   };
 
-  // Calculate subtotal for the preview display
+  // Calculate totals for the preview display
   const calculateSubtotal = (items: any[] = []) => {
     return items.reduce((sum, item) => sum + parseFloat(item.amount || '0'), 0);
   };
   
   const subtotal = calculateSubtotal(document.items);
+  const vat = subtotal * 0.2; // 20% VAT
+  const total = subtotal + vat;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -474,9 +490,17 @@ export default function QuotePreviewDialog({
               <div className="flex justify-end mb-8">
                 <table className="w-1/2">
                   <tbody>
-                    <tr className="font-semibold">
+                    <tr>
                       <td className="text-gray-500 py-1 text-right pr-8">Subtotal:</td>
-                      <td className="text-right py-1">£{subtotal.toFixed(2)} + VAT</td>
+                      <td className="text-right py-1">£{subtotal.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                      <td className="text-gray-500 py-1 text-right pr-8">VAT (20%):</td>
+                      <td className="text-right py-1">£{vat.toFixed(2)}</td>
+                    </tr>
+                    <tr className="font-semibold">
+                      <td className="text-gray-500 py-1 text-right pr-8 border-t">Total:</td>
+                      <td className="text-right py-1 border-t">£{total.toFixed(2)}</td>
                     </tr>
                   </tbody>
                 </table>
