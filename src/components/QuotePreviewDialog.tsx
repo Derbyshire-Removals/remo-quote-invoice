@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -41,6 +40,16 @@ export default function QuotePreviewDialog({
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     printWindow.document.title = `${document.customerName}'s Quote`;
+    
+    // Calculate the total (without VAT)
+    const calculateSubtotal = (items: any[]) => {
+      return items.reduce((sum, item) => sum + parseFloat(item.amount || '0'), 0);
+    };
+    
+    const subtotal = calculateSubtotal(document.items || []);
+    const vat = subtotal * 0.2; // 20% VAT
+    const total = subtotal + vat;
+    
     const content = `
       <!DOCTYPE html>
       <html>
@@ -175,9 +184,39 @@ export default function QuotePreviewDialog({
               margin: 10px 0;
               padding-left: 20px;
             }
-            @media print {
-              .no-print { display: none; }
-              body { margin: 0; padding: 20px; }
+            .totals-section {
+              margin-top: 1rem;
+              margin-bottom: 2rem;
+              width: 100%;
+              display: flex;
+              justify-content: flex-end;
+            }
+            .totals-table {
+              width: 50%;
+              border-collapse: collapse;
+            }
+            .totals-row {
+              text-align: right;
+            }
+            .totals-label {
+              padding: 8px;
+              color: #64748b;
+              font-weight: 500;
+              text-align: left;
+            }
+            .totals-value {
+              padding: 8px;
+              text-align: right;
+              font-weight: 400;
+            }
+            .totals-row.total {
+              font-weight: 600;
+              font-size: 16px;
+            }
+            .totals-row.total .totals-label,
+            .totals-row.total .totals-value {
+              padding-top: 12px;
+              border-top: 1px solid #e2e8f0;
             }
           </style>
         </head>
@@ -224,6 +263,25 @@ export default function QuotePreviewDialog({
               </div>
             `).join('') || ''}
           </div>
+
+          ${document.items && document.items.length > 1 ? `
+          <div class="totals-section">
+            <table class="totals-table">
+              <tr class="totals-row">
+                <td class="totals-label">Subtotal:</td>
+                <td class="totals-value">£${subtotal.toFixed(2)}</td>
+              </tr>
+              <tr class="totals-row">
+                <td class="totals-label">VAT (20%):</td>
+                <td class="totals-value">£${vat.toFixed(2)}</td>
+              </tr>
+              <tr class="totals-row total">
+                <td class="totals-label">Total:</td>
+                <td class="totals-value">£${total.toFixed(2)}</td>
+              </tr>
+            </table>
+          </div>
+          ` : ''}
 
           <div class="footer">
             <div class="signature">
@@ -323,7 +381,7 @@ export default function QuotePreviewDialog({
             <p>If our charges are not paid (see clause 3) we may take all or any part of the goods in our hands to store or keep them in store and we shall be entitled to charge for warehousing them and for any expenses in connection with taking them to store and removal from store. All these conditions shall continue to apply to them.</p>
 
             <p><strong>15. LIEN</strong></p>
-            <p>(“Lien” means the right to keep possession for someone else property until a debt is paid)</p>
+            <p>("Lien" means the right to keep possession for someone else property until a debt is paid)</p>
             <p>a. General Lien</p>
             <p>We shall have a general lien upon all goods in our possession for all money you owe us or for liabilities incurred by us and for payments we make on your behalf. If part of the goods have been delivered, removed, dispatched or sold, the general lien shall apply to any goods that remain in our possession.</p>
             <p>We shall be entitled to charge warehouse rent and all other expenses while we maintain a lien on the goods. All these conditions shall continue to apply to them.</p>
@@ -358,6 +416,15 @@ export default function QuotePreviewDialog({
     printWindow.document.write(content);
     printWindow.document.close();
   };
+
+  // Calculate totals for the preview display
+  const calculateSubtotal = (items: any[] = []) => {
+    return items.reduce((sum, item) => sum + parseFloat(item.amount || '0'), 0);
+  };
+  
+  const subtotal = calculateSubtotal(document.items);
+  const vat = subtotal * 0.2; // 20% VAT
+  const total = subtotal + vat;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -418,6 +485,27 @@ export default function QuotePreviewDialog({
                 </div>
               ))}
             </div>
+
+            {document.items && document.items.length > 1 && (
+              <div className="flex justify-end mb-8">
+                <table className="w-1/2">
+                  <tbody>
+                    <tr>
+                      <td className="text-gray-500 py-1 text-right pr-8">Subtotal:</td>
+                      <td className="text-right py-1">£{subtotal.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                      <td className="text-gray-500 py-1 text-right pr-8">VAT (20%):</td>
+                      <td className="text-right py-1">£{vat.toFixed(2)}</td>
+                    </tr>
+                    <tr className="font-semibold">
+                      <td className="text-gray-500 py-1 text-right pr-8 border-t">Total:</td>
+                      <td className="text-right py-1 border-t">£{total.toFixed(2)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             <div className="space-y-4 mb-16">
               <p>If you require any other information please do not hesitate to contact us.</p>

@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail } from "lucide-react";
@@ -182,6 +181,15 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       }
     };
     
+    // Calculate the total (without VAT)
+    const calculateSubtotal = (items: QuoteItem[]) => {
+      return items.reduce((sum, item) => sum + parseFloat(item.amount || '0'), 0);
+    };
+    
+    const subtotal = calculateSubtotal(quote.items);
+    const vat = subtotal * 0.2; // 20% VAT
+    const total = subtotal + vat;
+    
     const content = `
       <!DOCTYPE html>
       <html>
@@ -316,6 +324,40 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
               margin: 10px 0;
               padding-left: 20px;
             }
+            .totals-section {
+              margin-top: 1rem;
+              margin-bottom: 2rem;
+              width: 100%;
+              display: flex;
+              justify-content: flex-end;
+            }
+            .totals-table {
+              width: 50%;
+              border-collapse: collapse;
+            }
+            .totals-row {
+              text-align: right;
+            }
+            .totals-label {
+              padding: 8px;
+              color: #64748b;
+              font-weight: 500;
+              text-align: left;
+            }
+            .totals-value {
+              padding: 8px;
+              text-align: right;
+              font-weight: 400;
+            }
+            .totals-row.total {
+              font-weight: 600;
+              font-size: 16px;
+            }
+            .totals-row.total .totals-label,
+            .totals-row.total .totals-value {
+              padding-top: 12px;
+              border-top: 1px solid #e2e8f0;
+            }
           </style>
         </head>
         <body>
@@ -361,6 +403,25 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
               </div>
             `).join('') || ''}
           </div>
+
+          ${quote.items.length > 1 ? `
+          <div class="totals-section">
+            <table class="totals-table">
+              <tr class="totals-row">
+                <td class="totals-label">Subtotal:</td>
+                <td class="totals-value">£${subtotal.toFixed(2)}</td>
+              </tr>
+              <tr class="totals-row">
+                <td class="totals-label">VAT (20%):</td>
+                <td class="totals-value">£${vat.toFixed(2)}</td>
+              </tr>
+              <tr class="totals-row total">
+                <td class="totals-label">Total:</td>
+                <td class="totals-value">£${total.toFixed(2)}</td>
+              </tr>
+            </table>
+          </div>
+          ` : ''}
 
           <div class="footer">
             <div class="signature">
@@ -602,77 +663,4 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
             <Printer className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          {activeDocumentType === 'quotes' ? renderQuoteColumns() : renderInvoiceColumns()}
-        </TableHeader>
-        <TableBody>
-          {documents.map((doc) => (
-            activeDocumentType === 'quotes' 
-              ? renderQuoteRow(doc as Quote)
-              : renderInvoiceRow(doc as Invoice)
-          ))}
-        </TableBody>
-      </Table>
-
-      {showEditForm && selectedDocument && activeDocumentType === 'quotes' && (
-        <QuoteForm 
-          onClose={() => setShowEditForm(false)}
-          initialData={selectedDocument as Quote}
-        />
-      )}
-
-      {showEditForm && selectedDocument && activeDocumentType === 'invoices' && (
-        <InvoiceForm 
-          onClose={() => setShowEditForm(false)}
-          initialData={selectedDocument as Invoice}
-        />
-      )}
-
-      {showInvoiceForm && selectedDocument && (
-        <InvoiceForm 
-          onClose={() => setShowInvoiceForm(false)}
-          convertFromQuote={selectedDocument as Quote}
-        />
-      )}
-
-      {showPreviewDialog && selectedDocument && activeDocumentType === 'invoices' && (
-        <PreviewDialog
-          open={showPreviewDialog}
-          onClose={() => setShowPreviewDialog(false)}
-          document={selectedDocument}
-          companySettings={JSON.parse(localStorage.getItem("companySettings") || "{}")}
-        />
-      )}
-
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the {activeDocumentType === 'quotes' ? 'quote' : 'invoice'}.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
+            <Edit className="h-4 w
