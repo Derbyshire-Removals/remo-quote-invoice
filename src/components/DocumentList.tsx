@@ -1,6 +1,7 @@
+<lov-code>
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer } from "lucide-react";
+import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
@@ -506,6 +507,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const renderQuoteColumns = () => (
     <TableRow>
       <TableHead>Customer</TableHead>
+      <TableHead>Email</TableHead>
       <TableHead>Moving Date</TableHead>
       <TableHead>From Address</TableHead>
       <TableHead>Total</TableHead>
@@ -529,6 +531,20 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const renderQuoteRow = (doc: Quote) => (
     <TableRow key={doc.id}>
       <TableCell>{doc.customerName}</TableCell>
+      <TableCell className="max-w-[200px] truncate">
+        {doc.email ? (
+          <a 
+            href={`mailto:${doc.email}`}
+            className="flex items-center hover:text-primary hover:underline group"
+            title={doc.email}
+          >
+            <Mail className="h-4 w-4 mr-1 text-primary" />
+            <span className="truncate">{doc.email}</span>
+          </a>
+        ) : (
+          <span className="text-gray-400 italic">No email</span>
+        )}
+      </TableCell>
       <TableCell className="whitespace-nowrap">
         <div className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4" />
@@ -536,7 +552,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         </div>
       </TableCell>
       <TableCell 
-        className="max-w-[200px] truncate cursor-pointer hover:text-primary hover:underline" 
+        className="max-w-[150px] truncate cursor-pointer hover:text-primary hover:underline" 
         title="Click to open in Google Maps"
         onClick={() => openGoogleMaps(doc.fromAddress)}
       >
@@ -653,10 +669,4 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
+            </AlertDialogAction
