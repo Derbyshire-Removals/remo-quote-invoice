@@ -35,6 +35,7 @@ export interface InitialInvoiceData {
   notes?: string;
   terms?: string;
   isDepositInvoice?: boolean;
+  type?: string; // Adding type property to match PrintableDocument
 }
 
 export interface CompanySettings {

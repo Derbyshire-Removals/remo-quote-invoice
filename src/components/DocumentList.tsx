@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail } from "lucide-react";
@@ -11,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { PrintableDocument } from "@/types/invoice";
 
 interface QuoteItem {
   description: string;
@@ -663,91 +663,4 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
             <Printer className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-
-  return (
-    <div className="rounded-md border overflow-hidden">
-      <Table>
-        <TableHeader>
-          {activeDocumentType === 'quotes' ? renderQuoteColumns() : renderInvoiceColumns()}
-        </TableHeader>
-        <TableBody>
-          {documents.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={activeDocumentType === 'quotes' ? 8 : 6} className="text-center h-24 text-muted-foreground">
-                No {activeDocumentType} found.
-              </TableCell>
-            </TableRow>
-          ) : (
-            // Cast and render appropriate rows based on document type
-            activeDocumentType === 'quotes'
-              ? (documents as Quote[]).map(renderQuoteRow)
-              : (documents as Invoice[]).map(renderInvoiceRow)
-          )}
-        </TableBody>
-      </Table>
-
-      {showEditForm && selectedDocument && (
-        activeDocumentType === 'quotes' ? (
-          <QuoteForm
-            onClose={() => setShowEditForm(false)}
-            initialData={selectedDocument as Quote}
-          />
-        ) : (
-          <InvoiceForm
-            onClose={() => setShowEditForm(false)}
-            initialData={selectedDocument as Invoice}
-          />
-        )
-      )}
-
-      {showPreviewDialog && selectedDocument && (
-        activeDocumentType === 'quotes' ? (
-          <QuotePreviewDialog
-            open={showPreviewDialog}
-            onClose={() => setShowPreviewDialog(false)}
-            document={selectedDocument as Quote}
-          />
-        ) : (
-          <PreviewDialog
-            open={showPreviewDialog}
-            onClose={() => setShowPreviewDialog(false)}
-            document={selectedDocument as Invoice}
-          />
-        )
-      )}
-
-      {showInvoiceForm && selectedDocument && (
-        <InvoiceForm
-          onClose={() => setShowInvoiceForm(false)}
-          convertFromQuote={selectedDocument as Quote}
-        />
-      )}
-
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the {activeDocumentType === 'quotes' ? 'quote' : 'invoice'}.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
+            <Edit className="h
