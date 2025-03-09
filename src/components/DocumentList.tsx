@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail, CheckIcon, Circle } from "lucide-react";
@@ -20,16 +21,16 @@ interface QuoteItem {
 interface Quote {
   id: string;
   customerName: string;
-  email: string;
-  phone: string;
-  moveDate: string;
+  email?: string;
+  phone?: string;
+  moveDate?: string;
   fromAddress: string;
   items: QuoteItem[];
   message: string;
+  planningNotes?: string;
   total: number;
   createdAt: string;
   createdBy: string;
-  planningNotes?: string;
   status?: 'open' | 'invoiced' | 'lost' | 'expired';
 }
 
@@ -629,7 +630,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       <TableCell className="whitespace-nowrap">
         <div className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4" />
-          {formatDate(doc.moveDate)}
+          {formatDate(doc.moveDate || '')}
         </div>
       </TableCell>
       <TableCell 
@@ -661,4 +662,158 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
             size="icon" 
             onClick={() => handleConvertToInvoice(doc)}
             disabled={doc.status === 'invoiced'}
-            title={doc.status === 'in
+            title={doc.status === 'invoiced' ? 'Already invoiced' : 'Convert to invoice'}
+          >
+            <FileText className="h-4 w-4 text-primary" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+
+  const renderInvoiceRow = (doc: Invoice) => (
+    <TableRow key={doc.id}>
+      <TableCell>{doc.number}</TableCell>
+      <TableCell>{doc.customer}</TableCell>
+      <TableCell>{doc.date}</TableCell>
+      <TableCell>{doc.amount}</TableCell>
+      <TableCell>{doc.status}</TableCell>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost" 
+            className={`p-1 h-7 ${doc.paymentStatus === 'paid' ? 'text-green-600' : 'text-slate-400'}`}
+            onClick={() => togglePaymentStatus(doc)}
+            title={doc.paymentStatus === 'paid' ? 'Mark as unpaid' : 'Mark as paid'}
+          >
+            {doc.paymentStatus === 'paid' ? (
+              <CheckIcon className="h-5 w-5" />
+            ) : (
+              <Circle className="h-5 w-5" />
+            )}
+          </Button>
+          <span className={doc.paymentStatus === 'paid' ? 'text-green-600 font-medium' : 'text-slate-400'}>
+            {doc.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+          </span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
+            <Printer className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+
+  return (
+    <div className="container mx-auto py-10">
+      {showEditForm && (
+        activeDocumentType === 'quotes' ? (
+          <QuoteForm
+            initialData={selectedDocument as Quote}
+            onClose={() => {
+              setShowEditForm(false);
+              setSelectedDocument(null);
+            }}
+          />
+        ) : (
+          <InvoiceForm
+            initialData={selectedDocument as InitialInvoiceData}
+            onClose={() => {
+              setShowEditForm(false);
+              setSelectedDocument(null);
+            }}
+          />
+        )
+      )}
+
+      {showPreviewDialog && selectedDocument && (
+        activeDocumentType === 'quotes' ? (
+          <QuotePreviewDialog
+            quote={selectedDocument as Quote}
+            onClose={() => {
+              setShowPreviewDialog(false);
+            }}
+          />
+        ) : (
+          <PreviewDialog
+            document={{ 
+              ...selectedDocument as Invoice, 
+              type: 'INVOICE' 
+            }}
+            onClose={() => {
+              setShowPreviewDialog(false);
+            }}
+          />
+        )
+      )}
+
+      {showInvoiceForm && selectedDocument && (
+        <InvoiceForm
+          initialData={{}}
+          quoteData={selectedDocument as Quote}
+          onClose={() => {
+            setShowInvoiceForm(false);
+            setSelectedDocument(null);
+          }}
+          onSuccess={() => {
+            // Update the quote status to 'invoiced'
+            const quote = selectedDocument as Quote;
+            const quotes = JSON.parse(localStorage.getItem('quotes') || '[]');
+            const updatedQuotes = quotes.map((q: Quote) => 
+              q.id === quote.id ? { ...q, status: 'invoiced' } : q
+            );
+            localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+            loadDocuments();
+          }}
+        />
+      )}
+      
+      <AlertDialog open={showDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the {activeDocumentType === 'quotes' ? 'quote' : 'invoice'} from our database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {documents.length === 0 ? (
+        <div className="text-center py-10">
+          <p className="text-lg text-gray-500">No {activeDocumentType} found.</p>
+        </div>
+      ) : (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {activeDocumentType === 'quotes' ? renderQuoteColumns() : renderInvoiceColumns()}
+            </TableHeader>
+            <TableBody>
+              {documents.map((doc) => {
+                if (activeDocumentType === 'quotes') {
+                  return renderQuoteRow(doc as Quote);
+                } else {
+                  return renderInvoiceRow(doc as Invoice);
+                }
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+}
