@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail, CheckSquare } from "lucide-react";
@@ -663,3 +664,124 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           </Button>
           <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
             <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={() => handleConvertToInvoice(doc)}
+            disabled={doc.status === 'invoiced'}
+            title={doc.status === 'invoiced' ? 'Already invoiced' : 'Convert to invoice'}
+          >
+            <FileText className="h-4 w-4 text-primary" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+
+  const renderInvoiceRow = (doc: Invoice) => (
+    <TableRow key={doc.id}>
+      <TableCell>{doc.number}</TableCell>
+      <TableCell>{doc.customer}</TableCell>
+      <TableCell>{doc.date}</TableCell>
+      <TableCell>{doc.amount}</TableCell>
+      <TableCell>{getInvoiceStatusBadge(doc.status)}</TableCell>
+      <TableCell>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
+            <Printer className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => handleEdit(doc)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+          {doc.status !== 'Paid' && (
+            <Button 
+              variant="success" 
+              size="icon" 
+              onClick={() => handleMarkAsPaid(doc)}
+              title="Mark as paid"
+            >
+              <CheckSquare className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+
+  return (
+    <div className="rounded-md border overflow-hidden">
+      <Table>
+        <TableHeader>
+          {activeDocumentType === 'quotes' ? renderQuoteColumns() : renderInvoiceColumns()}
+        </TableHeader>
+        <TableBody>
+          {documents.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={activeDocumentType === 'quotes' ? 8 : 6} className="text-center py-8 text-gray-500">
+                No {activeDocumentType} found
+              </TableCell>
+            </TableRow>
+          ) : (
+            activeDocumentType === 'quotes' 
+              ? documents.map(doc => renderQuoteRow(doc as Quote))
+              : documents.map(doc => renderInvoiceRow(doc as Invoice))
+          )}
+        </TableBody>
+      </Table>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this {activeDocumentType === 'quotes' ? 'quote' : 'invoice'}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Form Dialog */}
+      {selectedDocument && showEditForm && activeDocumentType === 'quotes' && (
+        <QuoteForm 
+          onClose={() => setShowEditForm(false)} 
+          initialData={selectedDocument as Quote}
+        />
+      )}
+
+      {/* Preview Dialog */}
+      {selectedDocument && showPreviewDialog && activeDocumentType === 'invoices' && (
+        <PreviewDialog 
+          onClose={() => setShowPreviewDialog(false)} 
+          invoice={selectedDocument as Invoice}
+        />
+      )}
+
+      {/* Quote Preview Dialog */}
+      {selectedDocument && showPreviewDialog && activeDocumentType === 'quotes' && (
+        <QuotePreviewDialog 
+          onClose={() => setShowPreviewDialog(false)} 
+          quote={selectedDocument as Quote}
+        />
+      )}
+
+      {/* New Invoice Form from Quote */}
+      {selectedDocument && showInvoiceForm && (
+        <InvoiceForm 
+          onClose={() => setShowInvoiceForm(false)} 
+          quoteData={selectedDocument as Quote}
+        />
+      )}
+    </div>
+  );
+}
