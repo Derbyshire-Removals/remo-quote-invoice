@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
@@ -113,6 +112,83 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const handleConvertToInvoice = (quote: Quote) => {
     setSelectedDocument(quote);
     setShowInvoiceForm(true);
+  };
+
+  const handleGenerateRemainingInvoice = (invoice: Invoice) => {
+    // Let's create a function to generate the remaining 50% invoice
+    const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+    const nextInvoiceNumber = `${settings.invoicePrefix || "INV"}-${settings.invoiceCounter || 1000}`;
+    
+    // Get original invoice details
+    const originalItems = invoice.items || [];
+    
+    // Create new items with "Remaining 50%" prefix
+    const remainingItems = originalItems.map(item => {
+      // Calculate original amount before 50% was applied
+      const originalAmount = parseFloat(item.amount) * 2;
+      
+      // Create the remaining 50% item
+      return {
+        description: item.description.startsWith('50% Deposit:') 
+          ? `Remaining 50%: ${item.description.replace('50% Deposit:', '').trim()}`
+          : `Remaining 50%: ${item.description}`,
+        amount: (originalAmount * 0.5).toString() // Remaining 50%
+      };
+    });
+    
+    // Generate a new invoice
+    const currentDate = new Date().toISOString().split('T')[0];
+    
+    const newInvoice = {
+      id: Date.now(),
+      type: 'Invoice' as const,
+      number: nextInvoiceNumber,
+      customer: invoice.customer,
+      date: currentDate,
+      amount: invoice.amount, // The amount should be the same as the deposit
+      status: 'Unpaid',
+      email: invoice.email,
+      address: invoice.address,
+      tax: invoice.tax,
+      invoiceDate: currentDate,
+      dueDate: "", // Set appropriate due date
+      items: remainingItems,
+      notes: invoice.notes,
+      terms: invoice.terms,
+      invoiceType: 'remaining',
+      linkedInvoiceId: invoice.id,
+      convertedFromQuote: invoice.convertedFromQuote,
+      paymentStatus: 'unpaid'
+    };
+    
+    // Update the original invoice to mark that it has a linked invoice
+    const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+    
+    // Mark the original invoice as linked
+    const updatedInvoices = allInvoices.map((inv: Invoice) => 
+      inv.id === invoice.id ? 
+        { ...inv, linkedInvoiceId: newInvoice.id, invoiceType: inv.invoiceType || 'deposit' } : 
+        inv
+    );
+    
+    // Add the new invoice
+    updatedInvoices.push(newInvoice);
+    
+    // Save back to localStorage
+    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+    
+    // Increment the counter
+    settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
+    localStorage.setItem("companySettings", JSON.stringify(settings));
+    
+    // Refresh the documents list
+    loadDocuments();
+    
+    // Show success message
+    toast({
+      title: "Remaining invoice generated",
+      description: `Remaining 50% invoice #${nextInvoiceNumber} has been generated.`
+    });
   };
 
   const togglePaymentStatus = (invoice: Invoice) => {
@@ -240,6 +316,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
             onDelete={handleDelete}
             onPreview={handlePreview}
             onTogglePaymentStatus={togglePaymentStatus}
+            onGenerateRemainingInvoice={handleGenerateRemainingInvoice}
           />
         )
       )}

@@ -1,3 +1,4 @@
+
 export interface InvoiceItem {
   description: string;
   amount: string;
@@ -34,6 +35,9 @@ export interface InitialInvoiceData {
   notes?: string;
   terms?: string;
   isDepositInvoice?: boolean;
+  invoiceType?: 'deposit' | 'remaining' | 'full';
+  linkedInvoiceId?: number;
+  convertedFromQuote?: string | number;
   type?: string; // Adding type property to match PrintableDocument
   paymentStatus?: 'paid' | 'unpaid'; // Add payment status property
 }

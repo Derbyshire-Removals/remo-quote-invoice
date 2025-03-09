@@ -29,7 +29,7 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
       customerName: "",
       email: "",
       invoiceNumber: generateNewInvoiceNumber(),
-      invoiceDate: "",
+      invoiceDate: new Date().toISOString().split('T')[0],
       dueDate: "",
       address: "",
       tax: "20",

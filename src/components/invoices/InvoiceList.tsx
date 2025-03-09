@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Printer, CheckIcon, Circle } from "lucide-react";
+import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon } from "lucide-react";
 import { InitialInvoiceData } from "@/types/invoice";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +15,7 @@ interface InvoiceListProps {
   onDelete: (invoice: Invoice) => void;
   onPreview: (invoice: Invoice) => void;
   onTogglePaymentStatus: (invoice: Invoice) => void;
+  onGenerateRemainingInvoice?: (invoice: Invoice) => void;
 }
 
 export default function InvoiceList({ 
@@ -22,7 +23,8 @@ export default function InvoiceList({
   onEdit, 
   onDelete, 
   onPreview,
-  onTogglePaymentStatus
+  onTogglePaymentStatus,
+  onGenerateRemainingInvoice
 }: InvoiceListProps) {
   const { toast } = useToast();
 
@@ -36,6 +38,7 @@ export default function InvoiceList({
             <TableHead>Date</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Type</TableHead>
             <TableHead>Payment</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -48,6 +51,13 @@ export default function InvoiceList({
               <TableCell>{invoice.date}</TableCell>
               <TableCell>{invoice.amount}</TableCell>
               <TableCell>{invoice.status}</TableCell>
+              <TableCell>
+                {invoice.invoiceType === 'deposit' && "Deposit (50%)"}
+                {invoice.invoiceType === 'remaining' && "Remaining (50%)"}
+                {invoice.invoiceType === 'full' ? "Full" : 
+                 !invoice.invoiceType && invoice.isDepositInvoice ? "Deposit (50%)" : 
+                 !invoice.invoiceType && !invoice.isDepositInvoice ? "Full" : ""}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Button
@@ -78,6 +88,16 @@ export default function InvoiceList({
                   <Button variant="outline" size="icon" onClick={() => onDelete(invoice)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
+                  {((invoice.isDepositInvoice || invoice.invoiceType === 'deposit') && !invoice.linkedInvoiceId) && (
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      title="Generate Remaining 50% Invoice"
+                      onClick={() => onGenerateRemainingInvoice && onGenerateRemainingInvoice(invoice)}
+                    >
+                      <SplitIcon className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
