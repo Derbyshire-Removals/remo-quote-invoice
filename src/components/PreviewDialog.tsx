@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { CompanySettings, PrintableDocument } from "@/types/invoice";
@@ -8,6 +8,7 @@ import { PreviewHeader } from "@/components/invoice/preview/PreviewHeader";
 import { PreviewItems } from "@/components/invoice/preview/PreviewItems";
 import { PreviewTotals } from "@/components/invoice/preview/PreviewTotals";
 import { PreviewFooter } from "@/components/invoice/preview/PreviewFooter";
+import { useEffect, useState } from "react";
 
 interface PreviewDialogProps {
   open: boolean;
@@ -22,8 +23,24 @@ export default function PreviewDialog({
   document,
   companySettings
 }: PreviewDialogProps) {
+  const [settings, setSettings] = useState<CompanySettings | undefined>(companySettings);
+
+  // Ensure we have the latest company settings
+  useEffect(() => {
+    if (!companySettings) {
+      const savedSettings = localStorage.getItem("companySettings");
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings));
+      }
+    } else {
+      setSettings(companySettings);
+    }
+  }, [companySettings]);
+
   const handlePrint = () => {
-    openPrintWindow(document, companySettings);
+    // Log to confirm we're passing company settings
+    console.log("Printing with company settings:", settings);
+    openPrintWindow(document, settings);
   };
 
   return (
@@ -32,6 +49,9 @@ export default function PreviewDialog({
         <DialogTitle className="sr-only">
           {document.type} Preview
         </DialogTitle>
+        <DialogDescription className="sr-only">
+          Preview your {document.type.toLowerCase()} before printing
+        </DialogDescription>
         
         <div className="w-full relative rounded-lg p-8">
           <div className="flex justify-end mb-6">
@@ -43,7 +63,7 @@ export default function PreviewDialog({
 
           <PreviewHeader 
             document={document} 
-            companySettings={companySettings} 
+            companySettings={settings} 
           />
           
           <div className="mt-8">

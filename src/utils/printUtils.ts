@@ -35,6 +35,18 @@ export const generatePrintContent = (
   document: PrintableDocument,
   companySettings?: CompanySettings
 ): string => {
+  // Log the settings received to help debug
+  console.log("Generating print content with settings:", companySettings);
+  
+  // Fallback to localStorage if no settings were provided
+  if (!companySettings) {
+    const savedSettings = localStorage.getItem("companySettings");
+    if (savedSettings) {
+      companySettings = JSON.parse(savedSettings);
+      console.log("Using fallback settings from localStorage:", companySettings);
+    }
+  }
+
   const subtotal = calculateSubtotal(document.items || []);
   const vatAmount = calculateVAT(subtotal);
   const totalAmount = subtotal + vatAmount;
@@ -292,6 +304,9 @@ export const openPrintWindow = (
   document: PrintableDocument,
   companySettings?: CompanySettings
 ): Window | null => {
+  // Log to verify settings are being received
+  console.log("Opening print window with settings:", companySettings);
+  
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
     console.error("Failed to open print window. Please check your browser settings.");
