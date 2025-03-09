@@ -3,12 +3,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Receipt, FileText, Settings, MessageCircle } from "lucide-react";
 import DocumentList from "@/components/DocumentList";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import QuoteForm from "@/components/QuoteForm";
 import InvoiceForm from "@/components/InvoiceForm";
 import SettingsDialog from "@/components/SettingsDialog";
 import EnquiryForm from "@/components/EnquiryForm";
 import EnquiryList from "@/components/EnquiryList";
+import { getUnpaidInvoicesCount } from "@/utils/invoiceUtils";
 
 export default function Dashboard() {
   const [showQuoteForm, setShowQuoteForm] = useState(false);
@@ -16,9 +17,26 @@ export default function Dashboard() {
   const [showEnquiryForm, setShowEnquiryForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [activeDocumentType, setActiveDocumentType] = useState<'enquiries' | 'quotes' | 'invoices'>('enquiries');
+  const [unpaidInvoicesCount, setUnpaidInvoicesCount] = useState<number>(0);
 
   // Get company settings from localStorage
   const companySettings = JSON.parse(localStorage.getItem('companySettings') || '{}');
+
+  // Update unpaid invoices count
+  useEffect(() => {
+    const updateUnpaidCount = () => {
+      setUnpaidInvoicesCount(getUnpaidInvoicesCount());
+    };
+
+    // Initial count
+    updateUnpaidCount();
+
+    // Set up interval to check every 5 seconds
+    const intervalId = setInterval(updateUnpaidCount, 5000);
+
+    // Clean up on unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -82,7 +100,9 @@ export default function Dashboard() {
             </div>
             <div>
               <h2 className="text-2xl font-semibold">Invoices</h2>
-              <p className="text-muted-foreground">3 unpaid invoices</p>
+              {unpaidInvoicesCount > 0 && (
+                <p className="text-muted-foreground">{unpaidInvoicesCount} unpaid invoice{unpaidInvoicesCount !== 1 ? 's' : ''}</p>
+              )}
             </div>
           </div>
         </Card>

@@ -54,3 +54,12 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
     selectedTermsTemplate: "custom"
   };
 };
+
+// Get the count of unpaid invoices
+export const getUnpaidInvoicesCount = (): number => {
+  const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+  return invoices.filter((invoice: any) => 
+    invoice.paymentStatus === 'unpaid' || 
+    (!invoice.paymentStatus && invoice.status?.toLowerCase() === 'unpaid')
+  ).length;
+};
