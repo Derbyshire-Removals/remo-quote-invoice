@@ -187,7 +187,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       {showInvoiceForm && selectedDocument && (
         <InvoiceForm
           initialData={{} as InitialInvoiceData}
-          quoteData={selectedDocument as Quote}
+          convertFromQuote={selectedDocument as Quote}
           onClose={() => {
             setShowInvoiceForm(false);
             setSelectedDocument(null);
