@@ -217,8 +217,7 @@ export const generatePrintContent = (
             ${companySettings?.logoUrl ? `<img src="${companySettings.logoUrl}" alt="Company Logo" class="logo">` : ''}
             ${companySettings?.name ? `<div class="company-name">${companySettings.name}</div>` : ''}
             ${companySettings?.address ? `<div class="address">${companySettings.address}</div>` : ''}
-            ${companySettings?.phone ? `<div class="company-details">Phone: ${companySettings.phone}</div>` : ''}
-            ${companySettings?.email ? `<div class="company-details">Email: ${companySettings.email}</div>` : ''}
+            ${companySettings?.phone ? `<div class="company-details">${companySettings.phone}</div>` : ''}
             ${companySettings?.companyNumber ? `<div class="company-details">Company No: ${companySettings.companyNumber}</div>` : ''}
             ${companySettings?.registrationNumber ? `<div class="company-details">VAT: ${companySettings.registrationNumber}</div>` : ''}
             
