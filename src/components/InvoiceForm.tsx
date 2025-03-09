@@ -17,9 +17,10 @@ interface InvoiceFormProps {
   onClose: () => void;
   initialData?: InitialInvoiceData;
   convertFromQuote?: Quote; // Update to use the Quote type
+  onSuccess?: () => void; // Add the missing onSuccess prop
 }
 
-export default function InvoiceForm({ onClose, initialData, convertFromQuote }: InvoiceFormProps) {
+export default function InvoiceForm({ onClose, initialData, convertFromQuote, onSuccess }: InvoiceFormProps) {
   // Set createDepositInvoice to true by default when converting from a quote
   const [createDepositInvoice, setCreateDepositInvoice] = useState(convertFromQuote ? true : false);
   
@@ -195,6 +196,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote }: 
       toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
     }
     
+    onSuccess?.(); // Call onSuccess if provided
     onClose();
   };
 
