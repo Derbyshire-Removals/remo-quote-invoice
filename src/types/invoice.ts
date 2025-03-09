@@ -1,4 +1,3 @@
-
 export interface InvoiceItem {
   description: string;
   amount: string;
@@ -49,6 +48,15 @@ export interface CompanySettings {
   contactInfo?: string;
   registrationNumber?: string;
   companyNumber?: string;
+  phone?: string;
+  email?: string;
+  invoicePrefix?: string;
+  invoiceCounter?: number;
+  defaultNotes?: string;
+  termsTemplates?: {
+    name: string;
+    content: string;
+  }[];
 }
 
 export interface PrintableDocument {

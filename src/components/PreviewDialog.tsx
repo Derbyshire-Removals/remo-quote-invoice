@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { CompanySettings, PrintableDocument } from "@/types/invoice";
@@ -29,6 +29,10 @@ export default function PreviewDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[210mm] w-full max-h-[85vh] p-8 bg-white overflow-y-auto">
+        <DialogTitle className="sr-only">
+          {document.type} Preview
+        </DialogTitle>
+        
         <div className="w-full relative rounded-lg p-8">
           <div className="flex justify-end mb-6">
             <Button onClick={handlePrint} className="bg-gray-900 hover:bg-gray-800">
