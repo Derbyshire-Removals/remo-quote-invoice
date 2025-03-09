@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
-import PreviewDialog from "./PreviewDialog";
-import QuotePreviewDialog from "./QuotePreviewDialog";
 import QuoteForm from "./QuoteForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +7,7 @@ import { PrintableDocument, InitialInvoiceData } from "@/types/invoice";
 import QuoteList from "./quotes/QuoteList";
 import InvoiceList from "./invoices/InvoiceList";
 import { printQuote } from "@/utils/quotePrintUtils";
+import { openPrintWindow } from "@/utils/printUtils";
 
 interface QuoteItem {
   description: string;
@@ -41,7 +40,6 @@ interface DocumentListProps {
 
 export default function DocumentList({ activeDocumentType }: DocumentListProps) {
   const [showEditForm, setShowEditForm] = useState(false);
-  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Quote | Invoice | null>(null);
@@ -99,9 +97,20 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setShowEditForm(true);
   };
 
-  const handlePreview = (document: Quote | Invoice) => {
-    setSelectedDocument(document);
-    setShowPreviewDialog(true);
+  const handlePrint = (document: Quote | Invoice) => {
+    // Get company settings
+    const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+    
+    if (activeDocumentType === 'quotes') {
+      // Print the quote directly
+      printQuote(document as Quote, toast);
+    } else {
+      // Print the invoice directly
+      openPrintWindow({ 
+        ...document as Invoice, 
+        type: 'INVOICE' 
+      }, settings);
+    }
   };
 
   const handleDelete = (document: Quote | Invoice) => {
@@ -237,29 +246,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         )
       )}
 
-      {showPreviewDialog && selectedDocument && (
-        activeDocumentType === 'quotes' ? (
-          <QuotePreviewDialog
-            open={showPreviewDialog}
-            document={selectedDocument as Quote}
-            onClose={() => {
-              setShowPreviewDialog(false);
-            }}
-          />
-        ) : (
-          <PreviewDialog
-            open={showPreviewDialog}
-            document={{ 
-              ...selectedDocument as Invoice, 
-              type: 'INVOICE' 
-            }}
-            onClose={() => {
-              setShowPreviewDialog(false);
-            }}
-          />
-        )
-      )}
-
       {showInvoiceForm && selectedDocument && (
         <InvoiceForm
           initialData={{} as InitialInvoiceData}
@@ -306,7 +292,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
             quotes={documents as Quote[]} 
             onEdit={handleEdit}
             onDelete={handleDelete}
-            onPreview={handlePreview}
+            onPreview={handlePrint}
             onConvertToInvoice={handleConvertToInvoice}
           />
         ) : (
@@ -314,7 +300,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
             invoices={documents as Invoice[]} 
             onEdit={handleEdit}
             onDelete={handleDelete}
-            onPreview={handlePreview}
+            onPreview={handlePrint}
             onTogglePaymentStatus={togglePaymentStatus}
             onGenerateRemainingInvoice={handleGenerateRemainingInvoice}
           />
