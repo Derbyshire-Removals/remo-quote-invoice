@@ -35,7 +35,6 @@ export interface InitialInvoiceData {
   notes?: string;
   terms?: string;
   isDepositInvoice?: boolean;
-  convertedFromQuote?: string;
 }
 
 export interface QuoteItem {

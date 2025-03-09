@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail, CheckSquare } from "lucide-react";
+import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import PreviewDialog from "./PreviewDialog";
@@ -121,24 +121,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setShowInvoiceForm(true);
   };
 
-  // New function to handle marking an invoice as paid
-  const handleMarkAsPaid = (invoice: Invoice) => {
-    const updatedDocs = documents.map(doc => {
-      if (doc.id === invoice.id) {
-        return { ...doc, status: 'Paid' };
-      }
-      return doc;
-    });
-    
-    localStorage.setItem(storageKey, JSON.stringify(updatedDocs));
-    setDocuments(updatedDocs);
-    
-    toast({
-      title: "Invoice marked as paid",
-      description: `Invoice #${invoice.number} has been marked as paid.`
-    });
-  };
-
   const openGoogleMaps = (address: string) => {
     const encodedAddress = encodeURIComponent(address);
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
@@ -167,17 +149,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       case 'open':
       default:
         return <Badge className="bg-blue-500 hover:bg-blue-600"><Clock className="h-3 w-3 mr-1" /> Open</Badge>;
-    }
-  };
-
-  // New function to get the badge for invoice status
-  const getInvoiceStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Paid':
-        return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="h-3 w-3 mr-1" /> Paid</Badge>;
-      case 'Unpaid':
-      default:
-        return <Badge className="bg-amber-500 hover:bg-amber-600"><Clock className="h-3 w-3 mr-1" /> Unpaid</Badge>;
     }
   };
 
@@ -685,7 +656,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       <TableCell>{doc.customer}</TableCell>
       <TableCell>{doc.date}</TableCell>
       <TableCell>{doc.amount}</TableCell>
-      <TableCell>{getInvoiceStatusBadge(doc.status)}</TableCell>
+      <TableCell>{doc.status}</TableCell>
       <TableCell>
         <div className="flex space-x-2">
           <Button variant="outline" size="icon" onClick={() => handlePreview(doc)}>
@@ -697,16 +668,6 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
           <Button variant="outline" size="icon" onClick={() => handleDelete(doc)}>
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
-          {doc.status !== 'Paid' && (
-            <Button 
-              variant="success" 
-              size="icon" 
-              onClick={() => handleMarkAsPaid(doc)}
-              title="Mark as paid"
-            >
-              <CheckSquare className="h-4 w-4" />
-            </Button>
-          )}
         </div>
       </TableCell>
     </TableRow>
@@ -721,67 +682,72 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         <TableBody>
           {documents.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={activeDocumentType === 'quotes' ? 8 : 6} className="text-center py-8 text-gray-500">
-                No {activeDocumentType} found
+              <TableCell colSpan={activeDocumentType === 'quotes' ? 8 : 6} className="text-center h-24 text-muted-foreground">
+                No {activeDocumentType} found.
               </TableCell>
             </TableRow>
           ) : (
-            activeDocumentType === 'quotes' 
-              ? documents.map(doc => renderQuoteRow(doc as Quote))
-              : documents.map(doc => renderInvoiceRow(doc as Invoice))
+            // Cast and render appropriate rows based on document type
+            activeDocumentType === 'quotes'
+              ? (documents as Quote[]).map(renderQuoteRow)
+              : (documents as Invoice[]).map(renderInvoiceRow)
           )}
         </TableBody>
       </Table>
 
-      {/* Delete Confirmation Dialog */}
+      {showEditForm && selectedDocument && (
+        activeDocumentType === 'quotes' ? (
+          <QuoteForm
+            onClose={() => setShowEditForm(false)}
+            initialData={selectedDocument as Quote}
+          />
+        ) : (
+          <InvoiceForm
+            onClose={() => setShowEditForm(false)}
+            initialData={selectedDocument as Invoice}
+          />
+        )
+      )}
+
+      {showPreviewDialog && selectedDocument && (
+        activeDocumentType === 'quotes' ? (
+          <QuotePreviewDialog
+            open={showPreviewDialog}
+            onClose={() => setShowPreviewDialog(false)}
+            document={selectedDocument as Quote}
+          />
+        ) : (
+          <PreviewDialog
+            open={showPreviewDialog}
+            onClose={() => setShowPreviewDialog(false)}
+            document={selectedDocument as Invoice}
+          />
+        )
+      )}
+
+      {showInvoiceForm && selectedDocument && (
+        <InvoiceForm
+          onClose={() => setShowInvoiceForm(false)}
+          convertFromQuote={selectedDocument as Quote}
+        />
+      )}
+
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this {activeDocumentType === 'quotes' ? 'quote' : 'invoice'}.
+              This action cannot be undone. This will permanently delete the {activeDocumentType === 'quotes' ? 'quote' : 'invoice'}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Edit Form Dialog */}
-      {selectedDocument && showEditForm && activeDocumentType === 'quotes' && (
-        <QuoteForm 
-          onClose={() => setShowEditForm(false)} 
-          initialData={selectedDocument as Quote}
-        />
-      )}
-
-      {/* Preview Dialog */}
-      {selectedDocument && showPreviewDialog && activeDocumentType === 'invoices' && (
-        <PreviewDialog 
-          onClose={() => setShowPreviewDialog(false)} 
-          invoice={selectedDocument as Invoice}
-        />
-      )}
-
-      {/* Quote Preview Dialog */}
-      {selectedDocument && showPreviewDialog && activeDocumentType === 'quotes' && (
-        <QuotePreviewDialog 
-          onClose={() => setShowPreviewDialog(false)} 
-          quote={selectedDocument as Quote}
-        />
-      )}
-
-      {/* New Invoice Form from Quote */}
-      {selectedDocument && showInvoiceForm && (
-        <InvoiceForm 
-          onClose={() => setShowInvoiceForm(false)} 
-          quoteData={selectedDocument as Quote}
-        />
-      )}
     </div>
   );
 }
