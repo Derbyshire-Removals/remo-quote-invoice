@@ -37,6 +37,29 @@ export interface InitialInvoiceData {
   isDepositInvoice?: boolean;
 }
 
+export interface CompanySettings {
+  name?: string;
+  logoUrl?: string;
+  address?: string;
+  contactInfo?: string;
+  registrationNumber?: string;
+  companyNumber?: string;
+}
+
+export interface PrintableDocument {
+  type: string;
+  number: string;
+  customer: string;
+  address?: string;
+  invoiceDate?: string;
+  date: string;
+  dueDate?: string;
+  items?: InvoiceItem[];
+  notes?: string;
+  terms?: string;
+  amount: string;
+}
+
 export interface QuoteItem {
   description: string;
   amount: string;
