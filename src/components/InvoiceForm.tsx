@@ -188,14 +188,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
     
     localStorage.setItem('invoices', JSON.stringify(updatedDocs));
     
-    // Update quote status to 'invoiced' when converting from quote
     if (convertFromQuote) {
-      const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
-      const updatedQuotes = existingQuotes.map((quote: Quote) => 
-        quote.id === convertFromQuote.id ? { ...quote, status: 'invoiced' as const } : quote
-      );
-      localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
-      
       toast.success(createDepositInvoice 
         ? "Quote converted to 50% deposit invoice successfully" 
         : "Quote converted to invoice successfully");

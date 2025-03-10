@@ -38,6 +38,10 @@ export default function Dashboard() {
     return () => clearInterval(intervalId);
   }, []);
 
+  const handleChangeDocumentType = (type: 'quotes' | 'invoices') => {
+    setActiveDocumentType(type);
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-8">
@@ -111,15 +115,27 @@ export default function Dashboard() {
       {activeDocumentType === 'enquiries' ? (
         <EnquiryList />
       ) : (
-        <DocumentList activeDocumentType={activeDocumentType} />
+        <DocumentList 
+          activeDocumentType={activeDocumentType} 
+          onChangeDocumentType={handleChangeDocumentType}
+        />
       )}
 
       {showQuoteForm && (
-        <QuoteForm onClose={() => setShowQuoteForm(false)} companySettings={companySettings} />
+        <QuoteForm 
+          onClose={() => setShowQuoteForm(false)} 
+          companySettings={companySettings} 
+        />
       )}
       
       {showInvoiceForm && (
-        <InvoiceForm onClose={() => setShowInvoiceForm(false)} />
+        <InvoiceForm 
+          onClose={() => setShowInvoiceForm(false)}
+          onSuccess={() => {
+            // Switch to invoices view after creating a new invoice
+            setActiveDocumentType('invoices');
+          }}
+        />
       )}
 
       {showEnquiryForm && (

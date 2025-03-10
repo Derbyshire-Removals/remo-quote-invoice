@@ -37,9 +37,10 @@ interface Invoice extends InitialInvoiceData {
 
 interface DocumentListProps {
   activeDocumentType: 'quotes' | 'invoices';
+  onChangeDocumentType?: (type: 'quotes' | 'invoices') => void;
 }
 
-export default function DocumentList({ activeDocumentType }: DocumentListProps) {
+export default function DocumentList({ activeDocumentType, onChangeDocumentType }: DocumentListProps) {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
@@ -273,6 +274,12 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
               q.id === quote.id ? { ...q, status: 'invoiced' } : q
             );
             localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+            
+            // Switch to the invoices view after successful conversion
+            if (onChangeDocumentType) {
+              onChangeDocumentType('invoices');
+            }
+            
             loadDocuments();
           }}
         />
