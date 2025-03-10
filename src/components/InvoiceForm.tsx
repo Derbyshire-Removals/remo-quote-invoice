@@ -16,8 +16,8 @@ import { Switch } from "@/components/ui/switch";
 interface InvoiceFormProps {
   onClose: () => void;
   initialData?: InitialInvoiceData;
-  convertFromQuote?: Quote; // Update to use the Quote type
-  onSuccess?: () => void; // Add the missing onSuccess prop
+  convertFromQuote?: Quote; 
+  onSuccess?: () => void;
 }
 
 export default function InvoiceForm({ onClose, initialData, convertFromQuote, onSuccess }: InvoiceFormProps) {
@@ -146,7 +146,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
       type: 'Invoice' as const,
       number: formData.invoiceNumber,
       customer: formData.customerName,
-      date: formData.invoiceDate,
+      date: formData.invoiceDate, // This should be invoiceDate
       amount: `£${totalAmount.toFixed(2)}`,
       status: 'Unpaid',
       email: formData.email,
@@ -159,8 +159,12 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
       terms: formData.terms,
       convertedFromQuote: convertFromQuote ? convertFromQuote.id : undefined,
       isDepositInvoice: convertFromQuote && createDepositInvoice ? true : undefined,
-      paymentStatus: initialData?.paymentStatus || 'unpaid' // Preserve or set default payment status
+      paymentStatus: initialData?.paymentStatus || 'unpaid',
+      invoiceType: createDepositInvoice ? 'deposit' : 'full'
     };
+
+    // Log the document to debug
+    console.log("Creating/updating invoice:", newDocument);
 
     const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
     let updatedDocs;
@@ -179,6 +183,9 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
       localStorage.setItem("companySettings", JSON.stringify(settings));
     }
 
+    // Log the updated documents array before saving
+    console.log("Saving invoices:", updatedDocs);
+    
     localStorage.setItem('invoices', JSON.stringify(updatedDocs));
     
     // Update quote status to 'invoiced' when converting from quote

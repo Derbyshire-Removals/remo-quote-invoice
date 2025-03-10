@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import QuoteForm from "./QuoteForm";
@@ -50,10 +51,19 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
 
   // Function to load documents from localStorage
   const loadDocuments = () => {
+    console.log(`Loading ${storageKey} from localStorage`);
     const storedDocs = localStorage.getItem(storageKey);
     if (storedDocs) {
-      setDocuments(JSON.parse(storedDocs));
+      try {
+        const parsedDocs = JSON.parse(storedDocs);
+        console.log(`Loaded ${parsedDocs.length} ${storageKey}:`, parsedDocs);
+        setDocuments(parsedDocs);
+      } catch (e) {
+        console.error(`Error parsing ${storageKey}:`, e);
+        setDocuments([]);
+      }
     } else {
+      console.log(`No ${storageKey} found in localStorage`);
       setDocuments([]); // Initialize with empty array if no documents exist
     }
   };
@@ -65,6 +75,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     // Subscribe to storage changes from other windows
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === storageKey) {
+        console.log(`Storage event detected for ${storageKey}`);
         loadDocuments();
       }
     };
