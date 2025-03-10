@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail } from "lucide-react";
+import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail, RefreshCw } from "lucide-react";
 import { format, isValid, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -80,6 +80,28 @@ export default function QuoteList({
     onPreview(quote);
   };
 
+  const resetQuoteStatus = (quote: Quote) => {
+    // Get all quotes from localStorage
+    const quotes = JSON.parse(localStorage.getItem('quotes') || '[]');
+    
+    // Find the quote and reset its status to 'open'
+    const updatedQuotes = quotes.map((q: Quote) => 
+      q.id === quote.id ? { ...q, status: 'open' } : q
+    );
+    
+    // Save the updated quotes back to localStorage
+    localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+    
+    // Show success toast
+    toast({
+      title: "Quote status reset",
+      description: `Status for quote ${quote.customerName} has been reset to 'Open'`
+    });
+    
+    // Force a reload to refresh the list
+    // We'll let the polling in DocumentList handle this
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -152,6 +174,16 @@ export default function QuoteList({
                   >
                     <FileText className="h-4 w-4 text-primary" />
                   </Button>
+                  {quote.status === 'invoiced' && (
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => resetQuoteStatus(quote)}
+                      title="Reset quote status to 'Open'"
+                    >
+                      <RefreshCw className="h-4 w-4 text-amber-500" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
