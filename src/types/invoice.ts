@@ -1,3 +1,4 @@
+
 export interface InvoiceItem {
   description: string;
   amount: string;
@@ -36,7 +37,7 @@ export interface InitialInvoiceData {
   isDepositInvoice?: boolean;
   invoiceType?: 'deposit' | 'remaining' | 'full';
   linkedInvoiceId?: number;
-  convertedFromQuote?: string | number;
+  convertedFromQuote?: number;
   type?: string; // Adding type property to match PrintableDocument
   paymentStatus?: 'paid' | 'unpaid'; // Add payment status property
 }
@@ -80,7 +81,7 @@ export interface QuoteItem {
 }
 
 export interface Quote {
-  id: string;
+  id: string | number; // Updated to allow both string and number types for compatibility
   customerName: string;
   email?: string;
   phone?: string;

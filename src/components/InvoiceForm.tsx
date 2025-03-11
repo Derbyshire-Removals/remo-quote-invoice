@@ -141,63 +141,92 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
       return;
     }
 
-    const newDocument = {
-      id: initialData?.id || Date.now(),
-      type: 'Invoice' as const,
-      number: formData.invoiceNumber,
-      customer: formData.customerName,
-      date: formData.invoiceDate, // This should be invoiceDate
-      amount: `£${totalAmount.toFixed(2)}`,
-      status: 'Unpaid',
-      email: formData.email,
-      address: formData.address,
-      tax: parseInt(formData.tax),
-      invoiceDate: formData.invoiceDate,
-      dueDate: formData.dueDate,
-      items: formData.items,
-      notes: formData.notes,
-      terms: formData.terms,
-      convertedFromQuote: convertFromQuote ? convertFromQuote.id : undefined,
-      isDepositInvoice: convertFromQuote && createDepositInvoice ? true : undefined,
-      paymentStatus: initialData?.paymentStatus || 'unpaid',
-      invoiceType: createDepositInvoice ? 'deposit' : 'full'
-    };
-
-    // Log the document to debug
-    console.log("Creating/updating invoice:", newDocument);
-
-    const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
-    let updatedDocs;
-
-    if (initialData) {
-      updatedDocs = existingDocs.map((doc: any) => 
-        doc.id === initialData.id ? newDocument : doc
-      );
-    } else {
-      updatedDocs = [...existingDocs, newDocument];
+    try {
+      console.log("FormData before creating invoice:", formData);
+      console.log("Converting from quote:", convertFromQuote);
       
-      // Only increment the counter after saving the invoice
-      const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-      settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
-      settings.invoicePrefix = settings.invoicePrefix || "INV";
-      localStorage.setItem("companySettings", JSON.stringify(settings));
-    }
+      // Get quotes ID in numeric format to ensure consistency with invoice IDs 
+      const quoteId = convertFromQuote ? 
+        (typeof convertFromQuote.id === 'string' ? parseInt(convertFromQuote.id) : convertFromQuote.id) : 
+        undefined;
+      
+      const newDocument = {
+        id: initialData?.id || Date.now(), // Use numeric ID
+        type: 'Invoice' as const,
+        number: formData.invoiceNumber,
+        customer: formData.customerName,
+        date: formData.invoiceDate, // This should be invoiceDate
+        amount: `£${totalAmount.toFixed(2)}`,
+        status: 'Unpaid',
+        email: formData.email,
+        address: formData.address,
+        tax: parseInt(formData.tax),
+        invoiceDate: formData.invoiceDate,
+        dueDate: formData.dueDate,
+        items: formData.items,
+        notes: formData.notes,
+        terms: formData.terms,
+        convertedFromQuote: quoteId, // Use numeric ID
+        isDepositInvoice: convertFromQuote && createDepositInvoice ? true : undefined,
+        paymentStatus: initialData?.paymentStatus || 'unpaid',
+        invoiceType: createDepositInvoice ? 'deposit' : 'full'
+      };
 
-    // Log the updated documents array before saving
-    console.log("Saving invoices:", updatedDocs);
-    
-    localStorage.setItem('invoices', JSON.stringify(updatedDocs));
-    
-    if (convertFromQuote) {
-      toast.success(createDepositInvoice 
-        ? "Quote converted to 50% deposit invoice successfully" 
-        : "Quote converted to invoice successfully");
-    } else {
-      toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
+      // Log the document to debug
+      console.log("Creating/updating invoice:", newDocument);
+
+      const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
+      let updatedDocs;
+
+      if (initialData) {
+        updatedDocs = existingDocs.map((doc: any) => 
+          doc.id === initialData.id ? newDocument : doc
+        );
+      } else {
+        updatedDocs = [...existingDocs, newDocument];
+        
+        // Only increment the counter after saving the invoice
+        const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+        settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
+        settings.invoicePrefix = settings.invoicePrefix || "INV";
+        localStorage.setItem("companySettings", JSON.stringify(settings));
+      }
+
+      // Log the updated documents array before saving
+      console.log("Saving invoices:", updatedDocs);
+      
+      localStorage.setItem('invoices', JSON.stringify(updatedDocs));
+      
+      // When converting from a quote, update the quote's status immediately
+      if (convertFromQuote) {
+        console.log("Updating quote status for quote ID:", convertFromQuote.id);
+        
+        const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
+        console.log("Existing quotes before update:", existingQuotes);
+        
+        const updatedQuotes = existingQuotes.map((q: Quote) => {
+          const isMatch = q.id === convertFromQuote.id;
+          console.log(`Checking quote ID ${q.id} against ${convertFromQuote.id}: ${isMatch}`);
+          return isMatch ? { ...q, status: 'invoiced' } : q;
+        });
+        
+        console.log("Updated quotes after status update:", updatedQuotes);
+        localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+        
+        toast.success(createDepositInvoice 
+          ? "Quote converted to 50% deposit invoice successfully" 
+          : "Quote converted to invoice successfully");
+      } else {
+        toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
+      }
+      
+      console.log("Calling onSuccess callback:", !!onSuccess);
+      onSuccess?.(); // Call onSuccess if provided
+      onClose();
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+      toast.error(`Error creating invoice: ${error instanceof Error ? error.message : String(error)}`);
     }
-    
-    onSuccess?.(); // Call onSuccess if provided
-    onClose();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
