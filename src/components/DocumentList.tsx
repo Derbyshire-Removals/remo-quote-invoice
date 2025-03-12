@@ -125,6 +125,85 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setShowDeleteDialog(true);
   };
 
+  // Implement the toggle payment status function
+  const togglePaymentStatus = (invoice: Invoice) => {
+    try {
+      // Get all invoices
+      const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+      
+      // Update the payment status for the specific invoice
+      const updatedInvoices = allInvoices.map((doc: Invoice) => {
+        if (doc.id === invoice.id) {
+          return {
+            ...doc,
+            paymentStatus: doc.paymentStatus === 'paid' ? 'unpaid' : 'paid'
+          };
+        }
+        return doc;
+      });
+      
+      // Save the updated invoices back to localStorage
+      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+      
+      // Update our local state
+      if (activeDocumentType === 'invoices') {
+        setDocuments(updatedInvoices);
+      }
+      
+      toast({
+        title: "Invoice updated",
+        description: `Invoice marked as ${invoice.paymentStatus === 'paid' ? 'unpaid' : 'paid'}.`
+      });
+    } catch (error) {
+      console.error("Error toggling payment status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update invoice payment status.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Implement the generate remaining invoice function
+  const handleGenerateRemainingInvoice = (invoice: Invoice) => {
+    try {
+      // Get all invoices
+      const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+      
+      // Create a new invoice for the remaining amount
+      const newInvoice: Invoice = {
+        ...invoice,
+        id: Date.now(), // Generate a new ID
+        linkedInvoiceId: invoice.id, // Link to the original invoice
+        invoiceType: 'remaining',
+        number: `${invoice.number}-R`, // Append -R to indicate it's the remaining invoice
+      };
+      
+      // Add the new invoice to the array
+      const updatedInvoices = [...allInvoices, newInvoice];
+      
+      // Save the updated invoices back to localStorage
+      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+      
+      // Update our local state if we're on the invoices view
+      if (activeDocumentType === 'invoices') {
+        setDocuments(updatedInvoices);
+      }
+      
+      toast({
+        title: "Invoice created",
+        description: "Remaining invoice has been created successfully."
+      });
+    } catch (error) {
+      console.error("Error generating remaining invoice:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create remaining invoice.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto py-10">
       {showEditForm && (
