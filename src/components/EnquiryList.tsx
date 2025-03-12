@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +11,11 @@ import { format, isValid, parseISO } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import QuoteForm from "./QuoteForm";
 
-export default function EnquiryList() {
+interface EnquiryListProps {
+  onQuoteCreated?: (quoteId: string) => void;
+}
+
+export default function EnquiryList({ onQuoteCreated }: EnquiryListProps) {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
@@ -24,28 +27,24 @@ export default function EnquiryList() {
 
   const storageKey = 'enquiries';
 
-  // Function to load enquiries from localStorage
   const loadEnquiries = () => {
     const storedDocs = localStorage.getItem(storageKey);
     if (storedDocs) {
       setEnquiries(JSON.parse(storedDocs));
     } else {
-      setEnquiries([]); // Initialize with empty array if no documents exist
+      setEnquiries([]);
     }
   };
 
   useEffect(() => {
-    // Initial load
     loadEnquiries();
 
-    // Subscribe to storage changes from other windows
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === storageKey) {
         loadEnquiries();
       }
     };
 
-    // Set up an interval to check for changes every second
     const interval = setInterval(loadEnquiries, 1000);
 
     window.addEventListener('storage', handleStorageChange);
@@ -104,7 +103,6 @@ export default function EnquiryList() {
   };
 
   const handleExport = (enquiry: Enquiry) => {
-    // Generate formatted text for export
     const text = generateExportText(enquiry);
     setExportText(text);
     setSelectedEnquiry(enquiry);
@@ -112,7 +110,6 @@ export default function EnquiryList() {
   };
 
   const generateExportText = (enquiry: Enquiry) => {
-    // Generate a nicely formatted text representation of the enquiry
     const servicesRequested = [];
     if (enquiry.services.packaging) servicesRequested.push("Packaging");
     if (enquiry.services.storage) servicesRequested.push("Storage");
@@ -167,12 +164,10 @@ FOLLOW-UP ACTIONS:
     });
   };
 
-  // Function to generate Google Maps URL from an address
   const getGoogleMapsUrl = (address: string) => {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
   };
-  
-  // Function to render address cell with Google Maps link
+
   const renderAddressWithMapLink = (address: string) => {
     return (
       <a 
@@ -187,14 +182,11 @@ FOLLOW-UP ACTIONS:
     );
   };
 
-  // New function to convert enquiry to quote
   const handleConvertToQuote = (enquiry: Enquiry) => {
-    // Set the enquiry as selected and prepare to show the quote form
     setSelectedEnquiry(enquiry);
     setShowQuoteForm(true);
   };
 
-  // Function to update enquiry status to 'quoted'
   const updateEnquiryStatus = (enquiryId: string) => {
     const updatedEnquiries = enquiries.map(enquiry => 
       enquiry.id === enquiryId 
@@ -211,13 +203,15 @@ FOLLOW-UP ACTIONS:
     });
   };
 
-  // Function to close quote form and update status
-  const handleQuoteFormClose = (quoteCreated: boolean = false) => {
+  const handleQuoteFormClose = (quoteCreated: boolean = false, quoteId?: string) => {
     setShowQuoteForm(false);
     
-    // If a quote was created and we have a selected enquiry, update its status
     if (quoteCreated && selectedEnquiry) {
       updateEnquiryStatus(selectedEnquiry.id);
+      
+      if (onQuoteCreated && quoteId) {
+        onQuoteCreated(quoteId);
+      }
     }
     
     setSelectedEnquiry(null);
@@ -315,7 +309,7 @@ FOLLOW-UP ACTIONS:
 
       {showQuoteForm && selectedEnquiry && (
         <QuoteForm 
-          onClose={(created) => handleQuoteFormClose(created)}
+          onClose={(created, quoteId) => handleQuoteFormClose(created, quoteId)}
           initialData={{
             id: crypto.randomUUID(),
             customerName: selectedEnquiry.customerName,

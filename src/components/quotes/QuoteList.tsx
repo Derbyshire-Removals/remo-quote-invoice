@@ -4,6 +4,7 @@ import { Edit, Trash2, CalendarIcon, MapPin, CheckCircle, Clock, XCircle, AlertC
 import { format, isValid, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface QuoteItem {
   description: string;
@@ -32,6 +33,7 @@ interface QuoteListProps {
   onDelete: (quote: Quote) => void;
   onPreview: (quote: Quote) => void;
   onConvertToInvoice: (quote: Quote) => void;
+  editQuoteId?: string | null;
 }
 
 export default function QuoteList({ 
@@ -39,9 +41,19 @@ export default function QuoteList({
   onEdit, 
   onDelete, 
   onPreview,
-  onConvertToInvoice
+  onConvertToInvoice,
+  editQuoteId
 }: QuoteListProps) {
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (editQuoteId) {
+      const quoteToEdit = quotes.find(quote => quote.id === editQuoteId);
+      if (quoteToEdit) {
+        onEdit(quoteToEdit);
+      }
+    }
+  }, [editQuoteId, quotes, onEdit]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Not specified';

@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Quote, QuoteItem } from "@/types/invoice";
 
 interface QuoteFormProps {
-  onClose: (quoteCreated?: boolean) => void;
+  onClose: (quoteCreated?: boolean, quoteId?: string) => void;
   initialData?: Quote;
   companySettings?: {
     name?: string;
@@ -109,8 +109,8 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
         : "The quote has been successfully created.",
     });
 
-    // Close the form and indicate a quote was created
-    onClose(true);
+    // Close the form and indicate a quote was created, passing the quote ID
+    onClose(true, quoteData.id);
   };
 
   return (
