@@ -43,7 +43,7 @@ interface DocumentListProps {
   onChangeDocumentType?: (type: 'quotes' | 'invoices') => void;
 }
 
-export default function DocumentList({ activeDocumentType }: DocumentListProps) {
+export default function DocumentList({ activeDocumentType, onChangeDocumentType }: DocumentListProps) {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Quote | Invoice | null>(null);
@@ -300,6 +300,11 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         return q;
       });
       localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+      
+      // Switch to invoices tab
+      if (onChangeDocumentType) {
+        onChangeDocumentType('invoices');
+      }
       
       // Close dialog and reload
       setShowConvertDialog(false);
