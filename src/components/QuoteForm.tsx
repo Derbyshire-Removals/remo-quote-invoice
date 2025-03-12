@@ -77,29 +77,23 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
       status: initialData?.status || 'open'
     };
 
-    // Only add optional fields if they have values
     if (formData.email) quoteData.email = formData.email;
     if (formData.phone) quoteData.phone = formData.phone;
     if (formData.moveDate) quoteData.moveDate = formData.moveDate;
 
-    // Get existing quotes from localStorage
     const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
     
     let updatedQuotes;
     if (initialData && existingQuotes.some((quote: Quote) => quote.id === initialData.id)) {
-      // Update existing quote
       updatedQuotes = existingQuotes.map((quote: Quote) => 
         quote.id === initialData.id ? quoteData : quote
       );
     } else {
-      // Add new quote
       updatedQuotes = [...existingQuotes, quoteData];
     }
     
-    // Save to localStorage
     localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
 
-    // Show success message
     toast({
       title: initialData && existingQuotes.some((q: Quote) => q.id === initialData.id) 
         ? "Quote Updated" 
@@ -109,8 +103,9 @@ export default function QuoteForm({ onClose, initialData, companySettings }: Quo
         : "The quote has been successfully created.",
     });
 
-    // Close the form and indicate a quote was created, passing the quote ID
-    onClose(true, quoteData.id);
+    const quoteIdString = typeof quoteData.id === 'number' ? String(quoteData.id) : quoteData.id;
+    
+    onClose(true, quoteIdString);
   };
 
   return (

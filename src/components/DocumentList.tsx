@@ -41,9 +41,11 @@ interface Invoice extends InitialInvoiceData {
 interface DocumentListProps {
   activeDocumentType: 'quotes' | 'invoices';
   onChangeDocumentType?: (type: 'quotes' | 'invoices') => void;
+  editQuoteId?: string | null;
+  onQuoteEdited?: () => void;
 }
 
-export default function DocumentList({ activeDocumentType, onChangeDocumentType }: DocumentListProps) {
+export default function DocumentList({ activeDocumentType, onChangeDocumentType, editQuoteId, onQuoteEdited }: DocumentListProps) {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Quote | Invoice | null>(null);
@@ -55,7 +57,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
 
   const storageKey = activeDocumentType;
 
-  // Function to load documents from localStorage
   const loadDocuments = () => {
     const storedDocs = localStorage.getItem(storageKey);
     if (storedDocs) {
@@ -72,17 +73,14 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
   };
 
   useEffect(() => {
-    // Initial load
     loadDocuments();
 
-    // Subscribe to storage changes from other windows
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === storageKey) {
         loadDocuments();
       }
     };
 
-    // Set up an interval to check for changes every second
     const interval = setInterval(loadDocuments, 1000);
 
     window.addEventListener('storage', handleStorageChange);
@@ -111,14 +109,11 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
   };
 
   const handlePrint = (document: Quote | Invoice) => {
-    // Get company settings
     const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
     
     if (activeDocumentType === 'quotes') {
-      // Print the quote directly
       printQuote(document as Quote, toast);
     } else {
-      // Print the invoice directly
       openPrintWindow({ 
         ...document as Invoice, 
         type: 'INVOICE' 
@@ -131,13 +126,10 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     setShowDeleteDialog(true);
   };
 
-  // Toggle payment status function
   const togglePaymentStatus = (invoice: Invoice) => {
     try {
-      // Get all invoices
       const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
       
-      // Update the payment status for the specific invoice
       const updatedInvoices = allInvoices.map((doc: Invoice) => {
         if (doc.id === invoice.id) {
           return {
@@ -148,10 +140,8 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
         return doc;
       });
       
-      // Save the updated invoices back to localStorage
       localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
       
-      // Update our local state
       if (activeDocumentType === 'invoices') {
         setDocuments(updatedInvoices);
       }
@@ -170,28 +160,22 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     }
   };
 
-  // Generate remaining invoice function
   const handleGenerateRemainingInvoice = (invoice: Invoice) => {
     try {
-      // Get all invoices
       const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
       
-      // Create a new invoice for the remaining amount
       const newInvoice: Invoice = {
         ...invoice,
-        id: Date.now(), // Generate a new ID
-        linkedInvoiceId: invoice.id, // Link to the original invoice
+        id: Date.now(),
+        linkedInvoiceId: invoice.id,
         invoiceType: 'remaining',
-        number: `${invoice.number}-R`, // Append -R to indicate it's the remaining invoice
+        number: `${invoice.number}-R`,
       };
       
-      // Add the new invoice to the array
       const updatedInvoices = [...allInvoices, newInvoice];
       
-      // Save the updated invoices back to localStorage
       localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
       
-      // Update our local state if we're on the invoices view
       if (activeDocumentType === 'invoices') {
         setDocuments(updatedInvoices);
       }
@@ -210,15 +194,13 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     }
   };
 
-  // New quote to invoice conversion function
   const handleConvertToInvoice = (quote: Quote) => {
     setSelectedDocument(quote);
     setShowConvertDialog(true);
-    setDepositPercentage(50); // Default to 50%
-    setIsDepositInvoice(false); // Default to full invoice
+    setDepositPercentage(50);
+    setIsDepositInvoice(false);
   };
 
-  // Function to create invoice from quote
   const confirmConversion = () => {
     if (!selectedDocument) return;
     
@@ -227,7 +209,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     const invoiceCounter = settings.invoiceCounter || 1000;
     const invoicePrefix = settings.invoicePrefix || "INV";
     
-    // Create base invoice from quote
     const baseInvoice = {
       id: Date.now(),
       type: 'Invoice' as const,
@@ -243,23 +224,20 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
       status: 'Unpaid',
       paymentStatus: 'unpaid',
       notes: quote.planningNotes || '',
-      tax: 20, // Default VAT rate
+      tax: 20,
     };
 
     try {
       const existingInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
       let newInvoices = [];
       
-      // Update company settings (increment invoice counter)
       settings.invoiceCounter = invoiceCounter + 1;
       localStorage.setItem("companySettings", JSON.stringify(settings));
 
       if (isDepositInvoice) {
-        // Calculate deposit amount
         const depositAmount = (quote.total * depositPercentage) / 100;
         const remainingAmount = quote.total - depositAmount;
         
-        // Create deposit invoice
         const depositInvoice = {
           ...baseInvoice,
           items: [{
@@ -271,7 +249,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
           isDepositInvoice: true,
         };
         
-        // Add deposit invoice
         newInvoices = [...existingInvoices, depositInvoice];
         
         toast({
@@ -279,7 +256,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
           description: `A ${depositPercentage}% deposit invoice has been created.`,
         });
       } else {
-        // Add full invoice
         newInvoices = [...existingInvoices, baseInvoice];
         
         toast({
@@ -288,25 +264,21 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
         });
       }
       
-      // Save invoices
       localStorage.setItem('invoices', JSON.stringify(newInvoices));
       
-      // Update quote status if needed
       const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
       const updatedQuotes = existingQuotes.map((q: Quote) => {
         if (q.id === quote.id) {
-          return { ...q, status: 'expired' }; // Mark as used
+          return { ...q, status: 'expired' };
         }
         return q;
       });
       localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
       
-      // Switch to invoices tab
       if (onChangeDocumentType) {
         onChangeDocumentType('invoices');
       }
       
-      // Close dialog and reload
       setShowConvertDialog(false);
       loadDocuments();
     } catch (error) {
@@ -328,6 +300,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
             onClose={() => {
               setShowEditForm(false);
               setSelectedDocument(null);
+              if (onQuoteEdited) onQuoteEdited();
             }}
           />
         ) : (
@@ -414,6 +387,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
             onDelete={handleDelete}
             onPreview={handlePrint}
             onConvertToInvoice={handleConvertToInvoice}
+            editQuoteId={editQuoteId}
           />
         ) : (
           <InvoiceList 
