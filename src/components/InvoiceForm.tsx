@@ -9,58 +9,18 @@ import { CustomerInfoSection } from "./invoice/CustomerInfoSection";
 import { InvoiceDetailsSection } from "./invoice/InvoiceDetailsSection";
 import { InvoiceItemsSection } from "./invoice/InvoiceItemsSection";
 import { calculateTotals, mapInitialDataToFormData } from "@/utils/invoiceUtils";
-import { InvoiceFormData, InitialInvoiceData, Quote } from "@/types/invoice";
+import { InvoiceFormData, InitialInvoiceData } from "@/types/invoice";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 
 interface InvoiceFormProps {
   onClose: () => void;
   initialData?: InitialInvoiceData;
-  convertFromQuote?: Quote; 
   onSuccess?: () => void;
 }
 
-export default function InvoiceForm({ onClose, initialData, convertFromQuote, onSuccess }: InvoiceFormProps) {
-  // Set createDepositInvoice to true by default when converting from a quote
-  const [createDepositInvoice, setCreateDepositInvoice] = useState(convertFromQuote ? true : false);
-  
+export default function InvoiceForm({ onClose, initialData, onSuccess }: InvoiceFormProps) {
   const [formData, setFormData] = useState<InvoiceFormData>(() => {
-    if (convertFromQuote) {
-      // Map quote data to invoice form
-      const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-      const nextInvoiceNumber = `${settings.invoicePrefix || "INV"}-${settings.invoiceCounter || 1000}`;
-      
-      // Create items array with quote message appended to first item description
-      let itemsFromQuote = convertFromQuote.items?.map((item: any, index: number) => {
-        if (index === 0 && convertFromQuote.message) {
-          return {
-            description: `${item.description}\n\nQuote notes: ${convertFromQuote.message}`,
-            amount: item.amount.toString()
-          };
-        }
-        return {
-          description: item.description,
-          amount: item.amount.toString()
-        };
-      }) || [{ description: "", amount: "" }];
-      
-      return {
-        customerName: convertFromQuote.customerName || "",
-        email: convertFromQuote.email || "",
-        address: convertFromQuote.fromAddress || "",
-        invoiceNumber: nextInvoiceNumber,
-        invoiceDate: new Date().toISOString().split('T')[0],
-        dueDate: "", // Set due date to empty when converting from quote
-        tax: "20", // Default VAT rate
-        items: itemsFromQuote,
-        notes: settings.defaultNotes || "", // Use default notes from settings
-        terms: "",
-        selectedTermsTemplate: "custom"
-      };
-    } else {
-      // Regular initialization
-      return mapInitialDataToFormData(initialData);
-    }
+    return mapInitialDataToFormData(initialData);
   });
   
   const [termsTemplates, setTermsTemplates] = useState<{ name: string; content: string; }[]>([]);
@@ -68,68 +28,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
   useEffect(() => {
     const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
     setTermsTemplates(settings.termsTemplates || []);
-    
-    // If we're converting from a quote and have templates, select the first one by default
-    if (convertFromQuote && settings.termsTemplates && settings.termsTemplates.length > 0) {
-      setFormData(prev => ({
-        ...prev,
-        terms: settings.termsTemplates[0].content,
-        selectedTermsTemplate: settings.termsTemplates[0].name
-      }));
-    }
-  }, [convertFromQuote]);
-
-  useEffect(() => {
-    if (convertFromQuote && createDepositInvoice) {
-      // Apply 50% to the first item when deposit invoice is selected
-      setFormData(prev => {
-        if (prev.items.length > 0) {
-          const updatedItems = [...prev.items];
-          const firstItem = {...updatedItems[0]};
-          
-          // Calculate 50% of the original amount
-          const originalAmount = parseFloat(firstItem.amount);
-          if (!isNaN(originalAmount)) {
-            const depositAmount = originalAmount * 0.5;
-            firstItem.description = `50% Deposit: ${firstItem.description}`;
-            firstItem.amount = depositAmount.toString();
-            updatedItems[0] = firstItem;
-          }
-          
-          return {
-            ...prev,
-            items: updatedItems
-          };
-        }
-        return prev;
-      });
-    } else if (convertFromQuote && !createDepositInvoice) {
-      // Reset to original values if toggling off
-      setFormData(prev => {
-        const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-        
-        // Create items array with quote message appended to first item description
-        let itemsFromQuote = convertFromQuote.items?.map((item: any, index: number) => {
-          if (index === 0 && convertFromQuote.message) {
-            return {
-              description: `${item.description}\n\nQuote notes: ${convertFromQuote.message}`,
-              amount: item.amount.toString()
-            };
-          }
-          return {
-            description: item.description,
-            amount: item.amount.toString()
-          };
-        }) || [{ description: "", amount: "" }];
-        
-        return {
-          ...prev,
-          items: itemsFromQuote,
-          notes: settings.defaultNotes || ""
-        };
-      });
-    }
-  }, [createDepositInvoice, convertFromQuote]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,20 +41,12 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
     }
 
     try {
-      console.log("FormData before creating invoice:", formData);
-      console.log("Converting from quote:", convertFromQuote);
-      
-      // Get quotes ID in numeric format to ensure consistency with invoice IDs 
-      const quoteId = convertFromQuote ? 
-        (typeof convertFromQuote.id === 'string' ? parseInt(convertFromQuote.id) : convertFromQuote.id) : 
-        undefined;
-      
       const newDocument = {
-        id: initialData?.id || Date.now(), // Use numeric ID
+        id: initialData?.id || Date.now(),
         type: 'Invoice' as const,
         number: formData.invoiceNumber,
         customer: formData.customerName,
-        date: formData.invoiceDate, // This should be invoiceDate
+        date: formData.invoiceDate,
         amount: `£${totalAmount.toFixed(2)}`,
         status: 'Unpaid',
         email: formData.email,
@@ -166,14 +57,8 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
         items: formData.items,
         notes: formData.notes,
         terms: formData.terms,
-        convertedFromQuote: quoteId, // Use numeric ID
-        isDepositInvoice: convertFromQuote && createDepositInvoice ? true : undefined,
-        paymentStatus: initialData?.paymentStatus || 'unpaid',
-        invoiceType: createDepositInvoice ? 'deposit' : 'full'
+        paymentStatus: initialData?.paymentStatus || 'unpaid'
       };
-
-      // Log the document to debug
-      console.log("Creating/updating invoice:", newDocument);
 
       const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
       let updatedDocs;
@@ -185,43 +70,17 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
       } else {
         updatedDocs = [...existingDocs, newDocument];
         
-        // Only increment the counter after saving the invoice
         const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
         settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
         settings.invoicePrefix = settings.invoicePrefix || "INV";
         localStorage.setItem("companySettings", JSON.stringify(settings));
       }
 
-      // Log the updated documents array before saving
-      console.log("Saving invoices:", updatedDocs);
-      
       localStorage.setItem('invoices', JSON.stringify(updatedDocs));
       
-      // When converting from a quote, update the quote's status immediately
-      if (convertFromQuote) {
-        console.log("Updating quote status for quote ID:", convertFromQuote.id);
-        
-        const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
-        console.log("Existing quotes before update:", existingQuotes);
-        
-        const updatedQuotes = existingQuotes.map((q: Quote) => {
-          const isMatch = q.id === convertFromQuote.id;
-          console.log(`Checking quote ID ${q.id} against ${convertFromQuote.id}: ${isMatch}`);
-          return isMatch ? { ...q, status: 'invoiced' } : q;
-        });
-        
-        console.log("Updated quotes after status update:", updatedQuotes);
-        localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
-        
-        toast.success(createDepositInvoice 
-          ? "Quote converted to 50% deposit invoice successfully" 
-          : "Quote converted to invoice successfully");
-      } else {
-        toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
-      }
+      toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
       
-      console.log("Calling onSuccess callback:", !!onSuccess);
-      onSuccess?.(); // Call onSuccess if provided
+      onSuccess?.();
       onClose();
     } catch (error) {
       console.error("Error creating invoice:", error);
@@ -287,22 +146,11 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? "Edit Invoice" : convertFromQuote ? "Convert Quote to Invoice" : "Create New Invoice"}
+            {initialData ? "Edit Invoice" : "Create New Invoice"}
           </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          {convertFromQuote && (
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="deposit-invoice"
-                checked={createDepositInvoice}
-                onCheckedChange={setCreateDepositInvoice}
-              />
-              <Label htmlFor="deposit-invoice">Create as 50% deposit invoice</Label>
-            </div>
-          )}
-
           <CustomerInfoSection
             customerName={formData.customerName}
             email={formData.email}
@@ -315,7 +163,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
             invoiceDate={formData.invoiceDate}
             dueDate={formData.dueDate}
             onChange={handleChange}
-            readOnly={false} // Allow editing invoice number for all cases
+            readOnly={false}
           />
 
           <InvoiceItemsSection
@@ -388,7 +236,7 @@ export default function InvoiceForm({ onClose, initialData, convertFromQuote, on
           <div className="flex justify-end space-x-4">
             <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
             <Button type="submit">
-              {initialData ? "Save Changes" : convertFromQuote ? (createDepositInvoice ? "Create 50% Deposit Invoice" : "Create Invoice from Quote") : "Create Invoice"}
+              {initialData ? "Save Changes" : "Create Invoice"}
             </Button>
           </div>
         </form>

@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, CalendarIcon, FileText, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail, RefreshCw } from "lucide-react";
+import { Edit, Trash2, CalendarIcon, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail } from "lucide-react";
 import { format, isValid, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -24,7 +24,7 @@ interface Quote {
   total: number;
   createdAt: string;
   createdBy: string;
-  status?: 'open' | 'invoiced' | 'lost' | 'expired';
+  status?: 'open' | 'lost' | 'expired';
 }
 
 interface QuoteListProps {
@@ -32,15 +32,13 @@ interface QuoteListProps {
   onEdit: (quote: Quote) => void;
   onDelete: (quote: Quote) => void;
   onPreview: (quote: Quote) => void;
-  onConvertToInvoice: (quote: Quote) => void;
 }
 
 export default function QuoteList({ 
   quotes, 
   onEdit, 
   onDelete, 
-  onPreview, 
-  onConvertToInvoice 
+  onPreview
 }: QuoteListProps) {
   const { toast } = useToast();
 
@@ -57,10 +55,8 @@ export default function QuoteList({
     }
   };
 
-  const getStatusBadge = (status?: 'open' | 'invoiced' | 'lost' | 'expired') => {
+  const getStatusBadge = (status?: 'open' | 'lost' | 'expired') => {
     switch (status) {
-      case 'invoiced':
-        return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="h-3 w-3 mr-1" /> Invoiced</Badge>;
       case 'lost':
         return <Badge className="bg-red-500 hover:bg-red-600"><XCircle className="h-3 w-3 mr-1" /> Lost</Badge>;
       case 'expired':
@@ -78,28 +74,6 @@ export default function QuoteList({
 
   const handlePrintQuote = (quote: Quote) => {
     onPreview(quote);
-  };
-
-  const resetQuoteStatus = (quote: Quote) => {
-    // Get all quotes from localStorage
-    const quotes = JSON.parse(localStorage.getItem('quotes') || '[]');
-    
-    // Find the quote and reset its status to 'open'
-    const updatedQuotes = quotes.map((q: Quote) => 
-      q.id === quote.id ? { ...q, status: 'open' } : q
-    );
-    
-    // Save the updated quotes back to localStorage
-    localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
-    
-    // Show success toast
-    toast({
-      title: "Quote status reset",
-      description: `Status for quote ${quote.customerName} has been reset to 'Open'`
-    });
-    
-    // Force a reload to refresh the list
-    // We'll let the polling in DocumentList handle this
   };
 
   return (
@@ -165,25 +139,6 @@ export default function QuoteList({
                   <Button variant="outline" size="icon" onClick={() => onDelete(quote)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={() => onConvertToInvoice(quote)}
-                    disabled={quote.status === 'invoiced'}
-                    title={quote.status === 'invoiced' ? 'Already invoiced' : 'Convert to invoice'}
-                  >
-                    <FileText className="h-4 w-4 text-primary" />
-                  </Button>
-                  {quote.status === 'invoiced' && (
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => resetQuoteStatus(quote)}
-                      title="Reset quote status to 'Open'"
-                    >
-                      <RefreshCw className="h-4 w-4 text-amber-500" />
-                    </Button>
-                  )}
                 </div>
               </TableCell>
             </TableRow>

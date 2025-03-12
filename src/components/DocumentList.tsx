@@ -10,11 +10,6 @@ import InvoiceList from "./invoices/InvoiceList";
 import { printQuote } from "@/utils/quotePrintUtils";
 import { openPrintWindow } from "@/utils/printUtils";
 
-interface QuoteItem {
-  description: string;
-  amount: string;
-}
-
 interface Quote {
   id: string;
   customerName: string;
@@ -28,7 +23,12 @@ interface Quote {
   total: number;
   createdAt: string;
   createdBy: string;
-  status?: 'open' | 'invoiced' | 'lost' | 'expired';
+  status?: 'open' | 'lost' | 'expired';
+}
+
+interface QuoteItem {
+  description: string;
+  amount: string;
 }
 
 interface Invoice extends InitialInvoiceData {
@@ -40,10 +40,9 @@ interface DocumentListProps {
   onChangeDocumentType?: (type: 'quotes' | 'invoices') => void;
 }
 
-export default function DocumentList({ activeDocumentType, onChangeDocumentType }: DocumentListProps) {
+export default function DocumentList({ activeDocumentType }: DocumentListProps) {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Quote | Invoice | null>(null);
   const [documents, setDocuments] = useState<(Quote | Invoice)[]>([]);
   const { toast } = useToast();
@@ -52,20 +51,17 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
 
   // Function to load documents from localStorage
   const loadDocuments = () => {
-    console.log(`Loading ${storageKey} from localStorage`);
     const storedDocs = localStorage.getItem(storageKey);
     if (storedDocs) {
       try {
         const parsedDocs = JSON.parse(storedDocs);
-        console.log(`Loaded ${parsedDocs.length} ${storageKey}:`, parsedDocs);
         setDocuments(parsedDocs);
       } catch (e) {
         console.error(`Error parsing ${storageKey}:`, e);
         setDocuments([]);
       }
     } else {
-      console.log(`No ${storageKey} found in localStorage`);
-      setDocuments([]); // Initialize with empty array if no documents exist
+      setDocuments([]);
     }
   };
 
@@ -76,7 +72,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     // Subscribe to storage changes from other windows
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === storageKey) {
-        console.log(`Storage event detected for ${storageKey}`);
         loadDocuments();
       }
     };
@@ -130,112 +125,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     setShowDeleteDialog(true);
   };
 
-  const handleConvertToInvoice = (quote: Quote) => {
-    setSelectedDocument(quote);
-    setShowInvoiceForm(true);
-  };
-
-  const handleGenerateRemainingInvoice = (invoice: Invoice) => {
-    // Let's create a function to generate the remaining 50% invoice
-    const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-    const nextInvoiceNumber = `${settings.invoicePrefix || "INV"}-${settings.invoiceCounter || 1000}`;
-    
-    // Get original invoice details
-    const originalItems = invoice.items || [];
-    
-    // Create new items with "Remaining 50%" prefix
-    const remainingItems = originalItems.map(item => {
-      // Calculate original amount before 50% was applied
-      const originalAmount = parseFloat(item.amount) * 2;
-      
-      // Create the remaining 50% item
-      return {
-        description: item.description.startsWith('50% Deposit:') 
-          ? `Remaining 50%: ${item.description.replace('50% Deposit:', '').trim()}`
-          : `Remaining 50%: ${item.description}`,
-        amount: (originalAmount * 0.5).toString() // Remaining 50%
-      };
-    });
-    
-    // Generate a new invoice
-    const currentDate = new Date().toISOString().split('T')[0];
-    
-    const newInvoice = {
-      id: Date.now(),
-      type: 'Invoice' as const,
-      number: nextInvoiceNumber,
-      customer: invoice.customer,
-      date: currentDate,
-      amount: invoice.amount, // The amount should be the same as the deposit
-      status: 'Unpaid',
-      email: invoice.email,
-      address: invoice.address,
-      tax: invoice.tax,
-      invoiceDate: currentDate,
-      dueDate: "", // Set appropriate due date
-      items: remainingItems,
-      notes: invoice.notes,
-      terms: invoice.terms,
-      invoiceType: 'remaining',
-      linkedInvoiceId: invoice.id,
-      convertedFromQuote: invoice.convertedFromQuote,
-      paymentStatus: 'unpaid'
-    };
-    
-    // Update the original invoice to mark that it has a linked invoice
-    const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-    
-    // Mark the original invoice as linked
-    const updatedInvoices = allInvoices.map((inv: Invoice) => 
-      inv.id === invoice.id ? 
-        { ...inv, linkedInvoiceId: newInvoice.id, invoiceType: inv.invoiceType || 'deposit' } : 
-        inv
-    );
-    
-    // Add the new invoice
-    updatedInvoices.push(newInvoice);
-    
-    // Save back to localStorage
-    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
-    
-    // Increment the counter
-    settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
-    localStorage.setItem("companySettings", JSON.stringify(settings));
-    
-    // Refresh the documents list
-    loadDocuments();
-    
-    // Show success message
-    toast({
-      title: "Remaining invoice generated",
-      description: `Remaining 50% invoice #${nextInvoiceNumber} has been generated.`
-    });
-  };
-
-  const togglePaymentStatus = (invoice: Invoice) => {
-    const newStatus = invoice.paymentStatus === 'paid' ? 'unpaid' : 'paid';
-    
-    // Get all invoices
-    const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-    
-    // Update the status of the specific invoice
-    const updatedInvoices = allInvoices.map((inv: Invoice) => 
-      inv.id === invoice.id ? { ...inv, paymentStatus: newStatus } : inv
-    );
-    
-    // Save back to localStorage
-    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
-    
-    // Refresh the documents list
-    loadDocuments();
-    
-    // Show confirmation toast
-    toast({
-      title: `Invoice marked as ${newStatus}`,
-      description: `Invoice #${invoice.number} for ${invoice.customer} has been marked as ${newStatus}.`
-    });
-  };
-
   return (
     <div className="container mx-auto py-10">
       {showEditForm && (
@@ -256,33 +145,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
             }}
           />
         )
-      )}
-
-      {showInvoiceForm && selectedDocument && (
-        <InvoiceForm
-          initialData={{} as InitialInvoiceData}
-          convertFromQuote={selectedDocument as Quote}
-          onClose={() => {
-            setShowInvoiceForm(false);
-            setSelectedDocument(null);
-          }}
-          onSuccess={() => {
-            // Update the quote status to 'invoiced'
-            const quote = selectedDocument as Quote;
-            const quotes = JSON.parse(localStorage.getItem('quotes') || '[]');
-            const updatedQuotes = quotes.map((q: Quote) => 
-              q.id === quote.id ? { ...q, status: 'invoiced' } : q
-            );
-            localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
-            
-            // Switch to the invoices view after successful conversion
-            if (onChangeDocumentType) {
-              onChangeDocumentType('invoices');
-            }
-            
-            loadDocuments();
-          }}
-        />
       )}
       
       <AlertDialog open={showDeleteDialog}>
@@ -311,7 +173,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
             onEdit={handleEdit}
             onDelete={handleDelete}
             onPreview={handlePrint}
-            onConvertToInvoice={handleConvertToInvoice}
           />
         ) : (
           <InvoiceList 
