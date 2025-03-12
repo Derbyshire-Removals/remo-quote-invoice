@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Receipt, FileText, Settings, MessageCircle } from "lucide-react";
@@ -17,7 +18,6 @@ export default function Dashboard() {
   const [showSettings, setShowSettings] = useState(false);
   const [activeDocumentType, setActiveDocumentType] = useState<'enquiries' | 'quotes' | 'invoices'>('enquiries');
   const [unpaidInvoicesCount, setUnpaidInvoicesCount] = useState<number>(0);
-  const [editQuoteId, setEditQuoteId] = useState<string | null>(null);
 
   // Get company settings from localStorage
   const companySettings = JSON.parse(localStorage.getItem('companySettings') || '{}');
@@ -40,14 +40,6 @@ export default function Dashboard() {
 
   const handleChangeDocumentType = (type: 'quotes' | 'invoices') => {
     setActiveDocumentType(type);
-  };
-
-  // Handler for when an enquiry is converted to a quote
-  const handleQuoteCreated = (quoteId: string) => {
-    // Switch to quotes tab
-    setActiveDocumentType('quotes');
-    // Set the quote ID to edit
-    setEditQuoteId(quoteId);
   };
 
   return (
@@ -121,13 +113,11 @@ export default function Dashboard() {
       </div>
 
       {activeDocumentType === 'enquiries' ? (
-        <EnquiryList onQuoteCreated={handleQuoteCreated} />
+        <EnquiryList />
       ) : (
         <DocumentList 
           activeDocumentType={activeDocumentType} 
           onChangeDocumentType={handleChangeDocumentType}
-          editQuoteId={editQuoteId}
-          onQuoteEdited={() => setEditQuoteId(null)}
         />
       )}
 
