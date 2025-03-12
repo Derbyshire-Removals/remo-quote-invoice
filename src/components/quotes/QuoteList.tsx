@@ -1,7 +1,6 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, CalendarIcon, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail, FileInvoice } from "lucide-react";
+import { Edit, Trash2, CalendarIcon, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail, FileText } from "lucide-react";
 import { format, isValid, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -141,7 +140,7 @@ export default function QuoteList({
                     onClick={() => onConvertToInvoice(quote)} 
                     title="Convert to Invoice"
                   >
-                    <FileInvoice className="h-4 w-4" />
+                    <FileText className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="icon" onClick={() => onEdit(quote)}>
                     <Edit className="h-4 w-4" />
