@@ -12,7 +12,11 @@ import { format, isValid, parseISO } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import QuoteForm from "./QuoteForm";
 
-export default function EnquiryList() {
+interface EnquiryListProps {
+  onQuoteCreated?: (quoteId: string) => void;
+}
+
+export default function EnquiryList({ onQuoteCreated }: EnquiryListProps = {}) {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
@@ -212,12 +216,17 @@ FOLLOW-UP ACTIONS:
   };
 
   // Function to close quote form and update status
-  const handleQuoteFormClose = (quoteCreated: boolean = false) => {
+  const handleQuoteFormClose = (quoteCreated: string | boolean = false) => {
     setShowQuoteForm(false);
     
     // If a quote was created and we have a selected enquiry, update its status
     if (quoteCreated && selectedEnquiry) {
       updateEnquiryStatus(selectedEnquiry.id);
+      
+      // If a quote ID was returned and we have the callback, call it
+      if (typeof quoteCreated === 'string' && onQuoteCreated) {
+        onQuoteCreated(quoteCreated);
+      }
     }
     
     setSelectedEnquiry(null);
@@ -315,7 +324,7 @@ FOLLOW-UP ACTIONS:
 
       {showQuoteForm && selectedEnquiry && (
         <QuoteForm 
-          onClose={(created) => handleQuoteFormClose(created)}
+          onClose={handleQuoteFormClose}
           initialData={{
             id: crypto.randomUUID(),
             customerName: selectedEnquiry.customerName,

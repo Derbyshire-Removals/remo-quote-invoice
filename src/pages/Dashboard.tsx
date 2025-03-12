@@ -42,6 +42,12 @@ export default function Dashboard() {
     setActiveDocumentType(type);
   };
 
+  // Handle quote creation from an enquiry
+  const handleQuoteCreated = (quoteId: string) => {
+    // Switch to quotes tab
+    setActiveDocumentType('quotes');
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-8">
@@ -113,7 +119,7 @@ export default function Dashboard() {
       </div>
 
       {activeDocumentType === 'enquiries' ? (
-        <EnquiryList />
+        <EnquiryList onQuoteCreated={handleQuoteCreated} />
       ) : (
         <DocumentList 
           activeDocumentType={activeDocumentType} 
