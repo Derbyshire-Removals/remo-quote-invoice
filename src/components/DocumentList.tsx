@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import QuoteForm from "./QuoteForm";
@@ -9,6 +8,10 @@ import QuoteList from "./quotes/QuoteList";
 import InvoiceList from "./invoices/InvoiceList";
 import { printQuote } from "@/utils/quotePrintUtils";
 import { openPrintWindow } from "@/utils/printUtils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface Quote {
   id: string;
@@ -45,6 +48,9 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Quote | Invoice | null>(null);
   const [documents, setDocuments] = useState<(Quote | Invoice)[]>([]);
+  const [showConvertDialog, setShowConvertDialog] = useState(false);
+  const [depositPercentage, setDepositPercentage] = useState(50);
+  const [isDepositInvoice, setIsDepositInvoice] = useState(false);
   const { toast } = useToast();
 
   const storageKey = activeDocumentType;
@@ -125,7 +131,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     setShowDeleteDialog(true);
   };
 
-  // Implement the toggle payment status function
+  // Toggle payment status function
   const togglePaymentStatus = (invoice: Invoice) => {
     try {
       // Get all invoices
@@ -164,7 +170,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
     }
   };
 
-  // Implement the generate remaining invoice function
+  // Generate remaining invoice function
   const handleGenerateRemainingInvoice = (invoice: Invoice) => {
     try {
       // Get all invoices
@@ -199,6 +205,110 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
       toast({
         title: "Error",
         description: "Failed to create remaining invoice.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // New quote to invoice conversion function
+  const handleConvertToInvoice = (quote: Quote) => {
+    setSelectedDocument(quote);
+    setShowConvertDialog(true);
+    setDepositPercentage(50); // Default to 50%
+    setIsDepositInvoice(false); // Default to full invoice
+  };
+
+  // Function to create invoice from quote
+  const confirmConversion = () => {
+    if (!selectedDocument) return;
+    
+    const quote = selectedDocument as Quote;
+    const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+    const invoiceCounter = settings.invoiceCounter || 1000;
+    const invoicePrefix = settings.invoicePrefix || "INV";
+    
+    // Create base invoice from quote
+    const baseInvoice = {
+      id: Date.now(),
+      type: 'Invoice' as const,
+      number: `${invoicePrefix}-${invoiceCounter}`,
+      customer: quote.customerName,
+      date: new Date().toISOString().split('T')[0],
+      invoiceDate: new Date().toISOString().split('T')[0],
+      dueDate: quote.moveDate || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      address: quote.fromAddress,
+      email: quote.email || '',
+      items: quote.items,
+      amount: `£${quote.total.toFixed(2)}`,
+      status: 'Unpaid',
+      paymentStatus: 'unpaid',
+      notes: quote.planningNotes || '',
+      tax: 20, // Default VAT rate
+    };
+
+    try {
+      const existingInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+      let newInvoices = [];
+      
+      // Update company settings (increment invoice counter)
+      settings.invoiceCounter = invoiceCounter + 1;
+      localStorage.setItem("companySettings", JSON.stringify(settings));
+
+      if (isDepositInvoice) {
+        // Calculate deposit amount
+        const depositAmount = (quote.total * depositPercentage) / 100;
+        const remainingAmount = quote.total - depositAmount;
+        
+        // Create deposit invoice
+        const depositInvoice = {
+          ...baseInvoice,
+          items: [{
+            description: `Deposit payment (${depositPercentage}%) for: ${quote.fromAddress}`,
+            amount: depositAmount.toFixed(2)
+          }],
+          amount: `£${depositAmount.toFixed(2)}`,
+          invoiceType: 'deposit' as const,
+          isDepositInvoice: true,
+        };
+        
+        // Add deposit invoice
+        newInvoices = [...existingInvoices, depositInvoice];
+        
+        toast({
+          title: "Deposit Invoice Created",
+          description: `A ${depositPercentage}% deposit invoice has been created.`,
+        });
+      } else {
+        // Add full invoice
+        newInvoices = [...existingInvoices, baseInvoice];
+        
+        toast({
+          title: "Invoice Created",
+          description: "Quote has been converted to a full invoice.",
+        });
+      }
+      
+      // Save invoices
+      localStorage.setItem('invoices', JSON.stringify(newInvoices));
+      
+      // Update quote status if needed
+      const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
+      const updatedQuotes = existingQuotes.map((q: Quote) => {
+        if (q.id === quote.id) {
+          return { ...q, status: 'expired' }; // Mark as used
+        }
+        return q;
+      });
+      localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+      
+      // Close dialog and reload
+      setShowConvertDialog(false);
+      loadDocuments();
+    } catch (error) {
+      console.error("Error converting quote to invoice:", error);
+      toast({
+        title: "Error",
+        description: "Failed to convert quote to invoice.",
         variant: "destructive"
       });
     }
@@ -241,6 +351,52 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
         </AlertDialogContent>
       </AlertDialog>
 
+      <Dialog open={showConvertDialog} onOpenChange={setShowConvertDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Convert Quote to Invoice</DialogTitle>
+            <DialogDescription>
+              Create an invoice from this quote. You can either create a full invoice or a deposit invoice.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="depositInvoice"
+                checked={isDepositInvoice}
+                onChange={(e) => setIsDepositInvoice(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <Label htmlFor="depositInvoice">Create Deposit Invoice</Label>
+            </div>
+            
+            {isDepositInvoice && (
+              <div className="space-y-2">
+                <Label htmlFor="depositPercentage">Deposit Percentage (%)</Label>
+                <Input
+                  id="depositPercentage"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={depositPercentage}
+                  onChange={(e) => setDepositPercentage(Number(e.target.value))}
+                />
+                <p className="text-sm text-muted-foreground">
+                  This will create an invoice for {depositPercentage}% of the total quote amount.
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConvertDialog(false)}>Cancel</Button>
+            <Button onClick={confirmConversion}>Create Invoice</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {documents.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-lg text-gray-500">No {activeDocumentType} found.</p>
@@ -252,6 +408,7 @@ export default function DocumentList({ activeDocumentType }: DocumentListProps) 
             onEdit={handleEdit}
             onDelete={handleDelete}
             onPreview={handlePrint}
+            onConvertToInvoice={handleConvertToInvoice}
           />
         ) : (
           <InvoiceList 

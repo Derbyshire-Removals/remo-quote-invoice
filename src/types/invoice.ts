@@ -72,6 +72,8 @@ export interface PrintableDocument {
   terms?: string;
   amount: string;
   paymentStatus?: 'paid' | 'unpaid';
+  isDepositInvoice?: boolean;
+  invoiceType?: 'deposit' | 'remaining' | 'full';
 }
 
 export interface QuoteItem {

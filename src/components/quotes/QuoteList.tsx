@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, CalendarIcon, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail } from "lucide-react";
+import { Edit, Trash2, CalendarIcon, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Printer, Mail, FileInvoice } from "lucide-react";
 import { format, isValid, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -32,13 +32,15 @@ interface QuoteListProps {
   onEdit: (quote: Quote) => void;
   onDelete: (quote: Quote) => void;
   onPreview: (quote: Quote) => void;
+  onConvertToInvoice: (quote: Quote) => void;
 }
 
 export default function QuoteList({ 
   quotes, 
   onEdit, 
   onDelete, 
-  onPreview
+  onPreview,
+  onConvertToInvoice
 }: QuoteListProps) {
   const { toast } = useToast();
 
@@ -132,6 +134,14 @@ export default function QuoteList({
                 <div className="flex space-x-2">
                   <Button variant="outline" size="icon" onClick={() => handlePrintQuote(quote)} title="Print Quote">
                     <Printer className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => onConvertToInvoice(quote)} 
+                    title="Convert to Invoice"
+                  >
+                    <FileInvoice className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="icon" onClick={() => onEdit(quote)}>
                     <Edit className="h-4 w-4" />
