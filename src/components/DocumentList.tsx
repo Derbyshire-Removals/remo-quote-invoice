@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import QuoteForm from "./QuoteForm";
@@ -235,14 +236,20 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
       customer: quote.customerName,
       date: new Date().toISOString().split('T')[0],
       invoiceDate: new Date().toISOString().split('T')[0],
-      dueDate: quote.moveDate || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      // No due date set as per requirement
+      dueDate: "",
       address: quote.fromAddress,
       email: quote.email || '',
-      items: quote.items,
+      // Properly map all quote items to invoice items
+      items: quote.items.map(item => ({
+        description: item.description,
+        amount: item.amount
+      })),
       amount: `£${quote.total.toFixed(2)}`,
       status: 'Unpaid',
       paymentStatus: 'unpaid',
-      notes: quote.planningNotes || '',
+      // Use notes from settings
+      notes: settings.defaultNotes || '',
       tax: 20, // Default VAT rate
     };
 
