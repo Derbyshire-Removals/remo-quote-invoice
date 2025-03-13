@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +27,6 @@ export default function EnquiryList({ onQuoteCreated }: EnquiryListProps = {}) {
 
   const storageKey = 'enquiries';
 
-  // Function to load enquiries from localStorage
   const loadEnquiries = () => {
     const storedDocs = localStorage.getItem(storageKey);
     if (storedDocs) {
@@ -39,17 +37,14 @@ export default function EnquiryList({ onQuoteCreated }: EnquiryListProps = {}) {
   };
 
   useEffect(() => {
-    // Initial load
     loadEnquiries();
 
-    // Subscribe to storage changes from other windows
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === storageKey) {
         loadEnquiries();
       }
     };
 
-    // Set up an interval to check for changes every second
     const interval = setInterval(loadEnquiries, 1000);
 
     window.addEventListener('storage', handleStorageChange);
@@ -108,7 +103,6 @@ export default function EnquiryList({ onQuoteCreated }: EnquiryListProps = {}) {
   };
 
   const handleExport = (enquiry: Enquiry) => {
-    // Generate formatted text for export
     const text = generateExportText(enquiry);
     setExportText(text);
     setSelectedEnquiry(enquiry);
@@ -116,7 +110,6 @@ export default function EnquiryList({ onQuoteCreated }: EnquiryListProps = {}) {
   };
 
   const generateExportText = (enquiry: Enquiry) => {
-    // Generate a nicely formatted text representation of the enquiry
     const servicesRequested = [];
     if (enquiry.services.packaging) servicesRequested.push("Packaging");
     if (enquiry.services.storage) servicesRequested.push("Storage");
@@ -171,12 +164,10 @@ FOLLOW-UP ACTIONS:
     });
   };
 
-  // Function to generate Google Maps URL from an address
   const getGoogleMapsUrl = (address: string) => {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
   };
-  
-  // Function to render address cell with Google Maps link
+
   const renderAddressWithMapLink = (address: string) => {
     return (
       <a 
@@ -191,14 +182,11 @@ FOLLOW-UP ACTIONS:
     );
   };
 
-  // New function to convert enquiry to quote
   const handleConvertToQuote = (enquiry: Enquiry) => {
-    // Set the enquiry as selected and prepare to show the quote form
     setSelectedEnquiry(enquiry);
     setShowQuoteForm(true);
   };
 
-  // Function to update enquiry status to 'quoted'
   const updateEnquiryStatus = (enquiryId: string) => {
     const updatedEnquiries = enquiries.map(enquiry => 
       enquiry.id === enquiryId 
@@ -215,15 +203,12 @@ FOLLOW-UP ACTIONS:
     });
   };
 
-  // Function to close quote form and update status
   const handleQuoteFormClose = (quoteCreated: string | boolean = false) => {
     setShowQuoteForm(false);
     
-    // If a quote was created and we have a selected enquiry, update its status
     if (quoteCreated && selectedEnquiry) {
       updateEnquiryStatus(selectedEnquiry.id);
       
-      // If a quote ID was returned and we have the callback, call it
       if (typeof quoteCreated === 'string' && onQuoteCreated) {
         onQuoteCreated(quoteCreated);
       }
@@ -282,7 +267,6 @@ FOLLOW-UP ACTIONS:
                     size="icon" 
                     onClick={() => handleConvertToQuote(enquiry)} 
                     title="Convert to Quote"
-                    disabled={enquiry.status === 'quoted' || enquiry.status === 'converted'}
                   >
                     <QuoteIcon className="h-4 w-4 text-blue-500" />
                   </Button>
