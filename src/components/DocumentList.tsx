@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import QuoteForm from "./QuoteForm";
@@ -207,6 +208,17 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     const invoiceCounter = settings.invoiceCounter || 1000;
     const invoicePrefix = settings.invoicePrefix || "INV";
     
+    // Create a deep copy of quote items
+    const quoteItems = [...quote.items];
+    
+    // Append the quote message to the first item's description if items exist
+    if (quoteItems.length > 0 && quote.message) {
+      quoteItems[0] = {
+        ...quoteItems[0],
+        description: `${quoteItems[0].description}\n\nQuote Message: ${quote.message}`
+      };
+    }
+    
     const baseInvoice = {
       id: Date.now(),
       type: 'Invoice' as const,
@@ -217,7 +229,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
       dueDate: "",
       address: quote.fromAddress,
       email: quote.email || '',
-      items: quote.items.map(item => ({
+      items: quoteItems.map(item => ({
         description: item.description,
         amount: item.amount
       })),
@@ -240,7 +252,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
         
         const depositInvoice = {
           ...baseInvoice,
-          items: quote.items.map(item => ({
+          items: quoteItems.map(item => ({
             description: item.description,
             amount: ((parseFloat(item.amount) * depositPercentage) / 100).toFixed(2)
           })),
