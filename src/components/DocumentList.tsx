@@ -219,6 +219,9 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
       };
     }
     
+    // Get the first terms template if available
+    const firstTemplate = settings.termsTemplates?.[0];
+    
     const baseInvoice = {
       id: Date.now(),
       type: 'Invoice' as const,
@@ -238,6 +241,8 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
       paymentStatus: 'unpaid',
       notes: settings.defaultNotes || '',
       tax: 20,
+      terms: firstTemplate?.content || '',
+      selectedTermsTemplate: firstTemplate?.name || 'custom'
     };
 
     try {
