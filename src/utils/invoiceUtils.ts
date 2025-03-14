@@ -1,4 +1,3 @@
-
 import { InvoiceFormData, InvoiceItem, InitialInvoiceData } from "@/types/invoice";
 
 export const calculateTotals = (items: InvoiceItem[], taxRate: string) => {
@@ -103,4 +102,30 @@ export const updateInvoiceType = (
     console.error("Error updating invoice type:", error);
     return false;
   }
+};
+
+// Generate a remaining invoice from a deposit invoice
+export const generateRemainingInvoice = (depositInvoice: any): any => {
+  // Get the template index to use for remaining invoices (second template if available)
+  const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
+  const templates = settings.termsTemplates || [];
+  
+  // Use second template if available, otherwise use first or empty
+  const templateIndex = templates.length >= 2 ? 1 : (templates.length === 1 ? 0 : -1);
+  const selectedTemplate = templateIndex >= 0 ? templates[templateIndex] : null;
+  
+  // Create a new invoice with today's date and the appropriate template
+  const remainingInvoice = {
+    ...depositInvoice,
+    id: Date.now(),
+    linkedInvoiceId: depositInvoice.id,
+    invoiceType: 'remaining',
+    number: `${depositInvoice.number}-R`,
+    invoiceDate: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0],
+    terms: selectedTemplate?.content || depositInvoice.terms || "",
+    selectedTermsTemplate: selectedTemplate?.name || "custom",
+  };
+  
+  return remainingInvoice;
 };

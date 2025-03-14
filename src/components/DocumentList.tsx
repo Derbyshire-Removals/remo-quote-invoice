@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { generateRemainingInvoice } from "@/utils/invoiceUtils";
 
 interface Quote {
   id: string;
@@ -162,13 +163,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     try {
       const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
       
-      const newInvoice: Invoice = {
-        ...invoice,
-        id: Date.now(),
-        linkedInvoiceId: invoice.id,
-        invoiceType: 'remaining',
-        number: `${invoice.number}-R`,
-      };
+      const newInvoice = generateRemainingInvoice(invoice);
       
       const updatedInvoices = [...allInvoices, newInvoice];
       
