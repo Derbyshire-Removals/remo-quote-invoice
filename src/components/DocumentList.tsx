@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import InvoiceForm from "./InvoiceForm";
 import QuoteForm from "./QuoteForm";
@@ -308,6 +307,41 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     }
   };
 
+  const handleChangeInvoiceType = (invoice: Invoice, newType: 'deposit' | 'remaining' | 'full') => {
+    try {
+      const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+      
+      const updatedInvoices = allInvoices.map((doc: Invoice) => {
+        if (doc.id === invoice.id) {
+          return {
+            ...doc,
+            invoiceType: newType,
+            isDepositInvoice: newType === 'deposit'
+          };
+        }
+        return doc;
+      });
+      
+      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+      
+      if (activeDocumentType === 'invoices') {
+        setDocuments(updatedInvoices);
+      }
+      
+      toast({
+        title: "Invoice type changed",
+        description: `Invoice type updated to ${newType === 'deposit' ? 'Deposit' : newType === 'remaining' ? 'Remaining' : 'Full'}.`
+      });
+    } catch (error) {
+      console.error("Error changing invoice type:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update invoice type.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto py-10">
       {showEditForm && (
@@ -412,6 +446,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
             onPreview={handlePrint}
             onTogglePaymentStatus={togglePaymentStatus}
             onGenerateRemainingInvoice={handleGenerateRemainingInvoice}
+            onChangeInvoiceType={handleChangeInvoiceType}
           />
         )
       )}

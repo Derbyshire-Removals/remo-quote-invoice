@@ -34,7 +34,7 @@ export interface InitialInvoiceData {
   items?: InvoiceItem[];
   notes?: string;
   terms?: string;
-  isDepositInvoice?: boolean;
+  isDepositInvoice?: boolean; // Legacy field - kept for backwards compatibility
   invoiceType?: 'deposit' | 'remaining' | 'full';
   linkedInvoiceId?: number;
   type?: string;

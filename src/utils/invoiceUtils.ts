@@ -63,3 +63,44 @@ export const getUnpaidInvoicesCount = (): number => {
     (!invoice.paymentStatus && invoice.status?.toLowerCase() === 'unpaid')
   ).length;
 };
+
+// Normalize invoice type to ensure consistency
+export const normalizeInvoiceType = (invoice: any): 'deposit' | 'remaining' | 'full' => {
+  if (invoice.invoiceType) {
+    return invoice.invoiceType;
+  }
+  
+  // Legacy support
+  if (invoice.isDepositInvoice) {
+    return 'deposit';
+  }
+  
+  return 'full';
+};
+
+// Update invoice type in storage
+export const updateInvoiceType = (
+  invoiceId: number, 
+  newType: 'deposit' | 'remaining' | 'full'
+): boolean => {
+  try {
+    const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+    
+    const updatedInvoices = invoices.map((invoice: any) => {
+      if (invoice.id === invoiceId) {
+        return {
+          ...invoice,
+          invoiceType: newType,
+          isDepositInvoice: newType === 'deposit' // Update legacy field for backward compatibility
+        };
+      }
+      return invoice;
+    });
+    
+    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+    return true;
+  } catch (error) {
+    console.error("Error updating invoice type:", error);
+    return false;
+  }
+};
