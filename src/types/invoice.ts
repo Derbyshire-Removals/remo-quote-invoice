@@ -1,4 +1,3 @@
-
 export interface InvoiceItem {
   description: string;
   amount: string;
@@ -16,6 +15,7 @@ export interface InvoiceFormData {
   notes: string;
   terms: string;
   selectedTermsTemplate?: string;
+  invoiceType?: 'deposit' | 'remaining' | 'full';
 }
 
 export interface InitialInvoiceData {

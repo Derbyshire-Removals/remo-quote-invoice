@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +58,10 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
         items: formData.items,
         notes: formData.notes,
         terms: formData.terms,
-        paymentStatus: initialData?.paymentStatus || 'unpaid'
+        paymentStatus: initialData?.paymentStatus || 'unpaid',
+        invoiceType: formData.invoiceType || 'full',
+        isDepositInvoice: formData.invoiceType === 'deposit',
+        linkedInvoiceId: initialData?.linkedInvoiceId
       };
 
       const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');

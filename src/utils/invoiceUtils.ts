@@ -35,7 +35,8 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
       items: [{ description: "", amount: "" }],
       notes: settings.defaultNotes || "",
       terms: defaultTemplate?.content || "",
-      selectedTermsTemplate: defaultTemplate?.name || "custom"
+      selectedTermsTemplate: defaultTemplate?.name || "custom",
+      invoiceType: "full"
     };
   }
 
@@ -50,11 +51,11 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
     items: initialData.items || [{ description: initialData.description || "", amount: initialData.amount.replace('£', '') || "" }],
     notes: initialData.notes || "",
     terms: initialData.terms || "",
-    selectedTermsTemplate: "custom"
+    selectedTermsTemplate: "custom",
+    invoiceType: initialData.invoiceType || (initialData.isDepositInvoice ? "deposit" : "full")
   };
 };
 
-// Get the count of unpaid invoices
 export const getUnpaidInvoicesCount = (): number => {
   const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
   return invoices.filter((invoice: any) => 
@@ -63,7 +64,6 @@ export const getUnpaidInvoicesCount = (): number => {
   ).length;
 };
 
-// Normalize invoice type to ensure consistency
 export const normalizeInvoiceType = (invoice: any): 'deposit' | 'remaining' | 'full' => {
   if (invoice.invoiceType) {
     return invoice.invoiceType;
@@ -77,7 +77,6 @@ export const normalizeInvoiceType = (invoice: any): 'deposit' | 'remaining' | 'f
   return 'full';
 };
 
-// Update invoice type in storage
 export const updateInvoiceType = (
   invoiceId: number, 
   newType: 'deposit' | 'remaining' | 'full'
@@ -104,7 +103,6 @@ export const updateInvoiceType = (
   }
 };
 
-// Generate a remaining invoice from a deposit invoice
 export const generateRemainingInvoice = (depositInvoice: any): any => {
   // Get the template index to use for remaining invoices (second template if available)
   const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
