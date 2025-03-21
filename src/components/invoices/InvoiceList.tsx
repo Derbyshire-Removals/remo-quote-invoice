@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon } from "lucide-react";
@@ -11,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Filter } from "@/components/ui/filter";
 
 interface Invoice extends InitialInvoiceData {
   paymentStatus?: 'paid' | 'unpaid';
@@ -37,6 +37,17 @@ export default function InvoiceList({
 }: InvoiceListProps) {
   const { toast } = useToast();
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [filterValue, setFilterValue] = useState("");
+
+  const filteredInvoices = invoices.filter(invoice => {
+    if (!filterValue) return true;
+    
+    const searchTerm = filterValue.toLowerCase();
+    return (
+      invoice.customer.toLowerCase().includes(searchTerm) ||
+      (invoice.address && invoice.address.toLowerCase().includes(searchTerm))
+    );
+  });
 
   const getInvoiceTypeDisplay = (invoice: Invoice) => {
     if (invoice.invoiceType === 'deposit') return "Deposit (50%)";
@@ -49,6 +60,14 @@ export default function InvoiceList({
 
   return (
     <div className="rounded-md border">
+      <div className="p-4 border-b">
+        <Filter 
+          value={filterValue}
+          onChange={setFilterValue}
+          placeholder="Filter by customer name or address..."
+        />
+      </div>
+      
       <Table>
         <TableHeader>
           <TableRow>
@@ -63,85 +82,93 @@ export default function InvoiceList({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice, index) => (
-            <TableRow 
-              key={invoice.id}
-              onMouseEnter={() => setHoveredRow(index)}
-              onMouseLeave={() => setHoveredRow(null)}
-            >
-              <TableCell>{invoice.number}</TableCell>
-              <TableCell>{invoice.customer}</TableCell>
-              <TableCell>{invoice.date}</TableCell>
-              <TableCell>{invoice.amount}</TableCell>
-              <TableCell>{invoice.status}</TableCell>
-              <TableCell>
-                {onChangeInvoiceType ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-full justify-start font-normal">
-                        {getInvoiceTypeDisplay(invoice)}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'full')}>
-                        Full
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'deposit')}>
-                        Deposit (50%)
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'remaining')}>
-                        Remaining (50%)
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  getInvoiceTypeDisplay(invoice)
-                )}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost" 
-                    className={`p-1 h-7 ${invoice.paymentStatus === 'paid' ? 'text-green-600' : 'text-slate-400'}`}
-                    onClick={() => onTogglePaymentStatus(invoice)}
-                    title={invoice.paymentStatus === 'paid' ? 'Mark as unpaid' : 'Mark as paid'}
-                  >
-                    {invoice.paymentStatus === 'paid' ? (
-                      <CheckIcon className="h-5 w-5" />
-                    ) : (
-                      <Circle className="h-5 w-5" />
-                    )}
-                  </Button>
-                  <span className={invoice.paymentStatus === 'paid' ? 'text-green-600 font-medium' : 'text-slate-400'}>
-                    {invoice.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="icon" onClick={() => onPreview(invoice)}>
-                    <Printer className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={() => onEdit(invoice)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={() => onDelete(invoice)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                  {((invoice.invoiceType === 'deposit' || (!invoice.invoiceType && invoice.isDepositInvoice)) && !invoice.linkedInvoiceId) && (
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      title="Generate Remaining 50% Invoice"
-                      onClick={() => onGenerateRemainingInvoice && onGenerateRemainingInvoice(invoice)}
-                    >
-                      <SplitIcon className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+          {filteredInvoices.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center py-4 text-muted-foreground">
+                {invoices.length === 0 ? "No invoices found" : "No matching invoices found"}
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            filteredInvoices.map((invoice, index) => (
+              <TableRow 
+                key={invoice.id}
+                onMouseEnter={() => setHoveredRow(index)}
+                onMouseLeave={() => setHoveredRow(null)}
+              >
+                <TableCell>{invoice.number}</TableCell>
+                <TableCell>{invoice.customer}</TableCell>
+                <TableCell>{invoice.date}</TableCell>
+                <TableCell>{invoice.amount}</TableCell>
+                <TableCell>{invoice.status}</TableCell>
+                <TableCell>
+                  {onChangeInvoiceType ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-full justify-start font-normal">
+                          {getInvoiceTypeDisplay(invoice)}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'full')}>
+                          Full
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'deposit')}>
+                          Deposit (50%)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'remaining')}>
+                          Remaining (50%)
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    getInvoiceTypeDisplay(invoice)
+                  )}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost" 
+                      className={`p-1 h-7 ${invoice.paymentStatus === 'paid' ? 'text-green-600' : 'text-slate-400'}`}
+                      onClick={() => onTogglePaymentStatus(invoice)}
+                      title={invoice.paymentStatus === 'paid' ? 'Mark as unpaid' : 'Mark as paid'}
+                    >
+                      {invoice.paymentStatus === 'paid' ? (
+                        <CheckIcon className="h-5 w-5" />
+                      ) : (
+                        <Circle className="h-5 w-5" />
+                      )}
+                    </Button>
+                    <span className={invoice.paymentStatus === 'paid' ? 'text-green-600 font-medium' : 'text-slate-400'}>
+                      {invoice.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="icon" onClick={() => onPreview(invoice)}>
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => onEdit(invoice)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => onDelete(invoice)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                    {((invoice.invoiceType === 'deposit' || (!invoice.invoiceType && invoice.isDepositInvoice)) && !invoice.linkedInvoiceId) && (
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        title="Generate Remaining 50% Invoice"
+                        onClick={() => onGenerateRemainingInvoice && onGenerateRemainingInvoice(invoice)}
+                      >
+                        <SplitIcon className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

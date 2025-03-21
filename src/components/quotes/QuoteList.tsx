@@ -4,6 +4,8 @@ import { Edit, Trash2, CalendarIcon, MapPin, CheckCircle, Clock, XCircle, AlertC
 import { format, isValid, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Filter } from "@/components/ui/filter";
 
 interface QuoteItem {
   description: string;
@@ -42,6 +44,17 @@ export default function QuoteList({
   onConvertToInvoice
 }: QuoteListProps) {
   const { toast } = useToast();
+  const [filterValue, setFilterValue] = useState("");
+
+  const filteredQuotes = quotes.filter(quote => {
+    if (!filterValue) return true;
+    
+    const searchTerm = filterValue.toLowerCase();
+    return (
+      quote.customerName.toLowerCase().includes(searchTerm) ||
+      quote.fromAddress.toLowerCase().includes(searchTerm)
+    );
+  });
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Not specified';
@@ -79,6 +92,14 @@ export default function QuoteList({
 
   return (
     <div className="rounded-md border">
+      <div className="p-4 border-b">
+        <Filter 
+          value={filterValue}
+          onChange={setFilterValue}
+          placeholder="Filter by customer name or address..."
+        />
+      </div>
+      
       <Table>
         <TableHeader>
           <TableRow>
@@ -93,65 +114,73 @@ export default function QuoteList({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {quotes.map((quote) => (
-            <TableRow key={quote.id}>
-              <TableCell>{quote.customerName}</TableCell>
-              <TableCell className="max-w-[200px] truncate">
-                {quote.email ? (
-                  <a 
-                    href={`mailto:${quote.email}`}
-                    className="flex items-center hover:text-primary hover:underline group"
-                    title={quote.email}
-                  >
-                    <Mail className="h-4 w-4 mr-1 text-primary" />
-                    <span className="truncate">{quote.email}</span>
-                  </a>
-                ) : (
-                  <span className="text-gray-400 italic">No email</span>
-                )}
-              </TableCell>
-              <TableCell className="whitespace-nowrap">
-                <div className="flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4" />
-                  {formatDate(quote.moveDate)}
-                </div>
-              </TableCell>
-              <TableCell 
-                className="max-w-[150px] truncate cursor-pointer hover:text-primary hover:underline" 
-                title="Click to open in Google Maps"
-                onClick={() => openGoogleMaps(quote.fromAddress)}
-              >
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  {quote.fromAddress}
-                </div>
-              </TableCell>
-              <TableCell>£{(quote.total ?? 0).toFixed(2)}</TableCell>
-              <TableCell>{getStatusBadge(quote.status)}</TableCell>
-              <TableCell>{formatDate(quote.createdAt)}</TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="icon" onClick={() => handlePrintQuote(quote)} title="Print Quote">
-                    <Printer className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={() => onConvertToInvoice(quote)} 
-                    title="Convert to Invoice"
-                  >
-                    <FileText className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={() => onEdit(quote)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={() => onDelete(quote)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
+          {filteredQuotes.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center py-4 text-muted-foreground">
+                {quotes.length === 0 ? "No quotes found" : "No matching quotes found"}
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            filteredQuotes.map((quote) => (
+              <TableRow key={quote.id}>
+                <TableCell>{quote.customerName}</TableCell>
+                <TableCell className="max-w-[200px] truncate">
+                  {quote.email ? (
+                    <a 
+                      href={`mailto:${quote.email}`}
+                      className="flex items-center hover:text-primary hover:underline group"
+                      title={quote.email}
+                    >
+                      <Mail className="h-4 w-4 mr-1 text-primary" />
+                      <span className="truncate">{quote.email}</span>
+                    </a>
+                  ) : (
+                    <span className="text-gray-400 italic">No email</span>
+                  )}
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    {formatDate(quote.moveDate)}
+                  </div>
+                </TableCell>
+                <TableCell 
+                  className="max-w-[150px] truncate cursor-pointer hover:text-primary hover:underline" 
+                  title="Click to open in Google Maps"
+                  onClick={() => openGoogleMaps(quote.fromAddress)}
+                >
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    {quote.fromAddress}
+                  </div>
+                </TableCell>
+                <TableCell>£{(quote.total ?? 0).toFixed(2)}</TableCell>
+                <TableCell>{getStatusBadge(quote.status)}</TableCell>
+                <TableCell>{formatDate(quote.createdAt)}</TableCell>
+                <TableCell>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="icon" onClick={() => handlePrintQuote(quote)} title="Print Quote">
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => onConvertToInvoice(quote)} 
+                      title="Convert to Invoice"
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => onEdit(quote)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => onDelete(quote)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>
