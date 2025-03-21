@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +17,7 @@ interface EnquiryListProps {
   onQuoteCreated?: (quoteId: string) => void;
 }
 
-export default function EnquiryList({ onQuoteCreated }: EnquiryListProps = {}) {
+export default function EnquiryList({ onQuoteCreated }: EnquiryListProps) {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
