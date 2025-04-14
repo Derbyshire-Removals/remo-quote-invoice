@@ -16,6 +16,7 @@ export interface InvoiceFormData {
   terms: string;
   selectedTermsTemplate?: string;
   invoiceType?: 'deposit' | 'remaining' | 'full';
+  reviewStatus?: 'none' | 'requested' | 'completed';
 }
 
 export interface InitialInvoiceData {
@@ -39,6 +40,7 @@ export interface InitialInvoiceData {
   linkedInvoiceId?: number;
   type?: string;
   paymentStatus?: 'paid' | 'unpaid';
+  reviewStatus?: 'none' | 'requested' | 'completed';
 }
 
 export interface CompanySettings {
