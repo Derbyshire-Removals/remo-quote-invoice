@@ -1,6 +1,7 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon } from "lucide-react";
+import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon, Star } from "lucide-react";
 import { InitialInvoiceData } from "@/types/invoice";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -24,6 +25,7 @@ interface InvoiceListProps {
   onTogglePaymentStatus: (invoice: Invoice) => void;
   onGenerateRemainingInvoice?: (invoice: Invoice) => void;
   onChangeInvoiceType?: (invoice: Invoice, type: 'deposit' | 'remaining' | 'full') => void;
+  onToggleReviewStatus?: (invoice: Invoice) => void;
 }
 
 export default function InvoiceList({ 
@@ -33,7 +35,8 @@ export default function InvoiceList({
   onPreview,
   onTogglePaymentStatus,
   onGenerateRemainingInvoice,
-  onChangeInvoiceType
+  onChangeInvoiceType,
+  onToggleReviewStatus
 }: InvoiceListProps) {
   const { toast } = useToast();
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
@@ -78,13 +81,14 @@ export default function InvoiceList({
             <TableHead>Status</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Payment</TableHead>
+            <TableHead>Review</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredInvoices.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center py-4 text-muted-foreground">
+              <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
                 {invoices.length === 0 ? "No invoices found" : "No matching invoices found"}
               </TableCell>
             </TableRow>
@@ -140,6 +144,21 @@ export default function InvoiceList({
                     </Button>
                     <span className={invoice.paymentStatus === 'paid' ? 'text-green-600 font-medium' : 'text-slate-400'}>
                       {invoice.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost" 
+                      className={`p-1 h-7 ${invoice.hasReview ? 'text-yellow-500' : 'text-slate-400'}`}
+                      onClick={() => onToggleReviewStatus && onToggleReviewStatus(invoice)}
+                      title={invoice.hasReview ? 'Remove review status' : 'Mark as reviewed'}
+                    >
+                      <Star className="h-5 w-5" fill={invoice.hasReview ? "currentColor" : "none"} />
+                    </Button>
+                    <span className={invoice.hasReview ? 'text-yellow-500 font-medium' : 'text-slate-400'}>
+                      {invoice.hasReview ? 'Reviewed' : 'No review'}
                     </span>
                   </div>
                 </TableCell>
