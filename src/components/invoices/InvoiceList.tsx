@@ -148,19 +148,19 @@ export default function InvoiceList({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost" 
-                      className={`p-1 h-7 ${invoice.hasReview ? 'text-yellow-500' : 'text-slate-400'}`}
-                      onClick={() => onToggleReviewStatus && onToggleReviewStatus(invoice)}
-                      title={invoice.hasReview ? 'Remove review status' : 'Mark as reviewed'}
-                    >
-                      <Star className="h-5 w-5" fill={invoice.hasReview ? "currentColor" : "none"} />
-                    </Button>
-                    <span className={invoice.hasReview ? 'text-yellow-500 font-medium' : 'text-slate-400'}>
-                      {invoice.hasReview ? 'Reviewed' : 'No review'}
-                    </span>
-                  </div>
+                  <Button
+                    variant="ghost" 
+                    className="p-1 h-7"
+                    onClick={() => onToggleReviewStatus && onToggleReviewStatus(invoice)}
+                    title={invoice.hasReview ? 'Remove review status' : 'Mark as reviewed'}
+                  >
+                    <Star 
+                      className="h-5 w-5" 
+                      fill={invoice.hasReview ? "currentColor" : "none"}
+                      stroke={invoice.hasReview ? "#f59e0b" : "currentColor"}
+                      className={invoice.hasReview ? "text-yellow-500" : "text-slate-400"} 
+                    />
+                  </Button>
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
