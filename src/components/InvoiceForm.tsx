@@ -61,8 +61,7 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
         paymentStatus: initialData?.paymentStatus || 'unpaid',
         invoiceType: formData.invoiceType || 'full',
         isDepositInvoice: formData.invoiceType === 'deposit',
-        linkedInvoiceId: initialData?.linkedInvoiceId,
-        reviewStatus: formData.reviewStatus || 'none'
+        linkedInvoiceId: initialData?.linkedInvoiceId
       };
 
       const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
@@ -117,13 +116,6 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
         }));
       }
     }
-  };
-
-  const handleSelectChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
   };
 
   const handleItemChange = (index: number, field: keyof InvoiceFormData["items"][0], value: string) => {
@@ -189,35 +181,16 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
             totalAmount={totalAmount}
           />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="tax">VAT (%)</Label>
-              <Input 
-                id="tax" 
-                type="number" 
-                placeholder="20"
-                value={formData.tax}
-                onChange={handleChange}
-                className="w-full"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Customer Review Status</Label>
-              <Select
-                value={formData.reviewStatus || 'none'}
-                onValueChange={(value) => handleSelectChange('reviewStatus', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select review status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No Review</SelectItem>
-                  <SelectItem value="requested">Review Requested</SelectItem>
-                  <SelectItem value="completed">Review Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="tax">VAT (%)</Label>
+            <Input 
+              id="tax" 
+              type="number" 
+              placeholder="20"
+              value={formData.tax}
+              onChange={handleChange}
+              className="w-32"
+            />
           </div>
 
           <div className="space-y-4">

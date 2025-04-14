@@ -1,7 +1,6 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon, Star, StarOff, StarHalf } from "lucide-react";
+import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon } from "lucide-react";
 import { InitialInvoiceData } from "@/types/invoice";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -15,7 +14,6 @@ import { Filter } from "@/components/ui/filter";
 
 interface Invoice extends InitialInvoiceData {
   paymentStatus?: 'paid' | 'unpaid';
-  reviewStatus?: 'none' | 'requested' | 'completed';
 }
 
 interface InvoiceListProps {
@@ -26,7 +24,6 @@ interface InvoiceListProps {
   onTogglePaymentStatus: (invoice: Invoice) => void;
   onGenerateRemainingInvoice?: (invoice: Invoice) => void;
   onChangeInvoiceType?: (invoice: Invoice, type: 'deposit' | 'remaining' | 'full') => void;
-  onChangeReviewStatus?: (invoice: Invoice, status: 'none' | 'requested' | 'completed') => void;
 }
 
 export default function InvoiceList({ 
@@ -36,8 +33,7 @@ export default function InvoiceList({
   onPreview,
   onTogglePaymentStatus,
   onGenerateRemainingInvoice,
-  onChangeInvoiceType,
-  onChangeReviewStatus
+  onChangeInvoiceType
 }: InvoiceListProps) {
   const { toast } = useToast();
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
@@ -62,34 +58,6 @@ export default function InvoiceList({
     return "Unknown";
   };
 
-  const handleReviewStatusChange = (invoice: Invoice, status: 'none' | 'requested' | 'completed') => {
-    if (onChangeReviewStatus) {
-      onChangeReviewStatus(invoice, status);
-    }
-  };
-
-  const getReviewStatusIcon = (status?: string) => {
-    switch (status) {
-      case 'completed':
-        return <Star className="h-5 w-5 text-yellow-400" />;
-      case 'requested':
-        return <StarHalf className="h-5 w-5 text-yellow-400" />;
-      default:
-        return <StarOff className="h-5 w-5 text-slate-400" />;
-    }
-  };
-
-  const getReviewStatusText = (status?: string) => {
-    switch (status) {
-      case 'completed':
-        return 'Reviewed';
-      case 'requested':
-        return 'Requested';
-      default:
-        return 'No Review';
-    }
-  };
-
   return (
     <div className="rounded-md border">
       <div className="p-4 border-b">
@@ -110,14 +78,13 @@ export default function InvoiceList({
             <TableHead>Status</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Payment</TableHead>
-            <TableHead>Review</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredInvoices.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
+              <TableCell colSpan={8} className="text-center py-4 text-muted-foreground">
                 {invoices.length === 0 ? "No invoices found" : "No matching invoices found"}
               </TableCell>
             </TableRow>
@@ -175,39 +142,6 @@ export default function InvoiceList({
                       {invoice.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
                     </span>
                   </div>
-                </TableCell>
-                <TableCell>
-                  {onChangeReviewStatus ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-full justify-start font-normal">
-                          <div className="flex items-center gap-2">
-                            {getReviewStatusIcon(invoice.reviewStatus)}
-                            <span>{getReviewStatusText(invoice.reviewStatus)}</span>
-                          </div>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
-                        <DropdownMenuItem onClick={() => handleReviewStatusChange(invoice, 'none')}>
-                          <StarOff className="h-4 w-4 mr-2 text-slate-400" />
-                          No Review
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleReviewStatusChange(invoice, 'requested')}>
-                          <StarHalf className="h-4 w-4 mr-2 text-yellow-400" />
-                          Review Requested
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleReviewStatusChange(invoice, 'completed')}>
-                          <Star className="h-4 w-4 mr-2 text-yellow-400" />
-                          Review Completed
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      {getReviewStatusIcon(invoice.reviewStatus)}
-                      <span>{getReviewStatusText(invoice.reviewStatus)}</span>
-                    </div>
-                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
