@@ -58,8 +58,8 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
 
 export const getUnpaidInvoicesCount = (): number => {
   const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-  return invoices.filter((invoice: any) => 
-    invoice.paymentStatus === 'unpaid' || 
+  return invoices.filter((invoice: any) =>
+    invoice.paymentStatus === 'unpaid' ||
     (!invoice.paymentStatus && invoice.status?.toLowerCase() === 'unpaid')
   ).length;
 };
@@ -68,22 +68,22 @@ export const normalizeInvoiceType = (invoice: any): 'deposit' | 'remaining' | 'f
   if (invoice.invoiceType) {
     return invoice.invoiceType;
   }
-  
+
   // Legacy support
   if (invoice.isDepositInvoice) {
     return 'deposit';
   }
-  
+
   return 'full';
 };
 
 export const updateInvoiceType = (
-  invoiceId: number, 
+  invoiceId: number,
   newType: 'deposit' | 'remaining' | 'full'
 ): boolean => {
   try {
     const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-    
+
     const updatedInvoices = invoices.map((invoice: any) => {
       if (invoice.id === invoiceId) {
         return {
@@ -94,7 +94,7 @@ export const updateInvoiceType = (
       }
       return invoice;
     });
-    
+
     localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
     return true;
   } catch (error) {
@@ -107,11 +107,11 @@ export const generateRemainingInvoice = (depositInvoice: any): any => {
   // Get the template index to use for remaining invoices (second template if available)
   const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
   const templates = settings.termsTemplates || [];
-  
+
   // Use second template if available, otherwise use first or empty
   const templateIndex = templates.length >= 2 ? 1 : (templates.length === 1 ? 0 : -1);
   const selectedTemplate = templateIndex >= 0 ? templates[templateIndex] : null;
-  
+
   // Create a new invoice with today's date and the appropriate template
   const remainingInvoice = {
     ...depositInvoice,
@@ -123,7 +123,8 @@ export const generateRemainingInvoice = (depositInvoice: any): any => {
     date: new Date().toISOString().split('T')[0],
     terms: selectedTemplate?.content || depositInvoice.terms || "",
     selectedTermsTemplate: selectedTemplate?.name || "custom",
+    reviewed: false
   };
-  
+
   return remainingInvoice;
 };

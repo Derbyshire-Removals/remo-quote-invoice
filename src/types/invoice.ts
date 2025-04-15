@@ -39,6 +39,7 @@ export interface InitialInvoiceData {
   linkedInvoiceId?: number;
   type?: string;
   paymentStatus?: 'paid' | 'unpaid';
+  reviewed?: boolean;
 }
 
 export interface CompanySettings {

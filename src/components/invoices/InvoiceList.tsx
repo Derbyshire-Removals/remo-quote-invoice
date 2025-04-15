@@ -1,10 +1,9 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon } from "lucide-react";
+import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon, Star } from "lucide-react";
 import { InitialInvoiceData } from "@/types/invoice";
-import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -22,26 +21,27 @@ interface InvoiceListProps {
   onDelete: (invoice: Invoice) => void;
   onPreview: (invoice: Invoice) => void;
   onTogglePaymentStatus: (invoice: Invoice) => void;
+  onToggleReviewStatus?: (invoice: Invoice) => void;
   onGenerateRemainingInvoice?: (invoice: Invoice) => void;
   onChangeInvoiceType?: (invoice: Invoice, type: 'deposit' | 'remaining' | 'full') => void;
 }
 
-export default function InvoiceList({ 
-  invoices, 
-  onEdit, 
-  onDelete, 
+export default function InvoiceList({
+  invoices,
+  onEdit,
+  onDelete,
   onPreview,
   onTogglePaymentStatus,
+  onToggleReviewStatus,
   onGenerateRemainingInvoice,
   onChangeInvoiceType
 }: InvoiceListProps) {
-  const { toast } = useToast();
-  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [_, setHoveredRow] = useState<number | null>(null);
   const [filterValue, setFilterValue] = useState("");
 
   const filteredInvoices = invoices.filter(invoice => {
     if (!filterValue) return true;
-    
+
     const searchTerm = filterValue.toLowerCase();
     return (
       invoice.customer.toLowerCase().includes(searchTerm) ||
@@ -61,13 +61,13 @@ export default function InvoiceList({
   return (
     <div className="rounded-md border">
       <div className="p-4 border-b">
-        <Filter 
+        <Filter
           value={filterValue}
           onChange={setFilterValue}
           placeholder="Filter by customer name or address..."
         />
       </div>
-      
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -78,19 +78,20 @@ export default function InvoiceList({
             <TableHead>Status</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Payment</TableHead>
+            <TableHead>Review</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredInvoices.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center py-4 text-muted-foreground">
+              <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
                 {invoices.length === 0 ? "No invoices found" : "No matching invoices found"}
               </TableCell>
             </TableRow>
           ) : (
             filteredInvoices.map((invoice, index) => (
-              <TableRow 
+              <TableRow
                 key={invoice.id}
                 onMouseEnter={() => setHoveredRow(index)}
                 onMouseLeave={() => setHoveredRow(null)}
@@ -127,7 +128,7 @@ export default function InvoiceList({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Button
-                      variant="ghost" 
+                      variant="ghost"
                       className={`p-1 h-7 ${invoice.paymentStatus === 'paid' ? 'text-green-600' : 'text-slate-400'}`}
                       onClick={() => onTogglePaymentStatus(invoice)}
                       title={invoice.paymentStatus === 'paid' ? 'Mark as unpaid' : 'Mark as paid'}
@@ -144,6 +145,18 @@ export default function InvoiceList({
                   </div>
                 </TableCell>
                 <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      className={`p-1 h-7 ${invoice.reviewed ? 'text-yellow-500' : 'text-slate-400'}`}
+                      onClick={() => onToggleReviewStatus && onToggleReviewStatus(invoice)}
+                      title={invoice.reviewed ? 'Remove review' : 'Mark as reviewed'}
+                    >
+                      <Star className={`h-5 w-5 ${invoice.reviewed ? 'fill-yellow-500' : ''}`} />
+                    </Button>
+                  </div>
+                </TableCell>
+                <TableCell>
                   <div className="flex space-x-2">
                     <Button variant="outline" size="icon" onClick={() => onPreview(invoice)}>
                       <Printer className="h-4 w-4" />
@@ -155,9 +168,9 @@ export default function InvoiceList({
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                     {((invoice.invoiceType === 'deposit' || (!invoice.invoiceType && invoice.isDepositInvoice)) && !invoice.linkedInvoiceId) && (
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
+                      <Button
+                        variant="outline"
+                        size="icon"
                         title="Generate Remaining 50% Invoice"
                         onClick={() => onGenerateRemainingInvoice && onGenerateRemainingInvoice(invoice)}
                       >

@@ -23,7 +23,7 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
   const [formData, setFormData] = useState<InvoiceFormData>(() => {
     return mapInitialDataToFormData(initialData);
   });
-  
+
   const [termsTemplates, setTermsTemplates] = useState<{ name: string; content: string; }[]>([]);
 
   useEffect(() => {
@@ -33,9 +33,9 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const { totalAmount } = calculateTotals(formData.items, formData.tax);
-    
+
     if (!formData.invoiceNumber) {
       toast.error("Invalid invoice number");
       return;
@@ -61,19 +61,20 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
         paymentStatus: initialData?.paymentStatus || 'unpaid',
         invoiceType: formData.invoiceType || 'full',
         isDepositInvoice: formData.invoiceType === 'deposit',
-        linkedInvoiceId: initialData?.linkedInvoiceId
+        linkedInvoiceId: initialData?.linkedInvoiceId,
+        reviewed: initialData?.reviewed || false
       };
 
       const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
       let updatedDocs;
 
       if (initialData) {
-        updatedDocs = existingDocs.map((doc: any) => 
+        updatedDocs = existingDocs.map((doc: any) =>
           doc.id === initialData.id ? newDocument : doc
         );
       } else {
         updatedDocs = [...existingDocs, newDocument];
-        
+
         const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
         settings.invoiceCounter = (settings.invoiceCounter || 1000) + 1;
         settings.invoicePrefix = settings.invoicePrefix || "INV";
@@ -81,9 +82,9 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
       }
 
       localStorage.setItem('invoices', JSON.stringify(updatedDocs));
-      
+
       toast.success(initialData ? "Invoice updated successfully" : "Invoice created successfully");
-      
+
       onSuccess?.();
       onClose();
     } catch (error) {
@@ -121,7 +122,7 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
   const handleItemChange = (index: number, field: keyof InvoiceFormData["items"][0], value: string) => {
     setFormData(prev => ({
       ...prev,
-      items: prev.items.map((item, i) => 
+      items: prev.items.map((item, i) =>
         i === index ? { ...item, [field]: value } : item
       )
     }));
@@ -153,7 +154,7 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
             {initialData ? "Edit Invoice" : "Create New Invoice"}
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
           <CustomerInfoSection
             customerName={formData.customerName}
@@ -183,9 +184,9 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
 
           <div className="space-y-2">
             <Label htmlFor="tax">VAT (%)</Label>
-            <Input 
-              id="tax" 
-              type="number" 
+            <Input
+              id="tax"
+              type="number"
               placeholder="20"
               value={formData.tax}
               onChange={handleChange}

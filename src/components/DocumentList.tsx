@@ -109,13 +109,13 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
 
   const handlePrint = (document: Quote | Invoice) => {
     const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
-    
+
     if (activeDocumentType === 'quotes') {
       printQuote(document as Quote, toast);
     } else {
-      openPrintWindow({ 
-        ...document as Invoice, 
-        type: 'INVOICE' 
+      openPrintWindow({
+        ...document as Invoice,
+        type: 'INVOICE'
       }, settings);
     }
   };
@@ -128,7 +128,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
   const togglePaymentStatus = (invoice: Invoice) => {
     try {
       const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-      
+
       const updatedInvoices = allInvoices.map((doc: Invoice) => {
         if (doc.id === invoice.id) {
           return {
@@ -138,13 +138,13 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
         }
         return doc;
       });
-      
+
       localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
-      
+
       if (activeDocumentType === 'invoices') {
         setDocuments(updatedInvoices);
       }
-      
+
       toast({
         title: "Invoice updated",
         description: `Invoice marked as ${invoice.paymentStatus === 'paid' ? 'unpaid' : 'paid'}.`
@@ -159,20 +159,54 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     }
   };
 
-  const handleGenerateRemainingInvoice = (invoice: Invoice) => {
+  const toggleReviewStatus = (invoice: Invoice) => {
     try {
       const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-      
-      const newInvoice = generateRemainingInvoice(invoice);
-      
-      const updatedInvoices = [...allInvoices, newInvoice];
-      
+
+      const updatedInvoices = allInvoices.map((doc: Invoice) => {
+        if (doc.id === invoice.id) {
+          return {
+            ...doc,
+            reviewed: !doc.reviewed
+          };
+        }
+        return doc;
+      });
+
       localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
-      
+
       if (activeDocumentType === 'invoices') {
         setDocuments(updatedInvoices);
       }
-      
+
+      toast({
+        title: "Review status updated",
+        description: `Invoice ${!invoice.reviewed ? 'marked as reviewed' : 'review removed'}.`
+      });
+    } catch (error) {
+      console.error("Error toggling review status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update review status.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleGenerateRemainingInvoice = (invoice: Invoice) => {
+    try {
+      const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+
+      const newInvoice = generateRemainingInvoice(invoice);
+
+      const updatedInvoices = [...allInvoices, newInvoice];
+
+      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+
+      if (activeDocumentType === 'invoices') {
+        setDocuments(updatedInvoices);
+      }
+
       toast({
         title: "Invoice created",
         description: "Remaining invoice has been created successfully."
@@ -196,15 +230,15 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
 
   const confirmConversion = () => {
     if (!selectedDocument) return;
-    
+
     const quote = selectedDocument as Quote;
     const settings = JSON.parse(localStorage.getItem("companySettings") || "{}");
     const invoiceCounter = settings.invoiceCounter || 1000;
     const invoicePrefix = settings.invoicePrefix || "INV";
-    
+
     // Create a deep copy of quote items
     const quoteItems = [...quote.items];
-    
+
     // Append the quote message to the first item's description if items exist
     if (quoteItems.length > 0 && quote.message) {
       quoteItems[0] = {
@@ -212,10 +246,10 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
         description: `${quoteItems[0].description}\n\nQuote Message: ${quote.message}`
       };
     }
-    
+
     // Get the first terms template if available
     const firstTemplate = settings.termsTemplates?.[0];
-    
+
     const baseInvoice = {
       id: Date.now(),
       type: 'Invoice' as const,
@@ -236,19 +270,20 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
       notes: settings.defaultNotes || '',
       tax: 20,
       terms: firstTemplate?.content || '',
-      selectedTermsTemplate: firstTemplate?.name || 'custom'
+      selectedTermsTemplate: firstTemplate?.name || 'custom',
+      reviewed: false
     };
 
     try {
       const existingInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
       let newInvoices = [];
-      
+
       settings.invoiceCounter = invoiceCounter + 1;
       localStorage.setItem("companySettings", JSON.stringify(settings));
 
       if (isDepositInvoice) {
         const depositAmount = (quote.total * depositPercentage) / 100;
-        
+
         const depositInvoice = {
           ...baseInvoice,
           items: quoteItems.map(item => ({
@@ -259,24 +294,24 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
           invoiceType: 'deposit' as const,
           isDepositInvoice: true,
         };
-        
+
         newInvoices = [...existingInvoices, depositInvoice];
-        
+
         toast({
           title: "Deposit Invoice Created",
           description: `A ${depositPercentage}% deposit invoice has been created.`,
         });
       } else {
         newInvoices = [...existingInvoices, baseInvoice];
-        
+
         toast({
           title: "Invoice Created",
           description: "Quote has been converted to a full invoice.",
         });
       }
-      
+
       localStorage.setItem('invoices', JSON.stringify(newInvoices));
-      
+
       const existingQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
       const updatedQuotes = existingQuotes.map((q: Quote) => {
         if (q.id === quote.id) {
@@ -285,11 +320,11 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
         return q;
       });
       localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
-      
+
       if (onChangeDocumentType) {
         onChangeDocumentType('invoices');
       }
-      
+
       setShowConvertDialog(false);
       loadDocuments();
     } catch (error) {
@@ -305,7 +340,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
   const handleChangeInvoiceType = (invoice: Invoice, newType: 'deposit' | 'remaining' | 'full') => {
     try {
       const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-      
+
       const updatedInvoices = allInvoices.map((doc: Invoice) => {
         if (doc.id === invoice.id) {
           return {
@@ -316,13 +351,13 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
         }
         return doc;
       });
-      
+
       localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
-      
+
       if (activeDocumentType === 'invoices') {
         setDocuments(updatedInvoices);
       }
-      
+
       toast({
         title: "Invoice type changed",
         description: `Invoice type updated to ${newType === 'deposit' ? 'Deposit' : newType === 'remaining' ? 'Remaining' : 'Full'}.`
@@ -338,7 +373,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
   };
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="mx-auto">
       {showEditForm && (
         activeDocumentType === 'quotes' ? (
           <QuoteForm
@@ -358,7 +393,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
           />
         )
       )}
-      
+
       <AlertDialog open={showDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -382,7 +417,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
               Create an invoice from this quote. You can either create a full invoice or a deposit invoice.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="flex items-center space-x-2">
               <input
@@ -394,7 +429,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
               />
               <Label htmlFor="depositInvoice">Create Deposit Invoice</Label>
             </div>
-            
+
             {isDepositInvoice && (
               <div className="space-y-2">
                 <Label htmlFor="depositPercentage">Deposit Percentage (%)</Label>
@@ -412,7 +447,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
               </div>
             )}
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowConvertDialog(false)}>Cancel</Button>
             <Button onClick={confirmConversion}>Create Invoice</Button>
@@ -426,20 +461,21 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
         </div>
       ) : (
         activeDocumentType === 'quotes' ? (
-          <QuoteList 
-            quotes={documents as Quote[]} 
+          <QuoteList
+            quotes={documents as Quote[]}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onPreview={handlePrint}
             onConvertToInvoice={handleConvertToInvoice}
           />
         ) : (
-          <InvoiceList 
-            invoices={documents as Invoice[]} 
+          <InvoiceList
+            invoices={documents as Invoice[]}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onPreview={handlePrint}
             onTogglePaymentStatus={togglePaymentStatus}
+            onToggleReviewStatus={toggleReviewStatus}
             onGenerateRemainingInvoice={handleGenerateRemainingInvoice}
             onChangeInvoiceType={handleChangeInvoiceType}
           />
