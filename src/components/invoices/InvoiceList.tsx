@@ -44,7 +44,8 @@ export default function InvoiceList({
     return 'bg-amber-100 text-amber-800';
   };
 
-  const formatCurrency = (amount: string) => {
+  const formatCurrency = (amount: string | undefined) => {
+    if (!amount) return '£0.00';
     return amount.startsWith('£') ? amount : `£${amount}`;
   };
 
