@@ -37,7 +37,6 @@ interface QuoteItem {
 
 interface Invoice extends InitialInvoiceData {
   paymentStatus?: 'paid' | 'unpaid';
-  hasReview?: boolean;
 }
 
 interface DocumentListProps {
@@ -338,40 +337,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     }
   };
 
-  const toggleReviewStatus = (invoice: Invoice) => {
-    try {
-      const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-      
-      const updatedInvoices = allInvoices.map((doc: Invoice) => {
-        if (doc.id === invoice.id) {
-          return {
-            ...doc,
-            hasReview: !doc.hasReview
-          };
-        }
-        return doc;
-      });
-      
-      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
-      
-      if (activeDocumentType === 'invoices') {
-        setDocuments(updatedInvoices);
-      }
-      
-      toast({
-        title: "Review status updated",
-        description: `Invoice marked as ${invoice.hasReview ? 'not reviewed' : 'reviewed'}.`
-      });
-    } catch (error) {
-      console.error("Error toggling review status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update review status.",
-        variant: "destructive"
-      });
-    }
-  };
-
   return (
     <div className="container mx-auto py-10">
       {showEditForm && (
@@ -477,7 +442,6 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
             onTogglePaymentStatus={togglePaymentStatus}
             onGenerateRemainingInvoice={handleGenerateRemainingInvoice}
             onChangeInvoiceType={handleChangeInvoiceType}
-            onToggleReviewStatus={toggleReviewStatus}
           />
         )
       )}

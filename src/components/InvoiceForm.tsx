@@ -12,8 +12,6 @@ import { InvoiceItemsSection } from "./invoice/InvoiceItemsSection";
 import { calculateTotals, mapInitialDataToFormData } from "@/utils/invoiceUtils";
 import { InvoiceFormData, InitialInvoiceData } from "@/types/invoice";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Star } from "lucide-react";
 
 interface InvoiceFormProps {
   onClose: () => void;
@@ -63,8 +61,7 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
         paymentStatus: initialData?.paymentStatus || 'unpaid',
         invoiceType: formData.invoiceType || 'full',
         isDepositInvoice: formData.invoiceType === 'deposit',
-        linkedInvoiceId: initialData?.linkedInvoiceId,
-        hasReview: formData.hasReview || false
+        linkedInvoiceId: initialData?.linkedInvoiceId
       };
 
       const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');
@@ -146,13 +143,6 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
     }
   };
 
-  const handleReviewChange = (checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      hasReview: checked
-    }));
-  };
-
   const { subtotal, vatAmount, totalAmount } = calculateTotals(formData.items, formData.tax);
 
   return (
@@ -201,20 +191,6 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
               onChange={handleChange}
               className="w-32"
             />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="hasReview" 
-              checked={formData.hasReview}
-              onCheckedChange={handleReviewChange}
-            />
-            <div className="flex items-center space-x-1">
-              <Star className={`h-4 w-4 ${formData.hasReview ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`} />
-              <Label htmlFor="hasReview" className="cursor-pointer">
-                Customer has left a review
-              </Label>
-            </div>
           </div>
 
           <div className="space-y-4">

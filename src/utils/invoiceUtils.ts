@@ -1,4 +1,3 @@
-
 import { InvoiceFormData, InvoiceItem, InitialInvoiceData } from "@/types/invoice";
 
 export const calculateTotals = (items: InvoiceItem[], taxRate: string) => {
@@ -37,8 +36,7 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
       notes: settings.defaultNotes || "",
       terms: defaultTemplate?.content || "",
       selectedTermsTemplate: defaultTemplate?.name || "custom",
-      invoiceType: "full",
-      hasReview: false
+      invoiceType: "full"
     };
   }
 
@@ -54,8 +52,7 @@ export const mapInitialDataToFormData = (initialData?: InitialInvoiceData): Invo
     notes: initialData.notes || "",
     terms: initialData.terms || "",
     selectedTermsTemplate: "custom",
-    invoiceType: initialData.invoiceType || (initialData.isDepositInvoice ? "deposit" : "full"),
-    hasReview: initialData.hasReview || false
+    invoiceType: initialData.invoiceType || (initialData.isDepositInvoice ? "deposit" : "full")
   };
 };
 
@@ -102,28 +99,6 @@ export const updateInvoiceType = (
     return true;
   } catch (error) {
     console.error("Error updating invoice type:", error);
-    return false;
-  }
-};
-
-export const toggleReviewStatus = (invoiceId: number): boolean => {
-  try {
-    const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-    
-    const updatedInvoices = invoices.map((invoice: any) => {
-      if (invoice.id === invoiceId) {
-        return {
-          ...invoice,
-          hasReview: !invoice.hasReview
-        };
-      }
-      return invoice;
-    });
-    
-    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
-    return true;
-  } catch (error) {
-    console.error("Error toggling review status:", error);
     return false;
   }
 };
