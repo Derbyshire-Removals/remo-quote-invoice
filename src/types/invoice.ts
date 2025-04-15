@@ -18,6 +18,14 @@ export interface InvoiceFormData {
   invoiceType?: 'deposit' | 'remaining' | 'full';
 }
 
+export interface ReviewChaseRecord {
+  id: string; // Unique identifier for each record
+  date: string;
+  method: 'email' | 'text' | 'call' | 'other';
+  notes?: string;
+  status?: 'pending' | 'received' | 'wont_chase'; // Status of the chase
+}
+
 export interface InitialInvoiceData {
   id: number;
   number: string;
@@ -40,6 +48,7 @@ export interface InitialInvoiceData {
   type?: string;
   paymentStatus?: 'paid' | 'unpaid';
   reviewed?: boolean;
+  reviewChaseHistory?: ReviewChaseRecord[];
 }
 
 export interface CompanySettings {

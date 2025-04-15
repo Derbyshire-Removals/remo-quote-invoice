@@ -3,7 +3,7 @@ import InvoiceForm from "./InvoiceForm";
 import QuoteForm from "./QuoteForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { InitialInvoiceData } from "@/types/invoice";
+import { InitialInvoiceData, ReviewChaseRecord } from "@/types/invoice";
 import QuoteList from "./quotes/QuoteList";
 import InvoiceList from "./invoices/InvoiceList";
 import { printQuote } from "@/utils/quotePrintUtils";
@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { generateRemainingInvoice } from "@/utils/invoiceUtils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Quote {
   id: string;
@@ -37,6 +39,7 @@ interface QuoteItem {
 
 interface Invoice extends InitialInvoiceData {
   paymentStatus?: 'paid' | 'unpaid';
+  reviewChaseHistory?: ReviewChaseRecord[];
 }
 
 interface DocumentListProps {
@@ -53,7 +56,11 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
   const [depositPercentage, setDepositPercentage] = useState(50);
   const [isDepositInvoice, setIsDepositInvoice] = useState(false);
   const [showReviewNeededDialog, setShowReviewNeededDialog] = useState(false);
-  const [customersWithoutReviews, setCustomersWithoutReviews] = useState<{name: string; email: string}[]>([]);
+  const [showReviewChaseDialog, setShowReviewChaseDialog] = useState(false);
+  const [customersWithoutReviews, setCustomersWithoutReviews] = useState<{name: string; email: string; reviewChaseHistory?: ReviewChaseRecord[]}[]>([]);
+  const [selectedCustomerEmail, setSelectedCustomerEmail] = useState<string>("");
+  const [chaseMethod, setChaseMethod] = useState<'email' | 'text' | 'call' | 'other'>('email');
+  const [chaseNotes, setChaseNotes] = useState<string>("");
   const { toast } = useToast();
 
   const storageKey = activeDocumentType;
@@ -190,6 +197,199 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
       toast({
         title: "Error",
         description: "Failed to update review status.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleMarkCustomerChased = (customerEmail: string) => {
+    try {
+      setSelectedCustomerEmail(customerEmail);
+      setShowReviewChaseDialog(true);
+    } catch (error) {
+      console.error("Error opening chase dialog:", error);
+      toast({
+        title: "Error",
+        description: "Failed to open chase dialog.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const confirmChaseRecord = () => {
+    try {
+      if (!selectedCustomerEmail) return;
+
+      const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+
+      // Create a new chase record
+      const newChaseRecord: ReviewChaseRecord = {
+        id: crypto.randomUUID(), // Generate a unique ID
+        date: new Date().toISOString(),
+        method: chaseMethod,
+        notes: chaseNotes,
+        status: 'pending' // Default status
+      };
+
+      // Update all invoices for this customer
+      const updatedInvoices = allInvoices.map((invoice: Invoice) => {
+        if (invoice.email === selectedCustomerEmail) {
+          return {
+            ...invoice,
+            reviewChaseHistory: [...(invoice.reviewChaseHistory || []), newChaseRecord]
+          };
+        }
+        return invoice;
+      });
+
+      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+
+      // Update the customers without reviews list
+      const updatedCustomers = customersWithoutReviews.map(customer => {
+        if (customer.email === selectedCustomerEmail) {
+          return {
+            ...customer,
+            reviewChaseHistory: [...(customer.reviewChaseHistory || []), newChaseRecord]
+          };
+        }
+        return customer;
+      });
+
+      setCustomersWithoutReviews(updatedCustomers);
+
+      // Reset form and close dialog
+      setChaseMethod('email');
+      setChaseNotes('');
+      setShowReviewChaseDialog(false);
+
+      toast({
+        title: "Customer chased",
+        description: `Customer has been marked as chased for a review via ${chaseMethod}.`
+      });
+    } catch (error) {
+      console.error("Error marking customer as chased:", error);
+      toast({
+        title: "Error",
+        description: "Failed to mark customer as chased.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteChaseRecord = (customerEmail: string, recordId: string) => {
+    try {
+      const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+
+      // Update all invoices for this customer
+      const updatedInvoices = allInvoices.map((invoice: Invoice) => {
+        if (invoice.email === customerEmail && invoice.reviewChaseHistory) {
+          return {
+            ...invoice,
+            reviewChaseHistory: invoice.reviewChaseHistory.filter(record => record.id !== recordId)
+          };
+        }
+        return invoice;
+      });
+
+      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+
+      // Update the customers without reviews list
+      const updatedCustomers = customersWithoutReviews.map(customer => {
+        if (customer.email === customerEmail && customer.reviewChaseHistory) {
+          return {
+            ...customer,
+            reviewChaseHistory: customer.reviewChaseHistory.filter(record => record.id !== recordId)
+          };
+        }
+        return customer;
+      });
+
+      setCustomersWithoutReviews(updatedCustomers);
+
+      toast({
+        title: "Chase record deleted",
+        description: "The chase record has been deleted."
+      });
+    } catch (error) {
+      console.error("Error deleting chase record:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete chase record.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const updateChaseStatus = (customerEmail: string, recordId: string, newStatus: 'pending' | 'received' | 'wont_chase') => {
+    try {
+      const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+
+      // Update all invoices for this customer
+      const updatedInvoices = allInvoices.map((invoice: Invoice) => {
+        if (invoice.email === customerEmail && invoice.reviewChaseHistory) {
+          return {
+            ...invoice,
+            reviewChaseHistory: invoice.reviewChaseHistory.map(record =>
+              record.id === recordId ? { ...record, status: newStatus } : record
+            ),
+            // If status is 'received', also mark the invoice as reviewed
+            ...(newStatus === 'received' ? { reviewed: true } : {})
+          };
+        }
+        return invoice;
+      });
+
+      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+
+      // Update the customers without reviews list
+      const updatedCustomers = customersWithoutReviews.map(customer => {
+        if (customer.email === customerEmail && customer.reviewChaseHistory) {
+          return {
+            ...customer,
+            reviewChaseHistory: customer.reviewChaseHistory.map(record =>
+              record.id === recordId ? { ...record, status: newStatus } : record
+            )
+          };
+        }
+        return customer;
+      });
+
+      setCustomersWithoutReviews(updatedCustomers);
+
+      const statusMessages = {
+        pending: "Chase status set to pending",
+        received: "Marked as review received",
+        wont_chase: "Marked as won't chase anymore"
+      };
+
+      toast({
+        title: "Status updated",
+        description: statusMessages[newStatus]
+      });
+
+      // If we received a review, refresh the list to remove this customer
+      if (newStatus === 'received') {
+        // Also mark all invoices for this customer as reviewed
+        const allInvoicesWithReviews = allInvoices.map((invoice: Invoice) => {
+          if (invoice.email === customerEmail) {
+            return {
+              ...invoice,
+              reviewed: true
+            };
+          }
+          return invoice;
+        });
+
+        localStorage.setItem('invoices', JSON.stringify(allInvoicesWithReviews));
+
+        // Refresh the list
+        handleShowCustomersWithoutReviews();
+      }
+    } catch (error) {
+      console.error("Error updating chase status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update chase status.",
         variant: "destructive"
       });
     }
@@ -390,17 +590,35 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
 
       console.log('Paid invoices without reviews:', paidInvoicesWithoutReviews);
 
-      // Create a map to deduplicate customers
-      const customerMap = new Map<string, {name: string; email: string}>();
+      // Create a map to deduplicate customers and collect chase history
+      const customerMap = new Map<string, {name: string; email: string; reviewChaseHistory?: ReviewChaseRecord[]}>();
 
       paidInvoicesWithoutReviews.forEach((invoice: Invoice) => {
         // Only add if the customer has an email (for contact purposes)
         if (invoice.email) {
-          // Use email as the key to avoid duplicates
-          customerMap.set(invoice.email, {
-            name: invoice.customer,
-            email: invoice.email
-          });
+          const email = invoice.email;
+
+          // If this customer is already in the map, merge the chase history
+          if (customerMap.has(email)) {
+            const existingCustomer = customerMap.get(email)!;
+            const existingHistory = existingCustomer.reviewChaseHistory || [];
+            const newHistory = invoice.reviewChaseHistory || [];
+
+            // Combine histories and remove duplicates
+            const combinedHistory = [...existingHistory, ...newHistory];
+
+            customerMap.set(email, {
+              ...existingCustomer,
+              reviewChaseHistory: combinedHistory
+            });
+          } else {
+            // Add new customer with their chase history
+            customerMap.set(email, {
+              name: invoice.customer,
+              email: email,
+              reviewChaseHistory: invoice.reviewChaseHistory || []
+            });
+          }
         }
       });
 
@@ -525,6 +743,78 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
                     <li key={index} className="border rounded-md p-3">
                       <div className="font-medium">{customer.name}</div>
                       <div className="text-sm text-muted-foreground">{customer.email}</div>
+
+                      {/* Show chase history if any */}
+                      {customer.reviewChaseHistory && customer.reviewChaseHistory.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-gray-100">
+                          <div className="text-xs font-medium text-gray-500 mb-1">Chase History:</div>
+                          <div className="space-y-2">
+                            {customer.reviewChaseHistory.map((record) => (
+                              <div key={record.id} className="text-xs text-gray-500 border border-gray-100 rounded p-2">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <span className="font-medium">{new Date(record.date).toLocaleDateString()} - {record.method}</span>
+                                    {record.status && record.status !== 'pending' && (
+                                      <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${record.status === 'received' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
+                                        {record.status === 'received' ? 'Received' : "Won't Chase"}
+                                      </span>
+                                    )}
+                                    {record.notes && <div className="text-xs italic mt-1">Note: {record.notes}</div>}
+                                  </div>
+                                  <div className="flex space-x-1">
+                                    <div className="relative group">
+                                      <button
+                                        className="text-gray-400 hover:text-gray-600 p-1"
+                                        title="Options"
+                                      >
+                                        •••
+                                      </button>
+                                      <div className="absolute right-0 mt-1 w-48 bg-white shadow-lg rounded-md py-1 z-10 hidden group-hover:block">
+                                        <button
+                                          className="w-full text-left px-4 py-1 text-sm hover:bg-gray-100"
+                                          onClick={() => updateChaseStatus(customer.email, record.id, 'received')}
+                                        >
+                                          Mark as Received
+                                        </button>
+                                        <button
+                                          className="w-full text-left px-4 py-1 text-sm hover:bg-gray-100"
+                                          onClick={() => updateChaseStatus(customer.email, record.id, 'wont_chase')}
+                                        >
+                                          Mark as Won't Chase
+                                        </button>
+                                        <button
+                                          className="w-full text-left px-4 py-1 text-sm hover:bg-gray-100"
+                                          onClick={() => updateChaseStatus(customer.email, record.id, 'pending')}
+                                        >
+                                          Reset to Pending
+                                        </button>
+                                        <div className="border-t border-gray-100 my-1"></div>
+                                        <button
+                                          className="w-full text-left px-4 py-1 text-sm text-red-600 hover:bg-gray-100"
+                                          onClick={() => deleteChaseRecord(customer.email, record.id)}
+                                        >
+                                          Delete Record
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full mt-1"
+                          onClick={() => handleMarkCustomerChased(customer.email)}
+                        >
+                          Mark as Chased
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -534,6 +824,52 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
 
           <DialogFooter>
             <Button onClick={() => setShowReviewNeededDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showReviewChaseDialog} onOpenChange={setShowReviewChaseDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mark Customer as Chased</DialogTitle>
+            <DialogDescription>
+              Record how you contacted the customer about leaving a review.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="chaseMethod">Contact Method</Label>
+              <Select
+                value={chaseMethod}
+                onValueChange={(value) => setChaseMethod(value as 'email' | 'text' | 'call' | 'other')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select contact method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="text">Text Message</SelectItem>
+                  <SelectItem value="call">Phone Call</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="chaseNotes">Notes (Optional)</Label>
+              <Textarea
+                id="chaseNotes"
+                placeholder="Add any notes about the contact"
+                value={chaseNotes}
+                onChange={(e) => setChaseNotes(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReviewChaseDialog(false)}>Cancel</Button>
+            <Button onClick={confirmChaseRecord}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -62,7 +62,8 @@ export default function InvoiceForm({ onClose, initialData, onSuccess }: Invoice
         invoiceType: formData.invoiceType || 'full',
         isDepositInvoice: formData.invoiceType === 'deposit',
         linkedInvoiceId: initialData?.linkedInvoiceId,
-        reviewed: initialData?.reviewed || false
+        reviewed: initialData?.reviewed || false,
+        reviewChaseHistory: initialData?.reviewChaseHistory || []
       };
 
       const existingDocs = JSON.parse(localStorage.getItem('invoices') || '[]');

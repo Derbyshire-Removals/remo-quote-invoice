@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon, Star } from "lucide-react";
-import { InitialInvoiceData } from "@/types/invoice";
+import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon, Star, BellRing } from "lucide-react";
+import { InitialInvoiceData, ReviewChaseRecord } from "@/types/invoice";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import { Filter } from "@/components/ui/filter";
 
 interface Invoice extends InitialInvoiceData {
   paymentStatus?: 'paid' | 'unpaid';
+  reviewChaseHistory?: ReviewChaseRecord[];
 }
 
 interface InvoiceListProps {
@@ -58,6 +59,38 @@ export default function InvoiceList({
     if (!invoice.invoiceType && invoice.isDepositInvoice) return "Deposit (50%)";
     if (!invoice.invoiceType && !invoice.isDepositInvoice) return "Full";
     return "Unknown";
+  };
+
+  const getChaseStatusColor = (chaseHistory: ReviewChaseRecord[]) => {
+    // Check if any record has status 'received'
+    if (chaseHistory.some(record => record.status === 'received')) {
+      return 'text-green-500';
+    }
+
+    // Check if any record has status 'wont_chase'
+    if (chaseHistory.some(record => record.status === 'wont_chase')) {
+      return 'text-orange-500';
+    }
+
+    // Default color for pending or no status
+    return 'text-blue-500';
+  };
+
+  const getChaseTooltip = (chaseHistory: ReviewChaseRecord[]) => {
+    // Get the most recent record
+    const latestRecord = chaseHistory[chaseHistory.length - 1];
+
+    // Base tooltip text
+    let tooltip = `Chased ${chaseHistory.length} ${chaseHistory.length === 1 ? 'time' : 'times'} - Last: ${new Date(latestRecord.date).toLocaleDateString()} via ${latestRecord.method}`;
+
+    // Add status information if available
+    if (chaseHistory.some(record => record.status === 'received')) {
+      tooltip += ' - Review received';
+    } else if (chaseHistory.some(record => record.status === 'wont_chase')) {
+      tooltip += " - Won't chase anymore";
+    }
+
+    return tooltip;
   };
 
   return (
@@ -168,6 +201,15 @@ export default function InvoiceList({
                     >
                       <Star className={`h-5 w-5 ${invoice.reviewed ? 'fill-yellow-500' : ''}`} />
                     </Button>
+                    {invoice.reviewChaseHistory && invoice.reviewChaseHistory.length > 0 && (
+                      <div
+                        className={`flex items-center ${getChaseStatusColor(invoice.reviewChaseHistory)}`}
+                        title={getChaseTooltip(invoice.reviewChaseHistory)}
+                      >
+                        <BellRing className="h-4 w-4" />
+                        <span className="text-xs ml-1">{invoice.reviewChaseHistory.length}</span>
+                      </div>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>

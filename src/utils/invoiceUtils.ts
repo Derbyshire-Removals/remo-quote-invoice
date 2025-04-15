@@ -123,7 +123,9 @@ export const generateRemainingInvoice = (depositInvoice: any): any => {
     date: new Date().toISOString().split('T')[0],
     terms: selectedTemplate?.content || depositInvoice.terms || "",
     selectedTermsTemplate: selectedTemplate?.name || "custom",
-    reviewed: false
+    reviewed: false,
+    // Preserve review chase history from the deposit invoice
+    reviewChaseHistory: depositInvoice.reviewChaseHistory || []
   };
 
   return remainingInvoice;
