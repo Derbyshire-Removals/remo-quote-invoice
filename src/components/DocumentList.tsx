@@ -3,7 +3,7 @@ import InvoiceForm from "./InvoiceForm";
 import QuoteForm from "./QuoteForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { PrintableDocument, InitialInvoiceData } from "@/types/invoice";
+import { InitialInvoiceData } from "@/types/invoice";
 import QuoteList from "./quotes/QuoteList";
 import InvoiceList from "./invoices/InvoiceList";
 import { printQuote } from "@/utils/quotePrintUtils";
@@ -52,6 +52,8 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
   const [showConvertDialog, setShowConvertDialog] = useState(false);
   const [depositPercentage, setDepositPercentage] = useState(50);
   const [isDepositInvoice, setIsDepositInvoice] = useState(false);
+  const [showReviewNeededDialog, setShowReviewNeededDialog] = useState(false);
+  const [customersWithoutReviews, setCustomersWithoutReviews] = useState<{name: string; email: string}[]>([]);
   const { toast } = useToast();
 
   const storageKey = activeDocumentType;
@@ -372,6 +374,52 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
     }
   };
 
+  const handleShowCustomersWithoutReviews = () => {
+    try {
+      const allInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+      console.log('All invoices:', allInvoices);
+
+      // Get paid invoices without reviews
+      const paidInvoicesWithoutReviews = allInvoices.filter((invoice: Invoice) => {
+        // Check if the invoice is paid and not reviewed
+        const isPaid = invoice.paymentStatus === 'paid';
+        const isNotReviewed = invoice.reviewed !== true; // Explicitly check for not true
+        console.log(`Invoice ${invoice.id} - Paid: ${isPaid}, Reviewed: ${invoice.reviewed}, Will include: ${isPaid && isNotReviewed}`);
+        return isPaid && isNotReviewed;
+      });
+
+      console.log('Paid invoices without reviews:', paidInvoicesWithoutReviews);
+
+      // Create a map to deduplicate customers
+      const customerMap = new Map<string, {name: string; email: string}>();
+
+      paidInvoicesWithoutReviews.forEach((invoice: Invoice) => {
+        // Only add if the customer has an email (for contact purposes)
+        if (invoice.email) {
+          // Use email as the key to avoid duplicates
+          customerMap.set(invoice.email, {
+            name: invoice.customer,
+            email: invoice.email
+          });
+        }
+      });
+
+      // Convert map to array
+      const uniqueCustomers = Array.from(customerMap.values());
+      console.log('Unique customers without reviews:', uniqueCustomers);
+
+      setCustomersWithoutReviews(uniqueCustomers);
+      setShowReviewNeededDialog(true);
+    } catch (error) {
+      console.error("Error getting customers without reviews:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get customers without reviews.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="mx-auto">
       {showEditForm && (
@@ -455,6 +503,41 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
         </DialogContent>
       </Dialog>
 
+      <Dialog open={showReviewNeededDialog} onOpenChange={setShowReviewNeededDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Customers Needing Reviews</DialogTitle>
+            <DialogDescription>
+              These customers have paid invoices but haven't left a review yet.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            {customersWithoutReviews.length === 0 ? (
+              <p className="text-center text-muted-foreground">All paid customers have left reviews!</p>
+            ) : (
+              <div className="space-y-4">
+                <div className="text-sm font-medium">
+                  {customersWithoutReviews.length} {customersWithoutReviews.length === 1 ? 'customer needs' : 'customers need'} to leave a review:
+                </div>
+                <ul className="space-y-3">
+                  {customersWithoutReviews.map((customer, index) => (
+                    <li key={index} className="border rounded-md p-3">
+                      <div className="font-medium">{customer.name}</div>
+                      <div className="text-sm text-muted-foreground">{customer.email}</div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setShowReviewNeededDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {documents.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-lg text-gray-500">No {activeDocumentType} found.</p>
@@ -478,6 +561,7 @@ export default function DocumentList({ activeDocumentType, onChangeDocumentType 
             onToggleReviewStatus={toggleReviewStatus}
             onGenerateRemainingInvoice={handleGenerateRemainingInvoice}
             onChangeInvoiceType={handleChangeInvoiceType}
+            onShowCustomersWithoutReviews={handleShowCustomersWithoutReviews}
           />
         )
       )}

@@ -24,6 +24,7 @@ interface InvoiceListProps {
   onToggleReviewStatus?: (invoice: Invoice) => void;
   onGenerateRemainingInvoice?: (invoice: Invoice) => void;
   onChangeInvoiceType?: (invoice: Invoice, type: 'deposit' | 'remaining' | 'full') => void;
+  onShowCustomersWithoutReviews?: () => void;
 }
 
 export default function InvoiceList({
@@ -34,7 +35,8 @@ export default function InvoiceList({
   onTogglePaymentStatus,
   onToggleReviewStatus,
   onGenerateRemainingInvoice,
-  onChangeInvoiceType
+  onChangeInvoiceType,
+  onShowCustomersWithoutReviews
 }: InvoiceListProps) {
   const [_, setHoveredRow] = useState<number | null>(null);
   const [filterValue, setFilterValue] = useState("");
@@ -60,12 +62,24 @@ export default function InvoiceList({
 
   return (
     <div className="rounded-md border">
-      <div className="p-4 border-b">
-        <Filter
-          value={filterValue}
-          onChange={setFilterValue}
-          placeholder="Filter by customer name or address..."
-        />
+      <div className="p-4 border-b flex items-center justify-between gap-4">
+        <div className="flex-grow">
+          <Filter
+            value={filterValue}
+            onChange={setFilterValue}
+            placeholder="Filter by customer name or address..."
+          />
+        </div>
+        {onShowCustomersWithoutReviews && (
+          <Button
+            variant="outline"
+            onClick={onShowCustomersWithoutReviews}
+            className="flex items-center gap-2 whitespace-nowrap"
+          >
+            <Star className="h-4 w-4 text-yellow-500" />
+            Show Customers Needing Reviews
+          </Button>
+        )}
       </div>
 
       <Table>
