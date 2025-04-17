@@ -9,7 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Enquiry } from "@/types/invoice";
-import { Calendar, CheckSquare, Home, MessageSquare, Package, Phone, Truck, Wrench } from "lucide-react";
+import { Calendar, CheckSquare, Home, MessageSquare, Package, Phone, Truck, Wrench, Wand2 } from "lucide-react";
+import { processEnquiryText, isOpenAIConfigured } from "@/utils/openaiUtils";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface EnquiryFormProps {
   onClose: () => void;
@@ -18,6 +20,9 @@ interface EnquiryFormProps {
 
 export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) {
   const { toast } = useToast();
+  const [pastedText, setPastedText] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [showApiKeyAlert, setShowApiKeyAlert] = useState<boolean>(false);
   const [formData, setFormData] = useState<Omit<Enquiry, 'id' | 'createdAt' | 'status'>>({
     customerName: initialData?.customerName || "",
     phone: initialData?.phone || "",
@@ -72,7 +77,7 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const enquiryData: Enquiry = {
       id: initialData?.id || crypto.randomUUID(),
       ...formData,
@@ -81,26 +86,26 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
     };
 
     // Get existing enquiries from localStorage
-    const existingEnquiries = JSON.parse(localStorage.getItem('enquiries') || '[]');
-    
-    let updatedEnquiries;
+    const existingEnquiries = JSON.parse(localStorage.getItem('enquiries') || '[]') as Enquiry[];
+
+    let updatedEnquiries: Enquiry[];
     if (initialData) {
       // Update existing enquiry
-      updatedEnquiries = existingEnquiries.map((enquiry: Enquiry) => 
+      updatedEnquiries = existingEnquiries.map((enquiry: Enquiry) =>
         enquiry.id === initialData.id ? enquiryData : enquiry
       );
     } else {
       // Add new enquiry
       updatedEnquiries = [...existingEnquiries, enquiryData];
     }
-    
+
     // Save to localStorage
     localStorage.setItem('enquiries', JSON.stringify(updatedEnquiries));
 
     // Show success message
     toast({
       title: initialData ? "Enquiry Updated" : "Enquiry Created",
-      description: initialData 
+      description: initialData
         ? "The enquiry has been successfully updated."
         : "The enquiry has been successfully created.",
     });
@@ -109,19 +114,80 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
     onClose();
   };
 
+  const handleProcessText = async () => {
+    if (!pastedText.trim()) {
+      toast({
+        title: "No text to process",
+        description: "Please paste some text to process.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!isOpenAIConfigured()) {
+      setShowApiKeyAlert(true);
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const extractedData = await processEnquiryText(pastedText);
+      setFormData(prev => ({
+        ...prev,
+        ...extractedData,
+        services: {
+          ...prev.services,
+          ...(extractedData.services || {})
+        }
+      }));
+      toast({
+        title: "Text Processed",
+        description: "The form has been populated with the extracted information.",
+      });
+    } catch (error) {
+      toast({
+        title: "Processing Failed",
+        description: error instanceof Error ? error.message : "Failed to process the text. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{initialData ? "Edit Enquiry" : "New Enquiry"}</DialogTitle>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="grid gap-6 py-4">
+    <>
+      <AlertDialog open={showApiKeyAlert} onOpenChange={setShowApiKeyAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>OpenAI API Key Required</AlertDialogTitle>
+            <AlertDialogDescription>
+              To use the text processing feature, you need to add your OpenAI API key in the settings.
+              You can get an API key from the OpenAI website.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setShowApiKeyAlert(false);
+              // You might want to open settings dialog here if you have a way to do so
+            }}>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{initialData ? "Edit Enquiry" : "New Enquiry"}</DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="grid gap-6 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="customerName">Customer Name</Label>
-              <Input 
-                id="customerName" 
+              <Input
+                id="customerName"
                 placeholder="Enter customer name"
                 value={formData.customerName}
                 onChange={handleInputChange}
@@ -130,9 +196,9 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email (Optional)</Label>
-              <Input 
-                id="email" 
-                type="email" 
+              <Input
+                id="email"
+                type="email"
                 placeholder="customer@example.com"
                 value={formData.email}
                 onChange={handleInputChange}
@@ -145,8 +211,8 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
               <Label htmlFor="phone">Phone Number</Label>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />
-                <Input 
-                  id="phone" 
+                <Input
+                  id="phone"
                   placeholder="Enter phone number"
                   value={formData.phone}
                   onChange={handleInputChange}
@@ -158,7 +224,7 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
               <div className="flex items-center space-x-2 h-10 mb-2">
                 <MessageSquare className="h-4 w-4" />
                 <Label htmlFor="hasWhatsapp" className="cursor-pointer">Has WhatsApp</Label>
-                <Switch 
+                <Switch
                   id="hasWhatsapp"
                   checked={formData.hasWhatsapp}
                   onCheckedChange={(checked) => handleSwitchChange('hasWhatsapp', checked)}
@@ -172,8 +238,8 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
               <Label htmlFor="moveDate">Moving Date</Label>
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4" />
-                <Input 
-                  id="moveDate" 
+                <Input
+                  id="moveDate"
                   type="date"
                   value={formData.moveDate}
                   onChange={handleInputChange}
@@ -182,8 +248,8 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
             </div>
             <div className="space-y-2">
               <Label htmlFor="fromBedrooms">Number of Bedrooms</Label>
-              <Input 
-                id="fromBedrooms" 
+              <Input
+                id="fromBedrooms"
                 type="number"
                 min={0}
                 max={10}
@@ -198,8 +264,8 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
             <Label htmlFor="fromAddress">Moving From (house number, postcode, beds)</Label>
             <div className="flex items-center space-x-2">
               <Home className="h-4 w-4" />
-              <Textarea 
-                id="fromAddress" 
+              <Textarea
+                id="fromAddress"
                 placeholder="Enter pickup address"
                 value={formData.fromAddress}
                 onChange={handleInputChange}
@@ -212,8 +278,8 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
             <Label htmlFor="toAddress">Moving To (house number, postcode)</Label>
             <div className="flex items-center space-x-2">
               <Truck className="h-4 w-4" />
-              <Textarea 
-                id="toAddress" 
+              <Textarea
+                id="toAddress"
                 placeholder="Enter destination address"
                 value={formData.toAddress}
                 onChange={handleInputChange}
@@ -224,8 +290,8 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
 
           <div className="space-y-2">
             <Label htmlFor="accessIssues">Any access / parking issues</Label>
-            <Textarea 
-              id="accessIssues" 
+            <Textarea
+              id="accessIssues"
               placeholder="Describe any access or parking issues"
               value={formData.accessIssues}
               onChange={handleInputChange}
@@ -236,7 +302,7 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
             <div className="flex items-center space-x-2 h-10">
               <CheckSquare className="h-4 w-4" />
               <Label htmlFor="gettingMoreQuotes" className="cursor-pointer">Is customer getting more quotes?</Label>
-              <Switch 
+              <Switch
                 id="gettingMoreQuotes"
                 checked={formData.gettingMoreQuotes}
                 onCheckedChange={(checked) => handleSwitchChange('gettingMoreQuotes', checked)}
@@ -248,8 +314,8 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
             <Label>Services Required</Label>
             <div className="grid grid-cols-3 gap-4">
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="packaging" 
+                <Checkbox
+                  id="packaging"
                   checked={formData.services.packaging}
                   onCheckedChange={(checked) => handleSwitchChange('packaging', checked === true)}
                 />
@@ -258,10 +324,10 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
                   <span>Packaging</span>
                 </Label>
               </div>
-              
+
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="storage" 
+                <Checkbox
+                  id="storage"
                   checked={formData.services.storage}
                   onCheckedChange={(checked) => handleSwitchChange('storage', checked === true)}
                 />
@@ -270,10 +336,10 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
                   <span>Storage</span>
                 </Label>
               </div>
-              
+
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="disassembly" 
+                <Checkbox
+                  id="disassembly"
                   checked={formData.services.disassembly}
                   onCheckedChange={(checked) => handleSwitchChange('disassembly', checked === true)}
                 />
@@ -287,13 +353,37 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <Textarea 
-              id="notes" 
+            <Textarea
+              id="notes"
               value={formData.notes}
               onChange={handleInputChange}
               className="min-h-[100px]"
               placeholder="Any additional notes or requirements"
             />
+          </div>
+
+          <div className="border p-4 rounded-md space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">Paste Enquiry Text</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleProcessText}
+                disabled={isProcessing || !pastedText.trim()}
+                className="flex items-center gap-2"
+              >
+                <Wand2 className="h-4 w-4" />
+                {isProcessing ? "Processing..." : "Process Text"}
+              </Button>
+            </div>
+            <Textarea
+              placeholder="Paste enquiry text here to automatically fill the form using AI..."
+              value={pastedText}
+              onChange={(e) => setPastedText(e.target.value)}
+              className="min-h-[150px]"
+            />
+            <p className="text-xs text-muted-foreground">This feature uses OpenAI to extract information from pasted text. An API key must be configured in settings.</p>
           </div>
 
           <div className="flex justify-end space-x-4">
@@ -303,5 +393,6 @@ export default function EnquiryForm({ onClose, initialData }: EnquiryFormProps) 
         </form>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

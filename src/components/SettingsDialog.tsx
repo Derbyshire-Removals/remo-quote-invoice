@@ -18,6 +18,7 @@ interface CompanySettings {
   invoicePrefix: string;
   invoiceCounter: number;
   defaultNotes: string;
+  openaiApiKey?: string; // API key for OpenAI integration
   termsTemplates: {
     name: string;
     content: string;
@@ -35,6 +36,7 @@ const defaultSettings: CompanySettings = {
   invoicePrefix: "INV-DR",
   invoiceCounter: 1000,
   defaultNotes: "",
+  openaiApiKey: "", // Default empty API key
   termsTemplates: [
     {
       name: "Standard Terms",
@@ -96,7 +98,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const handleTemplateChange = (index: number, field: 'name' | 'content', value: string) => {
     setSettings(prev => ({
       ...prev,
-      termsTemplates: prev.termsTemplates.map((template, i) => 
+      termsTemplates: prev.termsTemplates.map((template, i) =>
         i === index ? { ...template, [field]: value } : template
       )
     }));
@@ -108,7 +110,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         <DialogHeader>
           <DialogTitle>Company Settings</DialogTitle>
         </DialogHeader>
-        
+
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="logoUrl">Company Logo URL</Label>
@@ -119,7 +121,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               onChange={(e) => setSettings({ ...settings, logoUrl: e.target.value })}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="name">Company Name</Label>
             <Input
@@ -189,6 +191,18 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               value={settings.defaultNotes}
               onChange={(e) => setSettings({ ...settings, defaultNotes: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="openaiApiKey">OpenAI API Key</Label>
+            <Input
+              id="openaiApiKey"
+              type="password"
+              placeholder="sk-..."
+              value={settings.openaiApiKey}
+              onChange={(e) => setSettings({ ...settings, openaiApiKey: e.target.value })}
+            />
+            <p className="text-xs text-muted-foreground mt-1">Required for AI-powered form filling from pasted text</p>
           </div>
 
           <div className="space-y-4">
