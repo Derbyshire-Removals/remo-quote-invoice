@@ -6,7 +6,7 @@ import OpenAI from "openai";
  */
 export const processEnquiryText = async (text: string): Promise<Partial<Enquiry>> => {
   const apiKey = getOpenAIApiKey();
-  
+
   if (!apiKey) {
     throw new Error("OpenAI API key not found. Please add it in the settings.");
   }
@@ -18,11 +18,11 @@ export const processEnquiryText = async (text: string): Promise<Partial<Enquiry>
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `You are a helpful assistant that extracts structured information from enquiry texts. 
+          content: `You are a helpful assistant that extracts structured information from enquiry texts.
           Extract the following information if available:
           - Customer name
           - Phone number
@@ -36,7 +36,7 @@ export const processEnquiryText = async (text: string): Promise<Partial<Enquiry>
           - Whether they're getting more quotes (default to false if not mentioned)
           - Services needed (packaging, storage, disassembly)
           - Any additional notes
-          
+
           Format your response as a valid JSON object with these fields:
           {
             "customerName": string,
