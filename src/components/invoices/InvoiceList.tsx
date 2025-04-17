@@ -1,6 +1,5 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon, Star, BellRing } from "lucide-react";
+import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon, Star, BellRing, ChevronDown, Calendar } from "lucide-react";
 import { InitialInvoiceData, ReviewChaseRecord } from "@/types/invoice";
 import { useState } from "react";
 import {
@@ -10,6 +9,9 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Filter } from "@/components/ui/filter";
+import { MonthlyGroupedList } from "@/components/ui/monthly-grouped-list";
+import { formatDate as formatDateUtil } from "@/utils/dateUtils";
+import { Badge } from "@/components/ui/badge";
 
 interface Invoice extends InitialInvoiceData {
   paymentStatus?: 'paid' | 'unpaid';
@@ -39,7 +41,7 @@ export default function InvoiceList({
   onChangeInvoiceType,
   onShowCustomersWithoutReviews
 }: InvoiceListProps) {
-  const [_, setHoveredRow] = useState<number | null>(null);
+  // No longer need hover state with card-based layout
   const [filterValue, setFilterValue] = useState("");
 
   const filteredInvoices = invoices.filter(invoice => {
@@ -115,131 +117,146 @@ export default function InvoiceList({
         )}
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Number</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Payment</TableHead>
-            <TableHead>Review</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredInvoices.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
-                {invoices.length === 0 ? "No invoices found" : "No matching invoices found"}
-              </TableCell>
-            </TableRow>
-          ) : (
-            filteredInvoices.map((invoice, index) => (
-              <TableRow
-                key={invoice.id}
-                onMouseEnter={() => setHoveredRow(index)}
-                onMouseLeave={() => setHoveredRow(null)}
-              >
-                <TableCell>{invoice.number}</TableCell>
-                <TableCell>{invoice.customer}</TableCell>
-                <TableCell>{invoice.date}</TableCell>
-                <TableCell>{invoice.amount}</TableCell>
-                <TableCell>{invoice.status}</TableCell>
-                <TableCell>
-                  {onChangeInvoiceType ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-full justify-start font-normal">
-                          {getInvoiceTypeDisplay(invoice)}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
-                        <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'full')}>
-                          Full
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'deposit')}>
-                          Deposit (50%)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'remaining')}>
-                          Remaining (50%)
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : (
-                    getInvoiceTypeDisplay(invoice)
+      <MonthlyGroupedList
+        items={filteredInvoices}
+        dateField="date"
+        emptyMessage={invoices.length === 0 ? "No invoices found" : "No matching invoices found"}
+        renderHeader={(month, count) => (
+          <div className="flex justify-between w-full items-center">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{month}</span>
+              <Badge variant="outline">{count}</Badge>
+            </div>
+            <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+          </div>
+        )}
+        renderItem={(invoice) => (
+          <div className="border rounded-md p-4 mb-2 bg-card">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-medium">{invoice.customer}</h3>
+                  <span className="text-sm text-muted-foreground">({invoice.number})</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {formatDateUtil(invoice.date)}
+                  </div>
+                  {invoice.email && (
+                    <span className="hidden md:inline">• {invoice.email}</span>
                   )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      className={`p-1 h-7 ${invoice.paymentStatus === 'paid' ? 'text-green-600' : 'text-slate-400'}`}
-                      onClick={() => onTogglePaymentStatus(invoice)}
-                      title={invoice.paymentStatus === 'paid' ? 'Mark as unpaid' : 'Mark as paid'}
-                    >
-                      {invoice.paymentStatus === 'paid' ? (
-                        <CheckIcon className="h-5 w-5" />
-                      ) : (
-                        <Circle className="h-5 w-5" />
-                      )}
-                    </Button>
-                    <span className={invoice.paymentStatus === 'paid' ? 'text-green-600 font-medium' : 'text-slate-400'}>
-                      {invoice.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      className={`p-1 h-7 ${invoice.reviewed ? 'text-yellow-500' : 'text-slate-400'}`}
-                      onClick={() => onToggleReviewStatus && onToggleReviewStatus(invoice)}
-                      title={invoice.reviewed ? 'Remove review' : 'Mark as reviewed'}
-                    >
-                      <Star className={`h-5 w-5 ${invoice.reviewed ? 'fill-yellow-500' : ''}`} />
-                    </Button>
-                    {invoice.reviewChaseHistory && invoice.reviewChaseHistory.length > 0 && (
-                      <div
-                        className={`flex items-center ${getChaseStatusColor(invoice.reviewChaseHistory)}`}
-                        title={getChaseTooltip(invoice.reviewChaseHistory)}
-                      >
-                        <BellRing className="h-4 w-4" />
-                        <span className="text-xs ml-1">{invoice.reviewChaseHistory.length}</span>
-                      </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    className={`p-1 h-7 ${invoice.paymentStatus === 'paid' ? 'text-green-600' : 'text-slate-400'}`}
+                    onClick={() => onTogglePaymentStatus(invoice)}
+                    title={invoice.paymentStatus === 'paid' ? 'Mark as unpaid' : 'Mark as paid'}
+                  >
+                    {invoice.paymentStatus === 'paid' ? (
+                      <CheckIcon className="h-5 w-5" />
+                    ) : (
+                      <Circle className="h-5 w-5" />
                     )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="icon" onClick={() => onPreview(invoice)}>
-                      <Printer className="h-4 w-4" />
+                  </Button>
+                  <span className={invoice.paymentStatus === 'paid' ? 'text-green-600 font-medium' : 'text-slate-400'}>
+                    {invoice.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+                  </span>
+                </div>
+                <div className="flex space-x-1">
+                  <Button variant="outline" size="icon" onClick={() => onPreview(invoice)} title="Print Invoice">
+                    <Printer className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={() => onEdit(invoice)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={() => onDelete(invoice)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                  {((invoice.invoiceType === 'deposit' || (!invoice.invoiceType && invoice.isDepositInvoice)) && !invoice.linkedInvoiceId) && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      title="Generate Remaining 50% Invoice"
+                      onClick={() => onGenerateRemainingInvoice && onGenerateRemainingInvoice(invoice)}
+                    >
+                      <SplitIcon className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" onClick={() => onEdit(invoice)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => onDelete(invoice)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                    {((invoice.invoiceType === 'deposit' || (!invoice.invoiceType && invoice.isDepositInvoice)) && !invoice.linkedInvoiceId) && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        title="Generate Remaining 50% Invoice"
-                        onClick={() => onGenerateRemainingInvoice && onGenerateRemainingInvoice(invoice)}
-                      >
-                        <SplitIcon className="h-4 w-4" />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 text-sm">
+              <div>
+                <div className="text-muted-foreground mb-1">Amount</div>
+                <div className="font-medium">{invoice.amount}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground mb-1">Status</div>
+                <div>{invoice.status}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground mb-1">Type</div>
+                {onChangeInvoiceType ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-full justify-start font-normal p-0">
+                        {getInvoiceTypeDisplay(invoice)}
                       </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'full')}>
+                        Full
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'deposit')}>
+                        Deposit (50%)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onChangeInvoiceType(invoice, 'remaining')}>
+                        Remaining (50%)
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  getInvoiceTypeDisplay(invoice)
+                )}
+              </div>
+              <div>
+                <div className="text-muted-foreground mb-1">Review</div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    className={`p-1 h-7 ${invoice.reviewed ? 'text-yellow-500' : 'text-slate-400'}`}
+                    onClick={() => onToggleReviewStatus && onToggleReviewStatus(invoice)}
+                    title={invoice.reviewed ? 'Remove review' : 'Mark as reviewed'}
+                  >
+                    <Star className={`h-5 w-5 ${invoice.reviewed ? 'fill-yellow-500' : ''}`} />
+                  </Button>
+                  {invoice.reviewChaseHistory && invoice.reviewChaseHistory.length > 0 && (
+                    <div
+                      className={`flex items-center ${getChaseStatusColor(invoice.reviewChaseHistory)}`}
+                      title={getChaseTooltip(invoice.reviewChaseHistory)}
+                    >
+                      <BellRing className="h-4 w-4" />
+                      <span className="text-xs ml-1">{invoice.reviewChaseHistory.length}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {invoice.address && (
+              <div className="mt-4 text-sm">
+                <div className="text-muted-foreground mb-1">Address</div>
+                <div className="bg-muted p-2 rounded-md">{invoice.address}</div>
+              </div>
+            )}
+          </div>
+        )}
+      />
     </div>
   );
 }

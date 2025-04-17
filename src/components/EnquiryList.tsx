@@ -1,16 +1,16 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, MessageSquare, Calendar, Share, Clipboard, MapPin, FileText as QuoteIcon } from "lucide-react";
+import { Edit, Trash2, MessageSquare, Calendar, Share, Clipboard, MapPin, FileText as QuoteIcon, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Enquiry, Quote } from "@/types/invoice";
+import { Enquiry } from "@/types/invoice";
 import EnquiryForm from "./EnquiryForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { format, isValid, parseISO } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import QuoteForm from "./QuoteForm";
 import { Filter } from "./ui/filter";
+import { MonthlyGroupedList } from "./ui/monthly-grouped-list";
+import { formatDate as formatDateUtil } from "@/utils/dateUtils";
 
 interface EnquiryListProps {
   onQuoteCreated?: (quoteId: string) => void;
@@ -58,7 +58,7 @@ export default function EnquiryList({ onQuoteCreated }: EnquiryListProps) {
 
   const filteredEnquiries = enquiries.filter(enquiry => {
     if (!filterValue) return true;
-    
+
     const searchTerm = filterValue.toLowerCase();
     return (
       enquiry.customerName.toLowerCase().includes(searchTerm) ||
@@ -90,19 +90,7 @@ export default function EnquiryList({ onQuoteCreated }: EnquiryListProps) {
     setShowDeleteDialog(true);
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Not specified';
-    
-    try {
-      const date = parseISO(dateString);
-      if (!isValid(date)) {
-        return 'Invalid date';
-      }
-      return format(date, 'dd/MM/yyyy');
-    } catch (error) {
-      return 'Invalid date';
-    }
-  };
+  const formatDate = formatDateUtil;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -183,9 +171,9 @@ FOLLOW-UP ACTIONS:
 
   const renderAddressWithMapLink = (address: string) => {
     return (
-      <a 
-        href={getGoogleMapsUrl(address)} 
-        target="_blank" 
+      <a
+        href={getGoogleMapsUrl(address)}
+        target="_blank"
         rel="noopener noreferrer"
         className="flex items-center hover:text-primary hover:underline group max-w-[150px] truncate"
       >
@@ -201,15 +189,15 @@ FOLLOW-UP ACTIONS:
   };
 
   const updateEnquiryStatus = (enquiryId: string) => {
-    const updatedEnquiries = enquiries.map(enquiry => 
-      enquiry.id === enquiryId 
-        ? { ...enquiry, status: 'quoted' as const } 
+    const updatedEnquiries = enquiries.map(enquiry =>
+      enquiry.id === enquiryId
+        ? { ...enquiry, status: 'quoted' as const }
         : enquiry
     );
-    
+
     localStorage.setItem(storageKey, JSON.stringify(updatedEnquiries));
     setEnquiries(updatedEnquiries);
-    
+
     toast({
       title: "Enquiry status updated",
       description: "The enquiry status has been changed to 'quoted'."
@@ -218,125 +206,138 @@ FOLLOW-UP ACTIONS:
 
   const handleQuoteFormClose = (quoteCreated: string | boolean = false) => {
     setShowQuoteForm(false);
-    
+
     if (quoteCreated && selectedEnquiry) {
       updateEnquiryStatus(selectedEnquiry.id);
-      
+
       if (typeof quoteCreated === 'string' && onQuoteCreated) {
         onQuoteCreated(quoteCreated);
       }
     }
-    
+
     setSelectedEnquiry(null);
   };
 
   return (
     <div className="rounded-md border">
       <div className="p-4 border-b">
-        <Filter 
+        <Filter
           value={filterValue}
           onChange={setFilterValue}
           placeholder="Filter by customer name or address..."
         />
       </div>
-      
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Customer</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Move Date</TableHead>
-            <TableHead>From</TableHead>
-            <TableHead>To</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredEnquiries.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} className="text-center py-4 text-muted-foreground">
-                {enquiries.length === 0 ? "No enquiries found" : "No matching enquiries found"}
-              </TableCell>
-            </TableRow>
-          ) : (
-            filteredEnquiries.map((enquiry) => (
-              <TableRow key={enquiry.id}>
-                <TableCell>{enquiry.customerName}</TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-1">
+
+      <MonthlyGroupedList
+        items={filteredEnquiries}
+        dateField="createdAt"
+        emptyMessage={enquiries.length === 0 ? "No enquiries found" : "No matching enquiries found"}
+        renderHeader={(month, count) => (
+          <div className="flex justify-between w-full items-center">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{month}</span>
+              <Badge variant="outline">{count}</Badge>
+            </div>
+            <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+          </div>
+        )}
+        renderItem={(enquiry) => (
+          <div className="border rounded-md p-4 mb-2 bg-card">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+              <div>
+                <h3 className="text-lg font-medium">{enquiry.customerName}</h3>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
                     {enquiry.phone}
                     {enquiry.hasWhatsapp && (
-                      <div className="flex items-center" title="Has WhatsApp">
-                        <MessageSquare className="h-4 w-4 text-green-500" />
+                      <div title="Has WhatsApp">
+                        <MessageSquare className="h-3 w-3 text-green-500" />
                       </div>
                     )}
                   </div>
-                </TableCell>
-                <TableCell className="whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {formatDate(enquiry.moveDate)}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {renderAddressWithMapLink(enquiry.fromAddress)}
-                </TableCell>
-                <TableCell>
-                  {renderAddressWithMapLink(enquiry.toAddress)}
-                </TableCell>
-                <TableCell>
-                  <Badge className={getStatusColor(enquiry.status)}>{enquiry.status}</Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => handleConvertToQuote(enquiry)} 
-                      title="Convert to Quote"
-                    >
-                      <QuoteIcon className="h-4 w-4 text-blue-500" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => handleExport(enquiry)} 
-                      title="Export to text"
-                    >
-                      <Share className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => handleEdit(enquiry)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => handleDelete(enquiry)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+                  {enquiry.email && (
+                    <span className="hidden md:inline">• {enquiry.email}</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className={getStatusColor(enquiry.status)}>{enquiry.status}</Badge>
+                <div className="flex space-x-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleConvertToQuote(enquiry)}
+                    title="Convert to Quote"
+                  >
+                    <QuoteIcon className="h-3 w-3 mr-1 text-blue-500" />
+                    Quote
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleExport(enquiry)}
+                    title="Export to text"
+                  >
+                    <Share className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleEdit(enquiry)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleDelete(enquiry)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-sm">
+              <div>
+                <div className="text-muted-foreground mb-1">Move Date</div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  {formatDate(enquiry.moveDate)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground mb-1">From</div>
+                {renderAddressWithMapLink(enquiry.fromAddress)}
+                <div className="text-xs text-muted-foreground mt-1">
+                  {enquiry.fromBedrooms} bedroom{enquiry.fromBedrooms !== 1 ? 's' : ''}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground mb-1">To</div>
+                {renderAddressWithMapLink(enquiry.toAddress)}
+              </div>
+            </div>
+
+            {enquiry.notes && (
+              <div className="mt-4 text-sm">
+                <div className="text-muted-foreground mb-1">Notes</div>
+                <div className="bg-muted p-2 rounded-md">{enquiry.notes}</div>
+              </div>
+            )}
+          </div>
+        )}
+      />
 
       {showEditForm && selectedEnquiry && (
-        <EnquiryForm 
+        <EnquiryForm
           onClose={() => setShowEditForm(false)}
           initialData={selectedEnquiry}
         />
       )}
 
       {showQuoteForm && selectedEnquiry && (
-        <QuoteForm 
+        <QuoteForm
           onClose={handleQuoteFormClose}
           initialData={{
             id: crypto.randomUUID(),
