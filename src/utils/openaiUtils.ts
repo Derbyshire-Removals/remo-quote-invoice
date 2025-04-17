@@ -35,7 +35,7 @@ export const processEnquiryText = async (text: string): Promise<Partial<Enquiry>
           - Any access issues
           - Whether they're getting more quotes (default to false if not mentioned)
           - Services needed (packaging, storage, disassembly)
-          - Any additional notes
+          - Any additional notes (anything that the above doesn't capture and would be useful)
 
           Format your response as a valid JSON object with these fields:
           {
