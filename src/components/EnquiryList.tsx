@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, MessageSquare, Calendar, Share, Clipboard, MapPin, FileText as QuoteIcon, ChevronDown } from "lucide-react";
+import { Edit, Trash2, MessageSquare, Calendar, Share, Clipboard, MapPin, FileText as QuoteIcon, ChevronDown, Route } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Enquiry } from "@/types/invoice";
 import EnquiryForm from "./EnquiryForm";
@@ -25,6 +25,7 @@ export default function EnquiryList({ onQuoteCreated }: EnquiryListProps) {
   const [exportText, setExportText] = useState("");
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [filterValue, setFilterValue] = useState("");
+  const [companyAddress, setCompanyAddress] = useState("");
   const { toast } = useToast();
 
   const storageKey = 'enquiries';
@@ -41,9 +42,20 @@ export default function EnquiryList({ onQuoteCreated }: EnquiryListProps) {
   useEffect(() => {
     loadEnquiries();
 
+    // Load company address from settings
+    const savedSettings = localStorage.getItem("companySettings");
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      setCompanyAddress(settings.address || "");
+    }
+
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === storageKey) {
         loadEnquiries();
+      } else if (e.key === "companySettings") {
+        // Update company address if settings change
+        const settings = e.newValue ? JSON.parse(e.newValue) : {};
+        setCompanyAddress(settings.address || "");
       }
     };
 
@@ -167,6 +179,21 @@ FOLLOW-UP ACTIONS:
 
   const getGoogleMapsUrl = (address: string) => {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  };
+
+  const getGoogleMapsRouteUrl = (enquiry: Enquiry) => {
+    // Create a directions URL with waypoints
+    // Format: https://www.google.com/maps/dir/?api=1&origin=ORIGIN&destination=DESTINATION&waypoints=WAYPOINT
+
+    if (!companyAddress) {
+      return null; // Return null if company address is not available
+    }
+
+    const origin = encodeURIComponent(companyAddress);
+    const waypoint = encodeURIComponent(enquiry.fromAddress);
+    const destination = encodeURIComponent(enquiry.toAddress);
+
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&waypoints=${waypoint}`;
   };
 
   const renderAddressWithMapLink = (address: string) => {
@@ -318,6 +345,21 @@ FOLLOW-UP ACTIONS:
                 {renderAddressWithMapLink(enquiry.toAddress)}
               </div>
             </div>
+
+            {companyAddress && (
+              <div className="mt-2 flex justify-end">
+                <a
+                  href={getGoogleMapsRouteUrl(enquiry)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs flex items-center text-primary hover:underline"
+                  title="View complete route: Company → From → To"
+                >
+                  <Route className="h-3 w-3 mr-1" />
+                  View complete route on Google Maps
+                </a>
+              </div>
+            )}
 
             {enquiry.notes && (
               <div className="mt-4 text-sm">
