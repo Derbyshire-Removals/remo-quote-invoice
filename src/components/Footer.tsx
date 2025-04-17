@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-const APP_VERSION = '1.0.3'; // Updated version number
+const APP_VERSION = '1.0.4'; // Updated version number
 
 const Footer = () => {
   return (
