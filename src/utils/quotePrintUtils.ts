@@ -366,7 +366,7 @@ export const printQuote = (quote: Quote, toast: any) => {
 
           <p><strong>8. LIMITS OF OUR LIABILITY</strong></p>
           <p>If we are liable for any loss, failure to produce or damages we will pay only:</p>
-          <p>a. the cost of repairing or replacing the damaged or missing article, or up to £20 for any one article, suite, service or complete case or package or other container and their contents whichever is the smaller amount. We shall choose whether to repair or replace any damaged or missing article if we repair no claim can be made against us for depreciation.</p>
+          <p>a. the cost of repairing or replacing the damaged or missing article, or up to £150 for any one article, suite, service or complete case or package or other container and their contents whichever is the smaller amount. We shall choose whether to repair or replace any damaged or missing article if we repair no claim can be made against us for depreciation.</p>
 
           <p><strong>9. OTHER LIABILITIES</strong></p>
           <p>We shall not be liable at all for any loss, failure to produce or damage however caused.</p>
