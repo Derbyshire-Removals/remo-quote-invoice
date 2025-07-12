@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { Download, Upload } from "lucide-react";
 
 interface CompanySettings {
   logoUrl: string;
@@ -102,6 +104,95 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         i === index ? { ...template, [field]: value } : template
       )
     }));
+  };
+
+  const handleExportData = () => {
+    try {
+      // Collect all localStorage data
+      const allData: Record<string, any> = {};
+      
+      // List of all possible localStorage keys used in the app
+      const keys = [
+        'companySettings',
+        'invoices',
+        'quotes', 
+        'enquiries',
+        'documents'
+      ];
+      
+      keys.forEach(key => {
+        const data = localStorage.getItem(key);
+        if (data) {
+          try {
+            allData[key] = JSON.parse(data);
+          } catch {
+            allData[key] = data; // Store as string if not JSON
+          }
+        }
+      });
+      
+      // Create and download the backup file
+      const dataStr = JSON.stringify(allData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success("Data exported successfully");
+    } catch (error) {
+      toast.error("Failed to export data");
+      console.error("Export error:", error);
+    }
+  };
+
+  const handleImportData = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importedData = JSON.parse(e.target?.result as string);
+          
+          // Restore each data type to localStorage
+          Object.keys(importedData).forEach(key => {
+            const value = typeof importedData[key] === 'string' 
+              ? importedData[key] 
+              : JSON.stringify(importedData[key]);
+            localStorage.setItem(key, value);
+          });
+          
+          // Refresh settings state if company settings were imported
+          if (importedData.companySettings) {
+            setSettings({
+              ...defaultSettings,
+              ...importedData.companySettings,
+              termsTemplates: importedData.companySettings.termsTemplates || defaultSettings.termsTemplates
+            });
+          }
+          
+          toast.success("Data imported successfully! Please refresh the page to see all changes.");
+        } catch (error) {
+          toast.error("Failed to import data. Please check the file format.");
+          console.error("Import error:", error);
+        }
+      };
+      
+      reader.readAsText(file);
+    };
+    
+    input.click();
   };
 
   return (
@@ -260,6 +351,36 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                 value={settings.invoiceCounter}
                 onChange={(e) => setSettings({ ...settings, invoiceCounter: Number(e.target.value) })}
               />
+            </div>
+          </div>
+
+          <Separator className="my-4" />
+          
+          <div className="space-y-4">
+            <div>
+              <Label className="text-base font-medium">Data Backup & Restore</Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Export your data for backup or import from a previous backup
+              </p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleExportData}
+                className="flex-1"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export Data
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleImportData}
+                className="flex-1"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Import Data
+              </Button>
             </div>
           </div>
 
