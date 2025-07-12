@@ -102,35 +102,66 @@ export default function InvoiceList({
     return tooltip;
   };
 
+  const calculateTotals = () => {
+    const paidTotal = filteredInvoices
+      .filter(invoice => invoice.paymentStatus === 'paid')
+      .reduce((sum, invoice) => sum + parseFloat(invoice.amount.replace('£', '')), 0);
+    
+    const unpaidTotal = filteredInvoices
+      .filter(invoice => invoice.paymentStatus !== 'paid')
+      .reduce((sum, invoice) => sum + parseFloat(invoice.amount.replace('£', '')), 0);
+
+    return { paidTotal, unpaidTotal };
+  };
+
+  const { paidTotal, unpaidTotal } = calculateTotals();
+
   return (
     <div className="rounded-md border">
-      <div className="p-4 border-b flex items-center justify-between gap-4">
-        <div className="flex-grow">
-          <Filter
-            value={filterValue}
-            onChange={setFilterValue}
-            placeholder="Filter by customer name or address..."
-          />
+      <div className="p-4 border-b bg-muted/30">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="bg-card p-3 rounded-lg border">
+            <div className="text-sm text-muted-foreground">Total Paid</div>
+            <div className="text-lg font-semibold text-green-600">£{paidTotal.toFixed(2)}</div>
+          </div>
+          <div className="bg-card p-3 rounded-lg border">
+            <div className="text-sm text-muted-foreground">Total Due</div>
+            <div className="text-lg font-semibold text-red-600">£{unpaidTotal.toFixed(2)}</div>
+          </div>
+          <div className="bg-card p-3 rounded-lg border">
+            <div className="text-sm text-muted-foreground">Total Value</div>
+            <div className="text-lg font-semibold">£{(paidTotal + unpaidTotal).toFixed(2)}</div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={showUnpaidOnly ? "default" : "outline"}
-            onClick={() => setShowUnpaidOnly(!showUnpaidOnly)}
-            className="flex items-center gap-2 whitespace-nowrap"
-          >
-            {showUnpaidOnly ? <FilterX className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
-            {showUnpaidOnly ? "Show All" : "Unpaid Only"}
-          </Button>
-          {onShowCustomersWithoutReviews && (
+        
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-grow">
+            <Filter
+              value={filterValue}
+              onChange={setFilterValue}
+              placeholder="Filter by customer name or address..."
+            />
+          </div>
+          <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              onClick={onShowCustomersWithoutReviews}
+              variant={showUnpaidOnly ? "default" : "outline"}
+              onClick={() => setShowUnpaidOnly(!showUnpaidOnly)}
               className="flex items-center gap-2 whitespace-nowrap"
             >
-              <Star className="h-4 w-4 text-yellow-500" />
-              Show Customers Needing Reviews
+              {showUnpaidOnly ? <FilterX className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
+              {showUnpaidOnly ? "Show All" : "Unpaid Only"}
             </Button>
-          )}
+            {onShowCustomersWithoutReviews && (
+              <Button
+                variant="outline"
+                onClick={onShowCustomersWithoutReviews}
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <Star className="h-4 w-4 text-yellow-500" />
+                Show Customers Needing Reviews
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
