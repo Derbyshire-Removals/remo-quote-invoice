@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, CalendarIcon, MapPin, Clock, XCircle, AlertCircle, Printer, Mail, FileText, ChevronDown } from "lucide-react";
+import { Edit, Trash2, CalendarIcon, MapPin, Clock, XCircle, AlertCircle, Printer, Mail, FileText, ChevronDown, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 // No longer need useToast import
 import { useState } from "react";
@@ -79,14 +79,55 @@ export default function QuoteList({
     onPreview(quote);
   };
 
+  const handleExportToCSV = () => {
+    const csvData = [
+      ['Date', 'Customer Name', 'Address', 'Email', 'Phone', 'Move Date', 'Total', 'Status', 'Notes'],
+      ...filteredQuotes.map(quote => [
+        formatDate(quote.createdAt),
+        quote.customerName,
+        quote.fromAddress,
+        quote.email || '',
+        quote.phone || '',
+        formatDate(quote.moveDate),
+        `£${quote.total.toFixed(2)}`,
+        quote.status || 'open',
+        quote.message || ''
+      ])
+    ];
+
+    const csvContent = csvData.map(row => 
+      row.map(field => `"${String(field).replace(/"/g, '""')}"`)
+    ).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `quotes-export-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="rounded-md border">
-      <div className="p-4 border-b">
-        <Filter
-          value={filterValue}
-          onChange={setFilterValue}
-          placeholder="Filter by customer name or address..."
-        />
+      <div className="p-4 border-b flex items-center justify-between gap-4">
+        <div className="flex-grow">
+          <Filter
+            value={filterValue}
+            onChange={setFilterValue}
+            placeholder="Filter by customer name or address..."
+          />
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleExportToCSV}
+          className="flex items-center gap-2 whitespace-nowrap"
+        >
+          <Download className="h-4 w-4" />
+          Export CSV
+        </Button>
       </div>
 
       <MonthlyGroupedList
