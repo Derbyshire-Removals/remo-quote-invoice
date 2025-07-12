@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon, Star, BellRing, ChevronDown, Calendar } from "lucide-react";
+import { Edit, Trash2, Printer, CheckIcon, Circle, SplitIcon, Star, BellRing, ChevronDown, Calendar, FilterX } from "lucide-react";
 import { InitialInvoiceData, ReviewChaseRecord } from "@/types/invoice";
 import { useState } from "react";
 import {
@@ -43,8 +43,15 @@ export default function InvoiceList({
 }: InvoiceListProps) {
   // No longer need hover state with card-based layout
   const [filterValue, setFilterValue] = useState("");
+  const [showUnpaidOnly, setShowUnpaidOnly] = useState(false);
 
   const filteredInvoices = invoices.filter(invoice => {
+    // First apply payment status filter
+    if (showUnpaidOnly && invoice.paymentStatus === 'paid') {
+      return false;
+    }
+
+    // Then apply text search filter
     if (!filterValue) return true;
 
     const searchTerm = filterValue.toLowerCase();
@@ -105,16 +112,26 @@ export default function InvoiceList({
             placeholder="Filter by customer name or address..."
           />
         </div>
-        {onShowCustomersWithoutReviews && (
+        <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            onClick={onShowCustomersWithoutReviews}
+            variant={showUnpaidOnly ? "default" : "outline"}
+            onClick={() => setShowUnpaidOnly(!showUnpaidOnly)}
             className="flex items-center gap-2 whitespace-nowrap"
           >
-            <Star className="h-4 w-4 text-yellow-500" />
-            Show Customers Needing Reviews
+            {showUnpaidOnly ? <FilterX className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
+            {showUnpaidOnly ? "Show All" : "Unpaid Only"}
           </Button>
-        )}
+          {onShowCustomersWithoutReviews && (
+            <Button
+              variant="outline"
+              onClick={onShowCustomersWithoutReviews}
+              className="flex items-center gap-2 whitespace-nowrap"
+            >
+              <Star className="h-4 w-4 text-yellow-500" />
+              Show Customers Needing Reviews
+            </Button>
+          )}
+        </div>
       </div>
 
       <MonthlyGroupedList
