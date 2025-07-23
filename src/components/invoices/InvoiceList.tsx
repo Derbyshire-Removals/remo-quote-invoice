@@ -105,11 +105,11 @@ export default function InvoiceList({
   const calculateTotals = () => {
     const paidTotal = invoices
       .filter(invoice => invoice.paymentStatus === 'paid')
-      .reduce((sum, invoice) => sum + parseFloat(invoice.amount.replace('£', '')), 0);
+      .reduce((sum, invoice) => sum + parseFloat((invoice.amount || '£0').replace('£', '')), 0);
     
     const unpaidTotal = invoices
       .filter(invoice => invoice.paymentStatus !== 'paid')
-      .reduce((sum, invoice) => sum + parseFloat(invoice.amount.replace('£', '')), 0);
+      .reduce((sum, invoice) => sum + parseFloat((invoice.amount || '£0').replace('£', '')), 0);
 
     return { paidTotal, unpaidTotal };
   };
